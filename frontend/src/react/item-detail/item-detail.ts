@@ -131,9 +131,9 @@ export async function fetchQueue(ref: QueueRef, helpers: Pick<ItemDetailHelpers,
     return playlistQueue(playlist);
   }
   const group = await apiGet<GroupPayload>(`/api/${ref.kind}?id=${ref.seedId}`, signal);
-  if (group.error || !group.items?.length) throw new Error(group.error || '这一组已不存在');
+  if (group.error || !group.items?.length) throw new Error(group.error || "이 그룹은 더 이상 존재하지 않습니다");
   return {
-    kind: ref.kind, seedId: ref.seedId!, title: `${ref.kind === 'parts' ? '分卷' : '版本'} · ${group.title || ''}`,
+    kind: ref.kind, seedId: ref.seedId!, title: `${ref.kind === 'parts' ? "분할 파일" : "버전"} · ${group.title || ''}`,
     items: group.items,
     versionCount: ref.kind === 'editions' ? group.count : undefined,
   };
@@ -372,7 +372,7 @@ export const clampRating = (value: number | null | undefined) => Math.min(Math.m
 export const ratingStars = (value: number | null | undefined) => Math.round(clampRating(value) / RATING_STEP);
 export const ratingText = (value: number | null | undefined) => {
   const stars = ratingStars(value);
-  return stars ? `${stars} 星` : '未评分';
+  return stars ? `${stars} 점` : "별점 없음";
 };
 /** 点第 `star` 颗之后要送的值：点的就是当前那一颗是撤销。 */
 export const nextRating = (before: number | null | undefined, star: number) => {
@@ -438,22 +438,22 @@ export function pickerSections(query: string, candidates: readonly TagCount[], r
  *  正片），但队列里两条并排时「什么都不写」等于让人自己猜哪条是哪条。 */
 export const EDITION_TONE: Record<string, string> = { 中字: 'subtitle', 无码: 'uncensored', 无码破解: 'cracked', 有码: 'censored' };
 
-const QUEUE_LABEL: Record<QueueKind, string> = { mix: 'Mix', parts: '分卷', editions: '版本', playlist: '播放列表' };
+const QUEUE_LABEL: Record<QueueKind, string> = { mix: 'Mix', parts: "분할 파일", editions: "버전", playlist: "재생목록" };
 
 /** 队列头那两行：类别与摘要。版次队列的标题是「版本 · 番号」，而番号就印在正上方的详情标题里，
  *  标题栏又已经写着「版本」——三处说同一件事，这里只留数量。别的队列标题带真信息（播放列表名、
  *  Mix 种子），不能一起砍。 */
 export function queueCopy(queue: DetailQueue): { title: string; summary: string } {
   const count = (queue.kind === 'editions' ? queue.versionCount ?? queue.items.length : queue.items.length).toLocaleString();
-  const countLabel = queue.kind === 'parts' ? `${count} 卷` : queue.kind === 'editions' ? `${count} 个版本` : `${count} 个视频`;
+  const countLabel = queue.kind === 'parts' ? `${count} 편` : queue.kind === 'editions' ? `${count} 개 버전` : `${count} 개 영상`;
   return { title: QUEUE_LABEL[queue.kind], summary: queue.kind === 'editions' ? countLabel : `${queue.title} · ${countLabel}` };
 }
 
 /** 同一部片的几卷共用文件名，标题、女优、厂牌逐字相同：详情标题不写卷号的话，在队列里换一卷，
  *  右侧整栏看上去纹丝不动。卷号说的是「第几份文件」而不是版次，用中性灰。数字卷写「第 2 卷」，
  *  字母卷照番号分卷后缀的写法大写成「A 卷」。 */
-export const partLabel = (label = '') => /^\d+$/.test(label) ? `第 ${label} 卷`
-  : /^[a-h]$/i.test(label) ? `${label.toUpperCase()} 卷` : label;
+export const partLabel = (label = '') => /^\d+$/.test(label) ? `제 ${label} 편`
+  : /^[a-h]$/i.test(label) ? `${label.toUpperCase()} 편` : label;
 export const partLabelHtml = (item: DetailItem, queue: DetailQueue | null) =>
   ((queue?.kind === 'parts' || queue?.kind === 'editions') && item.part_label ? `<small class="javedition partlabel">${esc(partLabel(item.part_label))}</small>` : '');
 
@@ -493,8 +493,8 @@ export function realWatched(item: DetailItem): number | null {
 
 /** 反馈键的回执。 */
 export function feedbackReceipt(kind: string, result: { feedback?: string | null; disposal?: string | null }): string {
-  if (kind === 'dislike') return result.feedback === 'dislike' ? '已标记不合口味' : '已取消不合口味';
-  if (kind === 'seen') return result.feedback === 'seen' ? '已标记看过' : '已取消看过';
-  if (kind === 'dispose') return result.disposal === 'trash' ? '已移入回收站' : '已移出回收站';
-  return '已记录一次高潮';
+  if (kind === 'dislike') return result.feedback === 'dislike' ? "취향에 맞지 않음으로 표시했습니다" : "취향에 맞지 않음 표시를 취소했습니다";
+  if (kind === 'seen') return result.feedback === 'seen' ? "본 항목으로 표시했습니다" : "본 항목 표시를 취소했습니다";
+  if (kind === 'dispose') return result.disposal === 'trash' ? "휴지통으로 옮겼습니다" : "휴지통에서 복원했습니다";
+  return "오르가슴 1회를 기록했습니다";
 }

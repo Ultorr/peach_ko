@@ -58,11 +58,11 @@ _SETUP_SYMBOLS = re.compile(r'<symbol id="i-(?:folder-search|hard-drive|database
 #: 键 -> 页面上的题目与一句说明。顺序、默认值与校验仍然来自 `onboarding.questions()`，
 #: 这里只决定同一道题在浏览器里怎么称呼：命令行那份题面要把可选值写进去，页面用控件表达。
 _SETUP_COPY = {
-    "data_root": ("数据目录", "Peach 数据库、缓存和设置文件都放在这里。"),
-    "media_dir": ("媒体库", "Peach 从媒体库读取视频和图片。请选择已存在的文件夹，也可以使用外置硬盘。"),
-    "host": ("谁可以访问", ""),
-    "port": ("端口", "浏览器地址里冒号后面的数字，一般不用改。"),
-    "mdns_name": ("局域网访问地址", "选了「同一局域网的设备」之后，其他设备在浏览器里输入这个地址就能打开 Peach。"),
+    "data_root": ("데이터 폴더", "Peach 데이터베이스, 캐시, 설정 파일을 이 폴더에 저장합니다."),
+    "media_dir": ("미디어 라이브러리", "Peach는 미디어 라이브러리에서 동영상과 이미지를 읽습니다. 기존 폴더를 선택하세요. 외장 드라이브도 사용할 수 있습니다."),
+    "host": ("접근 허용 범위", ""),
+    "port": ("포트", "브라우저 주소에서 콜론 뒤에 오는 숫자입니다. 일반적으로 변경할 필요가 없습니다."),
+    "mdns_name": ("로컬 네트워크 접속 주소", "‘같은 로컬 네트워크의 기기’를 선택하면 다른 기기의 브라우저에서 이 주소로 Peach에 접속할 수 있습니다."),
 }
 #: 「谁可以访问」在页面上的顺序：局域网在左边，也是默认选项——Peach 的本意就是给
 #: 同一局域网里的设备看。命令行问答按 `HOST_OPTIONS` 的编号顺序念，两边取值一致。
@@ -75,7 +75,7 @@ def setup_shell() -> str:
     字形从 `web/index.html` 的雪碧图里按名字摘。
     """
     index = (PROJECT_ROOT / "web/index.html").read_text(encoding="utf-8")
-    return page_shell("Peach · 首次运行", "setup", symbols="".join(_SETUP_SYMBOLS.findall(index)))
+    return page_shell("Peach · 초기 설정", "setup", symbols="".join(_SETUP_SYMBOLS.findall(index)))
 
 
 def error_page(status: int, message: str) -> str:
@@ -91,23 +91,23 @@ def _copy_for(key: str, fallback: str) -> tuple[str, str]:
 
 
 #: 非 Windows 上每行媒体来源多出的那一格：账本里的 Windows 形态路径。
-_MEDIA_ROOT_LABEL = "Windows 中的对应路径"
-_MEDIA_ROOT_PLACEHOLDER = "例如 B:\\"
+_MEDIA_ROOT_LABEL = "Windows에서의 대응 경로"
+_MEDIA_ROOT_PLACEHOLDER = "예: B:\\"
 #: 非 Windows 上媒体库底下多出的一句说明：本机挂载点和账本路径是两回事。
-_POSIX_MEDIA_NOTE = "本机文件夹是这台电脑读取媒体的位置；Windows 中的对应路径用于匹配馆藏中已有的路径。"
+_POSIX_MEDIA_NOTE = "로컬 폴더는 이 컴퓨터에서 미디어를 읽는 위치입니다. Windows 대응 경로는 라이브러리에 저장된 기존 경로와 연결하는 데 사용됩니다."
 
 
 #: 有一行媒体来源选了云盘时，媒体库底下出现的那句提示和它的帮助链接。
-_CLOUD_HELP = "请先将 CloudDrive2 或 OpenList 中的网盘挂载为本机文件夹；Windows 读取 NAS 共享时，请先映射为盘符，再选择对应文件夹。本机安装提示仅适用于在本机运行 CloudDrive。文件操作需要挂载工具和网盘账号授予写入权限；光鸭云盘的上传、建文件夹、改名和移动需要 CloudDrive2 v1.1.0 或更高版本，删除和复制暂不支持。"
+_CLOUD_HELP = "먼저 CloudDrive2 또는 OpenList의 클라우드 드라이브를 로컬 폴더로 마운트하세요. Windows에서 NAS 공유를 읽으려면 드라이브 문자에 연결한 다음 해당 폴더를 선택하세요. 로컬 설치 안내는 이 컴퓨터에서 CloudDrive를 실행할 때만 적용됩니다. 파일 작업에는 마운트 도구와 클라우드 계정의 쓰기 권한이 필요합니다. Guangya 클라우드의 업로드, 폴더 생성, 이름 변경, 이동은 CloudDrive2 v1.1.0 이상이 필요하며, 삭제와 복사는 아직 지원되지 않습니다."
 _CLOUD_HELP_URL = "https://www.clouddrive2.com/help.html"
-_CLOUD_HELP_LABEL = "挂载帮助"
+_CLOUD_HELP_LABEL = "마운트 도움말"
 
 
 def missing_mount_dependencies(*, windows: bool) -> list[dict[str, str]]:
     """云盘挂载缺的软件：每项一句「未检测到」和它的下载入口，由 `/api/setup/questions` 交给首启页。"""
     from .media_configuration import mount_dependencies
-    return [{"name": row["name"], "message": f"未检测到 {row['name']}。",
-             "download_url": row["download_url"], "download_label": f"下载 {row['name']}"}
+    return [{"name": row["name"], "message": f"{row['name']}을(를) 찾을 수 없습니다.",
+             "download_url": row["download_url"], "download_label": f"{row['name']} 다운로드"}
             for row in mount_dependencies(system='win32' if windows else 'darwin') if not row['available']]
 
 
@@ -132,8 +132,8 @@ def _question_view(question) -> dict[str, str]:
     elif question.key == "mdns_name":
         view.update(prefix="http://" if distribution.standalone() else "https://", suffix=".local")
         if distribution.standalone():
-            view["help"] = ("其他设备打开这个地址时要加上上面的端口，例如 "
-                            "http://peach.local:8900。首次连接请允许 Windows 专用网络访问。")
+            view["help"] = ("다른 기기에서 접속할 때는 위의 포트를 주소에 추가하세요. 예: "
+                            "http://peach.local:8900. 처음 연결할 때 Windows 개인 네트워크 접근을 허용하세요.")
     return view
 
 
@@ -318,14 +318,14 @@ def _setup_guard(request: Request, *, submit: bool) -> None:
         raise HTTPException(status_code=404, detail="not found")
     host = request.client.host if request.client else ""
     if host not in _LOOPBACK:
-        raise HTTPException(status_code=403, detail="setup is loopback-only")
+        raise HTTPException(status_code=403, detail="초기 설정은 이 컴퓨터에서만 사용할 수 있습니다")
     if distribution.standalone() and request.url.hostname not in _LOOPBACK:
-        raise HTTPException(status_code=403, detail="请使用本机地址打开设置")
+        raise HTTPException(status_code=403, detail="이 컴퓨터의 로컬 주소로 설정을 여세요")
     if not submit:
         return
     origin = request.headers.get("origin")
     if origin and origin.rstrip("/") != str(request.base_url).rstrip("/"):
-        raise HTTPException(status_code=403, detail="请从 Peach 设置页提交")
+        raise HTTPException(status_code=403, detail="Peach 설정 페이지에서 제출하세요")
 
 
 @router.get("/api/setup/questions")
@@ -400,7 +400,7 @@ async def setup_submit_json(request: Request):
     except ValueError:
         body = None
     if not isinstance(body, dict):
-        raise HTTPException(status_code=400, detail="请求正文要是 JSON 对象")
+        raise HTTPException(status_code=400, detail="요청 본문은 JSON 객체여야 합니다")
     from . import remote_reporting
     try:
         reporting = remote_reporting.parse_choices(body.get("remote_reporting", {}), partial=True)
@@ -426,7 +426,7 @@ async def setup_submit_json(request: Request):
     confirmation = submitted.get("access_confirm", "") if password_enabled else ""
     try:
         if password_enabled and not password:
-            raise ValueError("请输入访问密码")
+            raise ValueError("접속 비밀번호를 입력하세요")
         access.validate_password(password, confirmation)
     except ValueError as exc:
         errors["access_password"] = str(exc)
@@ -441,14 +441,14 @@ async def setup_submit_json(request: Request):
         # 那一刻按发现顺序算出来的这份。
         resolved, _broken = onboarding.resolve_config(answers.data_root)
         if resolved.path.exists():
-            raise HTTPException(status_code=409, detail="settings file already exists")
+            raise HTTPException(status_code=409, detail="설정 파일이 이미 존재합니다")
         try:
             applied = onboarding.apply(resolved, answers, windows=windows, access_password=password)
             settings_file.remember_data_root(settings_file.active(), applied.config)
         except (OSError, RuntimeError) as exc:
             errors = {"data_root": str(exc)}
     if errors:
-        raise HTTPException(status_code=400, detail={"message": "有几项需要修改", "errors": errors})
+        raise HTTPException(status_code=400, detail={"message": "수정이 필요한 항목이 있습니다", "errors": errors})
     remote_reporting.save(reporting, applied.config)
     if scan_now:
         onboarding.request_first_scan(applied.config, "configured" if answers.media_sources is not None else "local")
@@ -477,19 +477,19 @@ async def setup_restore(request: Request):
         body = await request.json()
         raw = body.get("data_root") if isinstance(body, dict) else None
         if not isinstance(raw, str) or not raw.strip() or not Path(raw).is_absolute():
-            raise ValueError("请选择已有数据目录的绝对路径")
+            raise ValueError("기존 데이터 폴더의 절대 경로를 선택하세요")
         config, broken = onboarding.resolve_config(Path(raw))
         if broken:
             raise broken
         if not config.present:
-            raise ValueError("此目录中没有有效的 config.toml")
+            raise ValueError("이 폴더에 유효한 config.toml 파일이 없습니다")
         if not (config.directory("database") / "ledger.db").is_file():
-            raise ValueError("此目录中没有账本，请选择保存原配置和账本的数据目录")
+            raise ValueError("이 폴더에 기록 데이터베이스가 없습니다. 기존 설정과 기록 데이터베이스가 저장된 데이터 폴더를 선택하세요")
         if distribution.standalone():
             onboarding.check_available_port(config.server.port, request.url.port or 80)
         settings_file.remember_data_root(settings_file.active(), config)
     except (ValueError, OSError, RuntimeError) as exc:
-        raise HTTPException(400, {"message": "无法使用此数据目录", "errors": {"data_root": str(exc)}}) from exc
+        raise HTTPException(400, {"message": "이 데이터 폴더를 사용할 수 없습니다", "errors": {"data_root": str(exc)}}) from exc
     return _setup_done(config, restored=True)
 
 

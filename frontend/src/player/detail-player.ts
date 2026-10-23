@@ -95,7 +95,7 @@ export async function mountDetailPlayer(
     return null;
   }
   const player = videojs(video, {
-    controls: true, preload: 'metadata', language: 'zh-CN', responsive: true,
+    controls: true, preload: 'metadata', language: 'ko', responsive: true,
     /* 海报与作品当前封面偏好一致，交给原生视频显示。 */
     poster: options.poster || detailPosterUrl(item, host.settings().javImage),
     controlBar: {
@@ -159,23 +159,23 @@ export async function mountDetailPlayer(
     const speedText = speed ? `${(speed / 1e6).toFixed(1)} Mbps` : '—';
     const byteScale = segmented || meter.bitrate > 0;
     const loadedRow: [string, string, string] = segmented
-      ? ['网络活动', `${bytes ? fmtSize(bytes) : '—'} · ${resources.length} 请求`,
-        `最近一秒网络活动 ${activity ? fmtSize(activity) : '0 B'}`]
-      : ['已下载', byteScale ? `${fmtSize(loaded)}${mediaSize > 0 ? ` / ${fmtSize(mediaSize)}` : ''}` : `${loaded.toFixed(0)} 秒`,
-        byteScale ? `最近一秒下载 ${activity ? fmtSize(activity) : '0 B'}` : `最近一秒下载 ${activity.toFixed(1)} 秒`];
+      ? ["네트워크 활동", `${bytes ? fmtSize(bytes) : '—'} · ${resources.length} 개 요청`,
+        `최근 1초 네트워크 활동 ${activity ? fmtSize(activity) : '0 B'}`]
+      : ["다운로드됨", byteScale ? `${fmtSize(loaded)}${mediaSize > 0 ? ` / ${fmtSize(mediaSize)}` : ''}` : `${loaded.toFixed(0)} 초`,
+        byteScale ? `최근 1초 다운로드 ${activity ? fmtSize(activity) : '0 B'}` : `최근 1초 다운로드 ${activity.toFixed(1)} 초`];
     const rows: [string, string, string?][] = [
-      ['视频 ID / 会话', stream && !options.source ? `${item.id} / ${stream.slice(0, 8)}` : `${item.id}`],
-      ['视口 / 帧', `${Math.round(rect.width)}×${Math.round(rect.height)} / ${quality ? `${quality.totalVideoFrames - quality.droppedVideoFrames} of ${quality.totalVideoFrames}` : '—'}`],
-      ['当前 / 最佳分辨率', `${current} / ${item.width || video.videoWidth || '?'}×${item.height || video.videoHeight || '?'}`],
-      ['编码 / 传输', `${container} / ${segmented ? 'HLS' : 'HTTP Range'}`],
-      ['连接速度', speedText,
-        playerStatsPlot(statsHistory.speed, 'speed', Math.max(10e6, ...statsHistory.speed), `连接速度 ${speedText === '—' ? '暂无数据' : speedText}`)],
+      ["동영상 ID / 세션", stream && !options.source ? `${item.id} / ${stream.slice(0, 8)}` : `${item.id}`],
+      ["뷰포트 / 프레임", `${Math.round(rect.width)}×${Math.round(rect.height)} / ${quality ? `${quality.totalVideoFrames - quality.droppedVideoFrames} of ${quality.totalVideoFrames}` : '—'}`],
+      ["현재 / 최적 해상도", `${current} / ${item.width || video.videoWidth || '?'}×${item.height || video.videoHeight || '?'}`],
+      ["인코딩 / 전송", `${container} / ${segmented ? 'HLS' : 'HTTP Range'}`],
+      ["연결 속도", speedText,
+        playerStatsPlot(statsHistory.speed, 'speed', Math.max(10e6, ...statsHistory.speed), `연결 속도 ${speedText === '—' ? "데이터 없음" : speedText}`)],
       [loadedRow[0], loadedRow[1],
         playerStatsPlot(statsHistory.activity, 'activity', Math.max(1, ...statsHistory.activity), loadedRow[2])],
-      ['缓冲健康', `${buffer.toFixed(1)} 秒`,
-        playerStatsPlot(statsHistory.buffer, 'buffer', 30, `当前可连续播放 ${buffer.toFixed(1)} 秒`)],
-      ['播放时间', `${fmtClock(video.currentTime)} / ${fmtClock(expected || player.duration())}`],
-      ['日期', new Date().toLocaleString()],
+      ["버퍼 상태", `${buffer.toFixed(1)} 초`,
+        playerStatsPlot(statsHistory.buffer, 'buffer', 30, `연속 재생 가능 시간 ${buffer.toFixed(1)} 초`)],
+      ["재생 시간", `${fmtClock(video.currentTime)} / ${fmtClock(expected || player.duration())}`],
+      ["날짜", new Date().toLocaleString()],
     ];
     statsPanel.innerHTML = `<dl>${rows.map(([key, value, plot]) =>
       `<dt>${esc(key)}</dt><dd${plot ? ' data-player-stats-metric=""' : ''}>${plot || ''}<span>${esc(value)}</span></dd>`).join('')}</dl>`;
@@ -189,7 +189,7 @@ export async function mountDetailPlayer(
     if (!segmented) meter.sample(video);
     const bits = playerSpeedBits(player, item.id, detailStreamSession(), segmented ? null : meter);
     const rate = segmented ? fmtSpeed(bits) : fmtLoadRate(bits, bufferedAhead(video));
-    netBadge.innerHTML = `${icon('gauge')}<span class="sr-only">加载速度</span><span>${esc(rate)}</span>`;
+    netBadge.innerHTML = `${icon('gauge')}<span class="sr-only">로딩 속도</span><span>${esc(rate)}</span>`;
   };
   const showNet = () => {
     const netBadge = session.chrome?.netBadge;
@@ -217,7 +217,7 @@ export async function mountDetailPlayer(
     if (options.checkSourceStatus === false) return;
     void host.loadSourceStatus().then((status) => {
       if (status[String(item.location)] !== false || player.isDisposed()) return;
-      player.error({ code: 2, message: `脱盘模式 · ${host.offlineReason(String(item.location))}` });
+      player.error({ code: 2, message: `디스크 연결 해제 모드 · ${host.offlineReason(String(item.location))}` });
     });
   });
   player.ready(() => {

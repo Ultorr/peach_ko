@@ -38,7 +38,7 @@ export function sourceMark(provider: string, label = ''): string {
 }
 
 /** 标题为空时卡片、详情与队列都写这一句。 */
-export const FOLLOW_UNTITLED = '未命名内容';
+export const FOLLOW_UNTITLED = "제목 없는 콘텐츠";
 export const followTitle = (item: { title?: unknown }): string => text(item.title).trim() || FOLLOW_UNTITLED;
 
 /** 这一版列表里一位创作者的名字（别名合并后的统称优先）。 */
@@ -60,7 +60,7 @@ export function followAuthorEntity(sources: readonly FollowSource[]): string {
 export function authorAvatarHtml(sources: readonly FollowSource[], name: string): string {
   const { src, fallback } = authorAvatar(sources);
   const initial = authorInitial(name);
-  if (!src) return `<span class="favatar none" title="没有可用头像">${esc(initial)}</span>`;
+  if (!src) return `<span class="favatar none" title="사용 가능한 프로필 사진 없음">${esc(initial)}</span>`;
   const fallbacks = fallback ? ` data-fallbacks="${esc(fallback)}"` : '';
   return `<img class="favatar" src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" `
     + `data-drop="initial"${fallbacks} data-initial="${esc(initial)}" data-drop-class="favatar none">`;
@@ -76,7 +76,7 @@ export function followIdentity(item: FollowItem, authorSources: readonly FollowS
   const poster = credit?.poster;
   if (!poster) {
     const name = authorName(authorSources, aliases);
-    return { author: name || text(item.author) || text(item.source_label) || '创作者未取得',
+    return { author: name || text(item.author) || text(item.source_label) || "크리에이터 정보를 가져오지 못했습니다",
       avatar: authorAvatarHtml(authorSources, name), credited: '', entityName: followAuthorEntity(authorSources) };
   }
   const key = (value: unknown) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -94,11 +94,11 @@ export function followTitleMarks(group: FollowGroup, shown: FollowItem = group.p
   const mark = (edition: string, label: string) =>
     `<small class="javedition" data-follow-edition="${edition}">${label}</small>`;
   if (group.primary.variant_kind === 'wip') marks.push(mark('wip', 'WIP'));
-  else if (group.has_wip) marks.push(mark('has-wip', '含 WIP'));
+  else if (group.has_wip) marks.push(mark('has-wip', "WIP 포함"));
   const version = text(group.primary.version);
   if (version) marks.push(mark('version', esc(version)));
   const audio = text(shown.audio);
-  const label = audio === 'voiced' ? '配音版' : audio === 'silent' ? '无声版' : '';
+  const label = audio === 'voiced' ? "더빙 버전" : audio === 'silent' ? "무음 버전" : '';
   if (label) marks.push(mark(audio, label));
   return marks.join('');
 }
@@ -111,15 +111,15 @@ export function followBadges(group: FollowGroup, shown: FollowItem = group.prima
     .map((member) => [member.provider, member.provider_label || member.provider] as const));
   if (!sites.size) return '';
   const marks = [...sites].map(([provider, label]) => sourceIcon(provider, label) || `<span>${esc(label)}</span>`).join('');
-  return `<span data-follow-seealso="" title="另见 ${esc([...sites.values()].join('、'))}"><span data-follow-seealso-label="">另见</span> ${marks}</span>`;
+  return `<span data-follow-seealso="" title="함께 보기: ${esc([...sites.values()].join('、'))}"><span data-follow-seealso-label="">함께 보기</span> ${marks}</span>`;
 }
 
 /** 「媒体未取得」那一句，没有就是空串。 */
 export function followMediaIssue(item: FollowItem, context: FollowContext): string {
   const error = text(item.media_error);
-  if (error) return `媒体未取得：${error}`;
+  if (error) return `미디어를 가져오지 못했습니다：${error}`;
   if (item.media_needs_credential && !context.credentials.has(item.provider)) {
-    return item.playable ? '部分媒体未取得：需要 F95 登录会话解析' : '媒体未取得：需要 F95 登录会话解析';
+    return item.playable ? "일부 미디어를 가져오지 못했습니다: 분석에 F95 로그인 세션이 필요합니다" : "미디어를 가져오지 못했습니다: 분석에 F95 로그인 세션이 필요합니다";
   }
   return '';
 }
@@ -140,22 +140,22 @@ function whenParts(item: FollowItem, now: number) {
   const approximate = item.published_precision === 'approximate';
   const full = localTime(iso);
   return {
-    prefix: approximate ? '约 ' : '',
+    prefix: approximate ? "약 " : '',
     full: approximate ? full.slice(0, 10) : full,
-    suffix: isFuture(iso, now) ? ' · 晚于现在' : '',
+    suffix: isFuture(iso, now) ? " · 현재보다 미래 시각" : '',
   };
 }
 
 /** 发布时间，按看的人所在时区显示；来源没给就明说。 */
 export function followWhen(item: FollowItem, now = Date.now()): string {
   const parts = whenParts(item, now);
-  return parts ? `${parts.prefix}${parts.full}${parts.suffix}` : '时间未取得';
+  return parts ? `${parts.prefix}${parts.full}${parts.suffix}` : "시간 정보를 가져오지 못했습니다";
 }
 
 /** 列表里时间只写到日：今年的去掉年份，往年的留着。悬停读得到 `followWhen` 的完整写法。 */
 export function followCompactWhen(item: FollowItem, now = Date.now()): string {
   const parts = whenParts(item, now);
-  if (!parts) return '时间未取得';
+  if (!parts) return "시간 정보를 가져오지 못했습니다";
   if (!/^\d{4}-/.test(parts.full)) return `${parts.prefix}${parts.full}${parts.suffix}`;
   const day = parts.full.startsWith(String(new Date(now).getFullYear())) ? parts.full.slice(5, 10) : parts.full.slice(0, 10);
   return `${parts.prefix}${day}${parts.suffix}`;

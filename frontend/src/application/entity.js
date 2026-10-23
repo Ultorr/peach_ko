@@ -48,7 +48,7 @@ export function sortKeys(current,dir,jav=javActive()){
   return sortOptions(jav).map(([key,label])=>{
     const pressed=current===key,next=nextSortState(key,current,dir);
     return {key,label,pressed,dir:pressed&&sortDirWord(key,dir)?(dir==='asc'?'asc':'desc'):'',
-      ariaLabel:next?`按${label}${next.dir?sortDirWord(next.sort,next.dir):''}排序`:''}});
+      ariaLabel:next?`${label}${next.dir?sortDirWord(next.sort,next.dir):''} 기준 정렬`:''}});
 }
 
 export function routeEntityPage(kind,name,filters,media=entityState.EMPTY_ENTITY_MEDIA,options={}){
@@ -74,7 +74,7 @@ export function setPhotoSize(value){entityState.photos.setSize(value)}
 
 export const revealSource = createRevealSourceAction({
   request:id=>api('/api/reveal',{method:'POST',body:JSON.stringify({id})}),
-  success:()=>receiptsState.toast({text:'已在资源管理器中显示'}),
+  success:()=>receiptsState.toast({text:"파일 탐색기에 표시했습니다"}),
   failureText:error=>entityState.sourceHint(error instanceof Error?error.message:String(error)),
 });
 
@@ -87,15 +87,15 @@ export async function syncForIsland(id){
 }
 
 export async function syncMissing(id,status,done){
-  status.textContent='正在核对目录…';
+  status.textContent="폴더 대조 중…";
   try{
     const r=await api('/api/purge-missing',{method:'POST',body:JSON.stringify({id})});
     if(r.ok===false){status.textContent=entityState.sourceHint(r.error);return}
     status.textContent=r.removed
-      ? `${entityState.syncedText(r)}（核对 ${r.checked} 项${r.unreadable?`，${r.unreadable} 项未能读取`:''}）`
+      ? `${entityState.syncedText(r)}(대조: ${r.checked} 개${r.unreadable?`，${r.unreadable}개 읽기 실패`:''}）`
       : r.unreadable
-        ? `目录有 ${r.unreadable} 项暂时无法读取，本次未改动`
-        : `目录内 ${r.checked} 项都还在，无需改动`;
+        ? `폴더의 ${r.unreadable}개를 읽을 수 없어 변경하지 않았습니다`
+        : `폴더의 ${r.checked}개가 모두 있어 변경할 필요가 없습니다`;
     if(r.removed){
       const ids=(r.items||[]).filter(item=>item.disposal!=='reattached').map(item=>item.id);
       if(done)done(r);
@@ -103,8 +103,8 @@ export async function syncMissing(id,status,done){
         await api('/api/batch',{method:'POST',body:JSON.stringify({ids,operation:'restore'})});
         if(done)done({removed:0,restored:ids.length});
       }:null});
-    }else receiptsState.actionReceipt('目录核对完成，无需改动');
-  }catch(e){status.textContent=entityState.sourceHint(e.message);receiptsState.actionFailure('核对目录',e)}
+    }else receiptsState.actionReceipt("폴더 대조 완료, 변경 사항 없음");
+  }catch(e){status.textContent=entityState.sourceHint(e.message);receiptsState.actionFailure("폴더 대조",e)}
 }
 
 export function sourceTools(id){return `<div class="srctools">${entityState.sourceToolButtons(id)}
@@ -121,16 +121,16 @@ export function wireSourceTools(root,done){
 
 export async function entityAliasForm(mine,write){
   const form=formModal({
-    title:'添加别名',
-    description:'图库按名字存图，多记一个写法就多一批候选；这里添的名字也能提为统称。',
-    body:`<label class="modalfield"><span>别名</span>
+    title:"별칭 추가",
+    description:"이미지는 이름별로 저장됩니다. 다른 표기를 추가하면 후보 이미지가 늘어나며, 추가한 이름을 대표 이름으로 지정할 수도 있습니다.",
+    body:`<label class="modalfield"><span>별칭</span>
         <input class="geist-input" name="alias" maxlength="80" autocomplete="off"
-          placeholder="另一种写法，或另一个艺名"></label>`
-      +(mine.length?`<div class="modalfield"><span>自己添过的</span>
+          placeholder="다른 표기 또는 예명"></label>`
+      +(mine.length?`<div class="modalfield"><span>직접 추가한 별칭</span>
         <div class="aliaschips">${mine.map(one=>`<span class="aliaschip">${esc(one)}
           <button type="button" data-alias-drop="${esc(one)}"
-            aria-label="撤销别名 ${esc(one)}">${icon('x')}</button></span>`).join('')}</div></div>`:''),
-    confirmLabel:'添加别名',
+            aria-label="별칭 취소 ${esc(one)}">${icon('x')}</button></span>`).join('')}</div></div>`:''),
+    confirmLabel:"별칭 추가",
     confirmDisabled:true,
     onConfirm:()=>write({alias:field.value.trim()})});
   const field=form.dialog.querySelector('[name=alias]');
@@ -141,23 +141,23 @@ export async function entityAliasForm(mine,write){
     const gone=chip.dataset.aliasDrop;
     form.close();
     try{await write({alias:gone,remove:true})}
-    catch(error){receiptsState.actionFailure('撤销别名',error);return}
-    receiptsState.actionReceipt(`已撤销别名 ${gone}`,{undo:async()=>{await write({alias:gone})}});
+    catch(error){receiptsState.actionFailure("별칭 취소",error);return}
+    receiptsState.actionReceipt(`취소한 별칭: ${gone}`,{undo:async()=>{await write({alias:gone})}});
   }));
   const {confirmed,result}=await form.done;
   if(!confirmed)return;
-  if(result?.added)receiptsState.actionReceipt(`已添加别名 ${result.alias}`,{undo:async()=>{
+  if(result?.added)receiptsState.actionReceipt(`추가한 별칭: ${result.alias}`,{undo:async()=>{
     await write({alias:result.alias,remove:true})}});
-  else receiptsState.actionReceipt(`${result?.alias} 已经是这条实体的名字`);
+  else receiptsState.actionReceipt(`${result?.alias}은(는) 이미 이 항목의 이름입니다`);
 }
 
 export function showEntityLoading(kind,name){
   const jav=['performer','studio'].includes(kind)&&feedState.hasEntityPart(kind,name,'jav');
-  const head=`<div data-filter-row="bottom" class="flex min-w-0 items-center gap-3 px-3 py-2 min-h-12"><h3 data-entity-readout><span data-skeleton="count" class="relative inline-block h-3.5 w-24 rounded-md align-middle skeleton-sheen"></span></h3>${islandShortcutsEntry()}${kind==='agency'?'':filterControlsSkeletonHtml(sortKeys(state.sort,state.dir,jav),jav?{name:'jav-layout',label:'JAV 卡片版式',value:javLayout(),options:JAV_LAYOUTS}:null)}</div>`;
-  const top=kind==='agency'?'':`<div data-entity-media><button type="button" data-media-view="videos" aria-label="视频" aria-pressed="true" disabled data-skeleton-action>${icon('play')}</button><button type="button" data-media-view="photos" aria-label="照片" disabled data-skeleton-action>${icon('pics')}</button></div><span data-entity-sep></span><div data-entity-scroll><div data-entity-states>${catalogState.catalogViews().map(view=>`<button type="button" data-entity-state="${esc(view.k)}" aria-pressed="${state.state===view.k}" disabled data-skeleton-action>${esc(view.label)}</button>`).join('')}</div>`;
+  const head=`<div data-filter-row="bottom" class="flex min-w-0 items-center gap-3 px-3 py-2 min-h-12"><h3 data-entity-readout><span data-skeleton="count" class="relative inline-block h-3.5 w-24 rounded-md align-middle skeleton-sheen"></span></h3>${islandShortcutsEntry()}${kind==='agency'?'':filterControlsSkeletonHtml(sortKeys(state.sort,state.dir,jav),jav?{name:'jav-layout',label:"JAV 카드 형식",value:javLayout(),options:JAV_LAYOUTS}:null)}</div>`;
+  const top=kind==='agency'?'':`<div data-entity-media><button type="button" data-media-view="videos" aria-label="동영상" aria-pressed="true" disabled data-skeleton-action>${icon('play')}</button><button type="button" data-media-view="photos" aria-label="사진" disabled data-skeleton-action>${icon('pics')}</button></div><span data-entity-sep></span><div data-entity-scroll><div data-entity-states>${catalogState.catalogViews().map(view=>`<button type="button" data-entity-state="${esc(view.k)}" aria-pressed="${state.state===view.k}" disabled data-skeleton-action>${esc(view.label)}</button>`).join('')}</div>`;
   const body=kind==='agency'
     ?indexSkeletonHtml({kind:'performers',layout:indexState.peopleIndexLayout()})
-    :pageSkeletonHtml('正在读取作品',{cards:true,className:'catalog-skeleton postercard-skeleton',cardRatio:cardRatio(gridLayout({active:jav,home:false,portrait:false}))});
+    :pageSkeletonHtml("항목을 불러오는 중",{cards:true,className:'catalog-skeleton postercard-skeleton',cardRatio:cardRatio(gridLayout({active:jav,home:false,portrait:false}))});
   const placeholder=entitySkeletonHtml(kind,head,body,top);
   if($('#index').firstElementChild?.dataset.skeleton!==`entity/${kind}`){
     $('#index').innerHTML=placeholder;
@@ -179,9 +179,9 @@ export function syncEntitySkeletonParts(kind,name){
 }
 
 export function showEntityMissing(kind){
-  const index=ENTITY_ROUTES[kind]||kind,title=INDEX_TITLES[index]||'条目';
-  const actions=INDEX_TITLES[index]?`<a class="geist-button primary" href="/${index}">返回${title}列表</a>`:'';
-  $('#index').innerHTML=preferencesState.emptyState('search-x',`找不到这个${title}`,'名字可能拼错了，或者已经合并到别的名字下；回列表里重新找。',{actions});
+  const index=ENTITY_ROUTES[kind]||kind,title=INDEX_TITLES[index]||"항목";
+  const actions=INDEX_TITLES[index]?`<a class="geist-button primary" href="/${index}">${title} 목록으로 돌아가기</a>`:'';
+  $('#index').innerHTML=preferencesState.emptyState('search-x',`찾을 수 없는 항목: ${title}`,"이름이 잘못되었거나 다른 이름으로 병합되었을 수 있습니다. 목록에서 다시 찾아보세요.",{actions});
 }
 
 export function openEntity(kind,name){openRoutedPage(entityState.application.fresh(kind,name))}
@@ -226,21 +226,21 @@ entityState.entityPageHelpers = {
 entityState.entityFollowActions = {...followState.followFeedActions,
   route:()=>{},shuffle:()=>{},loaded:()=>{},toggleSelection:()=>{}};
 entityState.SOURCE_HINTS = {
-  'source offline':'来源不在线，这一次不对账；接上这个来源后重试',
-  'source not mapped':'本机没有映射这个来源的盘符',
-  'file missing':'源文件已不在盘上；点右边的同步把账本对齐',
-  'unsupported platform':'当前服务端系统不支持直接定位文件',
-  'reveal failed':'打开文件管理器失败，请重试',
+  'source offline':"소스가 오프라인이어서 대조하지 않았습니다. 소스를 연결한 후 다시 시도하세요",
+  'source not mapped':"이 기기에 소스 드라이브 문자가 매핑되지 않았습니다",
+  'file missing':"원본 파일이 디스크에 없습니다. 오른쪽 동기화를 눌러 원장에 반영하세요",
+  'unsupported platform':"현재 서버 운영체제에서는 파일 위치 열기를 지원하지 않습니다",
+  'reveal failed':"파일 탐색기를 열지 못했습니다. 다시 시도하세요.",
 };
 entityState.sourceHint = message=>entityState.SOURCE_HINTS[message]||message;
-entityState.syncedText = r=>[r.trashed?`已把 ${r.trashed} 项移入回收站`:'',
-  r.vanished?`${r.vanished} 项带个人记录，已标为已消失`:'',
-  r.reattached?`${r.reattached} 项的记录已接到库里的另一个版本`:''].filter(Boolean).join('，');
+entityState.syncedText = r=>[r.trashed?`총 ${r.trashed} 개 항목을 휴지통으로 이동했습니다`:'',
+  r.vanished?`${r.vanished}개는 개인 기록이 있어 사라짐으로 표시했습니다`:'',
+  r.reattached?`${r.reattached}개의 기록을 라이브러리의 다른 버전에 연결했습니다`:''].filter(Boolean).join('，');
 entityState.sourceToolButtons = id=>`
-    <button type="button" data-reveal="${id}" title="在文件管理器里打开源文件所在目录"
-      aria-label="定位源文件">${icon('folder-open')}</button>
-    <button type="button" data-sync="${id}" title="核对该目录：磁盘上已删除的移入 Peach 回收站，带个人记录的标为已消失"
-      aria-label="同步删除">${icon('folder-sync')}</button>`;
+    <button type="button" data-reveal="${id}" title="파일 탐색기에서 원본 파일 폴더 열기"
+      aria-label="원본 파일 위치">${icon('folder-open')}</button>
+    <button type="button" data-sync="${id}" title="폴더 대조: 디스크에서 삭제된 항목은 Peach 휴지통으로 이동하고 개인 기록이 있으면 사라짐으로 표시"
+      aria-label="삭제 동기화">${icon('folder-sync')}</button>`;
 }
 
 export function connectPhotoController(){

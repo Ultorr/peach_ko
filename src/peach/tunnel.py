@@ -43,7 +43,7 @@ EDGE_HEADERS = ("cf-connecting-ip", "cf-ray")
 QUICK_MODE = "quick"
 NAMED_MODE = "named"
 MODES = (QUICK_MODE, NAMED_MODE)
-STANDALONE_NAMED_ERROR = "独立包只支持临时链接"
+STANDALONE_NAMED_ERROR = "독립 패키지는 임시 링크만 지원합니다"
 #: 一段主机名标签：字母数字开头结尾，中间可带连字符；整串至少两段且不超过 253 字符。
 HOSTNAME_RE = re.compile(
     r"^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"
@@ -152,7 +152,7 @@ def build_origin(
     """
     if standalone_mode:
         if type(port) is not int or not 1 <= port <= 65535:
-            raise TunnelError(f"独立包 Tunnel 的 HTTP 端口无效：{port}")
+            raise TunnelError(f"독립 패키지 터널의 HTTP 포트가 유효하지 않습니다: {port}")
         return TunnelOrigin(f"http://127.0.0.1:{port}")
     if port is None:
         port = 443
@@ -193,13 +193,13 @@ def origin_for_config(
 
 def _access_error(policy: dict, token: str) -> str | None:
     if policy.get("mode") == "locked":
-        return "访问设置损坏，不能启动公网 Tunnel"
+        return "접속 설정이 손상되어 공개 인터넷 터널을 시작할 수 없습니다"
     if policy.get("mode") == "open":
-        return "启动公网 Tunnel 前必须先设置访问密码"
+        return "공개 인터넷 터널을 시작하기 전에 접속 비밀번호를 설정하세요"
     if policy.get("mode") not in {"password", "legacy"}:
-        return "访问设置不是受支持的密码模式"
+        return "지원되지 않는 비밀번호 모드입니다"
     if not token:
-        return "缺少 Peach 内部访问令牌，不能启动公网 Tunnel"
+        return "Peach 내부 접속 토큰이 없어 공개 인터넷 터널을 시작할 수 없습니다"
     return None
 
 
@@ -215,7 +215,7 @@ def normalize_mode(value: str) -> str:
     """把设置里的模式收敛成两个已知值之一；空串按临时链接处理。"""
     mode = (value or "").strip().lower() or QUICK_MODE
     if mode not in MODES:
-        raise TunnelError(f"tunnel.mode 只能是 quick 或 named：{value}")
+        raise TunnelError(f"tunnel.mode는 quick 또는 named만 허용합니다: {value}")
     return mode
 
 
@@ -232,9 +232,9 @@ def normalize_hostname(value: str) -> str:
             host = host[len(prefix):]
     host = host.rstrip("/").rstrip(".")
     if not host:
-        raise TunnelError("命名隧道需要填写公开主机名")
+        raise TunnelError("이름 지정 터널에는 공개 호스트명이 필요합니다")
     if not HOSTNAME_RE.match(host):
-        raise TunnelError(f"公开主机名不是有效的域名：{value}")
+        raise TunnelError(f"공개 호스트명이 유효한 도메인이 아닙니다: {value}")
     return host
 
 
@@ -276,7 +276,7 @@ def named_plan(
         raise TunnelError(STANDALONE_NAMED_ERROR)
     secret = (token or "").strip()
     if not secret:
-        raise TunnelError("命名隧道需要填写 Cloudflare 隧道令牌")
+        raise TunnelError("이름 지정 터널에는 Cloudflare 터널 토큰이 필요합니다")
     url = public_url(normalize_hostname(hostname))
     return TunnelPlan(
         binary=binary, origin=TunnelOrigin(url), command=build_named_command(binary, secret),
@@ -332,8 +332,8 @@ def _require_binary(
     )
     if binary is None:
         raise TunnelError(
-            "找不到 cloudflared：安装官方 cloudflared，"
-            "或用设置文件的 tunnel.binary 与 PEACH_CLOUDFLARED 指定路径"
+            "cloudflared를 찾을 수 없습니다. 공식 cloudflared를 설치하거나, "
+            "설정 파일의 tunnel.binary 또는 PEACH_CLOUDFLARED로 경로를 지정하세요"
         )
     return binary
 
@@ -396,9 +396,9 @@ def _read_state(path: Path) -> TunnelSnapshot:
     except FileNotFoundError:
         return TunnelSnapshot()
     except (OSError, ValueError, TypeError):
-        return TunnelSnapshot(error="Tunnel 状态文件不可读")
+        return TunnelSnapshot(error="터널 상태 파일을 읽을 수 없습니다")
     if not isinstance(data, dict):
-        return TunnelSnapshot(error="Tunnel 状态文件格式错误")
+        return TunnelSnapshot(error="터널 상태 파일 형식이 올바르지 않습니다")
     return TunnelSnapshot(
         state=str(data.get("state") or "stopped"),
         url=str(data.get("url") or ""),
@@ -413,7 +413,7 @@ def saved_snapshot(state_dir: Path) -> TunnelSnapshot:
     saved = _read_state(state_path(state_dir))
     if saved.state in {"running", "starting"}:
         return TunnelSnapshot(
-            state="stopped", error="上一次 Tunnel 没有正常收尾，运行结果未取得",
+            state="stopped", error="이전 터널이 정상적으로 종료되지 않아 실행 결과를 확인할 수 없습니다",
         )
     return saved
 
@@ -673,7 +673,7 @@ class TunnelManager:
                     started_at=self._started_at,
                 )
             if process is not None and not self._process_alive(process):
-                error = self._error or "cloudflared 已退出"
+                error = self._error or "cloudflared가 종료되었습니다"
                 return TunnelSnapshot(
                     state="error", url=self._url, error=error,
                     pid=self._process_pid(process), started_at=self._started_at,
@@ -717,7 +717,7 @@ class TunnelManager:
                 if not self._process_alive(process):
                     with self._lock:
                         if not self._url and not self._error:
-                            self._error = "cloudflared 在取得入口前退出"
+                            self._error = "접속 주소를 가져오기 전에 cloudflared가 종료되었습니다"
                         snapshot = TunnelSnapshot(
                             state="error", url=self._url, error=self._error,
                             pid=self._process_pid(process), started_at=self._started_at,
@@ -772,7 +772,7 @@ class TunnelManager:
                         handle.close()
                     except OSError:
                         pass
-                message = f"cloudflared 启动失败：{exc}"
+                message = f"cloudflared 시작 실패: {exc}"
                 self._generation += 1
                 self._process = None
                 self._reader = None
@@ -783,7 +783,7 @@ class TunnelManager:
             self._process = process
             stream = process.stdout
             if stream is None:
-                message = "cloudflared 没有输出通道"
+                message = "cloudflared 출력 채널이 없습니다"
                 self._terminate_process(process)
                 self._generation += 1
                 self._process = None
@@ -807,7 +807,7 @@ class TunnelManager:
                     started_at=self._started_at,
                 ))
             except (OSError, RuntimeError) as exc:
-                message = f"Tunnel 启动状态失败：{exc}"
+                message = f"터널 시작 상태 처리 실패: {exc}"
                 self._generation += 1
                 self._process = None
                 self._reader = None
@@ -840,8 +840,8 @@ class TunnelManager:
             if alive:
                 self.stop()
             message = error or (
-                "cloudflared 未在限定时间内取得入口"
-                if not url else "cloudflared 未在限定时间内连接到 Cloudflare 边缘"
+                "cloudflared가 제한 시간 내에 접속 주소를 가져오지 못했습니다"
+                if not url else "cloudflared가 제한 시간 내에 Cloudflare 엣지에 연결하지 못했습니다"
             )
             self._write_error(message)
             raise TunnelError(message)
@@ -852,7 +852,7 @@ class TunnelManager:
         try:
             _write_state(self.state_file, snapshot)
         except OSError as exc:
-            message = f"Tunnel 状态写入失败：{exc}"
+            message = f"터널 상태 저장 실패: {exc}"
             self.stop()
             self._write_error(message)
             raise TunnelError(message) from exc

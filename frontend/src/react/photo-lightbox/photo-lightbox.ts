@@ -127,17 +127,17 @@ export function photoZoom(box: Element, main: SwiperInstance, show: (percent: nu
 /** 一千字节以下也写 1 KB；数和单位之间是不换行空格，窄面板里不拆成两行。 */
 export const fmtPhotoSize = (raw: unknown): string => {
   const size = Number(raw) || 0;
-  if (!size) return '大小未知';
+  if (!size) return "크기 알 수 없음";
   return (size < 1024 * 1024 ? `${Math.max(1, Math.round(size / 1024))} KB` : fmtSize(size)).replace(' ', ' ');
 };
 
-export const photoTitle = (slide: LightboxSlide): string => (slide.asset?.name || slide.name) || '未命名图片';
+export const photoTitle = (slide: LightboxSlide): string => (slide.asset?.name || slide.name) || "이름 없는 이미지";
 
 /** 面板第二行。本地图是来源与大小；别的是来源、分辨率（大图到了才有）和大小。第几张只有底栏那一个编号。 */
 export function photoMeta(slide: LightboxSlide, natural: readonly [number, number] | undefined): string {
   const asset = slide.asset;
-  if (asset) return [LOC[asset.location ?? ''] || asset.location || '来源未知', fmtPhotoSize(asset.size)].join(' · ');
+  if (asset) return [LOC[asset.location ?? ''] || asset.location || "출처 알 수 없음", fmtPhotoSize(asset.size)].join(' · ');
   const resolution = natural?.[0] && natural[1] ? `${natural[0]} × ${natural[1]}` : '';
-  return [slide.source || '在线图片', resolution, slide.size ? fmtPhotoSize(slide.size) : '']
+  return [slide.source || "온라인 이미지", resolution, slide.size ? fmtPhotoSize(slide.size) : '']
     .filter(Boolean).join(' · ');
 }

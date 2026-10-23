@@ -201,9 +201,9 @@ def w_settings(contract: SettingsContract, body) -> dict:
         raise TypeError("settings body must be an object")
     unknown = set(body) - SYNCED_SETTING_KEYS
     if unknown:
-        raise ValueError(f"这些设置不跟账本同步：{sorted(unknown)}")
+        raise ValueError(f"다음 설정은 기록 데이터베이스와 동기화되지 않습니다: {sorted(unknown)}")
     if not body:
-        raise ValueError("没有要写入的设置")
+        raise ValueError("저장할 설정이 없습니다")
 
     merged = _stored(contract)
     if "sidebarOrder" in body:
@@ -217,12 +217,12 @@ def w_settings(contract: SettingsContract, body) -> dict:
     if "searchHistoryLimit" in body:
         limit = normalise_search_history_limit(body["searchHistoryLimit"])
         if limit is None:
-            raise ValueError(f"searchHistoryLimit 只收 0 到 {SEARCH_HISTORY_LIMIT_MAX} 的整数")
+            raise ValueError(f"searchHistoryLimit는 0~{SEARCH_HISTORY_LIMIT_MAX} 사이의 정수여야 합니다")
         merged["searchHistoryLimit"] = limit
     for key, _kind in FEED_COMPILATION_SWITCHES:
         if key in body:
             if not isinstance(body[key], bool):
-                raise ValueError(f"{key} 只收 true 或 false")
+                raise ValueError(f"{key}은(는) true 또는 false만 허용합니다")
             merged[key] = body[key]
     stamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with contract.write_transaction() as connection:
@@ -238,5 +238,5 @@ def w_settings(contract: SettingsContract, body) -> dict:
             (json.dumps(current, ensure_ascii=False), stamp, DEFAULT_PROFILE_ID),
         ).rowcount
         if not updated:
-            raise ValueError(f"profile {DEFAULT_PROFILE_ID} 不存在")
+            raise ValueError(f"프로필 {DEFAULT_PROFILE_ID}이(가) 존재하지 않습니다")
     return {"ok": True, **q_settings(contract)}

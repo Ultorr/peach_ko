@@ -41,7 +41,7 @@ export function MixQueue({ kind, title, summary, onClose, actions, listRef, chil
         <div data-mix-queue-actions="">
           {actions}
           {/* 详情底部的队列头不放关闭键，关舞台用媒体框上那一枚（`stage.css`）。 */}
-          <button type="button" data-queue-close="" title="关闭" aria-label="关闭" onClick={onClose}
+          <button type="button" data-queue-close="" title="닫기" aria-label="닫기" onClick={onClose}
             dangerouslySetInnerHTML={{ __html: icon('x') }} />
         </div>
       </div>

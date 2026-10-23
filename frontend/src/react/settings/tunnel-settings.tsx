@@ -21,11 +21,11 @@ import { busyProps, useAction } from './use-action';
 /** 连接握手在服务端进行，页面按固定间隔重问，直到拿到入口或失败原因。 */
 const POLL_INTERVAL = 2000;
 
-const MODES: [TunnelState['mode'], string][] = [['quick', '临时链接'], ['named', '命名隧道']];
+const MODES: [TunnelState['mode'], string][] = [['quick', "임시 링크"], ['named', "이름이 지정된 터널"]];
 
 const HELP: Record<TunnelState['mode'], string> = {
-  quick: '临时预览用，地址随机，重启后会变。启动前要先设置访问密码。',
-  named: '使用你在 Cloudflare 绑定的固定域名。启动前要先设置访问密码。',
+  quick: "임시 미리보기용입니다. 주소는 임의로 생성되며 다시 시작하면 바뀝니다. 시작하기 전에 접근 비밀번호를 설정해야 합니다.",
+  named: "Cloudflare에 연결한 고정 도메인을 사용합니다. 시작하기 전에 접근 비밀번호를 설정해야 합니다.",
 };
 
 type FieldErrors = Partial<Record<'hostname' | 'mode', string>>;
@@ -89,18 +89,18 @@ export function TunnelSettings({ revision: initialRevision, initial, receipt }: 
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    send('save', active, () => receipt('已保存配置'));
+    send('save', active, () => receipt("설정이 저장되었습니다"));
   };
 
   const toggle = () => send('toggle', !active, (next) => receipt(
-    next.enabled ? '公网入口已启动' : '公网入口已停止',
+    next.enabled ? "외부 접속을 시작했습니다" : "외부 접속을 중지했습니다",
   ));
 
   return (
-    <Section title="Cloudflare 公网入口" onSubmit={submit}>
+    <Section title="Cloudflare 외부 접속" onSubmit={submit}>
       <Stack>
         {state.named_available
-          ? <RadioGroup aria-label="公网入口的形态（二选一）" value={mode} isDisabled={active}
+          ? <RadioGroup aria-label="외부 접속 방식(하나 선택)" value={mode} isDisabled={active}
               onChange={(next) => setMode(next as TunnelState['mode'])} className={SEGMENTED_TRACK}>
               {MODES.map(([value, label]) => (
                 <Radio key={value} value={value} className={SEGMENT}>{label}</Radio>
@@ -109,32 +109,32 @@ export function TunnelSettings({ revision: initialRevision, initial, receipt }: 
           : null}
         <Help>{HELP[named ? 'named' : 'quick']}</Help>
         {named ? <>
-          <Input id="tunnel-hostname" label="公开主机名" autoComplete="off" maxLength={253}
+          <Input id="tunnel-hostname" label="공개 호스트 이름" autoComplete="off" maxLength={253}
             value={hostname} onChange={setHostname} isDisabled={active} validationBehavior="aria"
             isInvalid={Boolean(fields.hostname)}
-            hint={fields.hostname || 'Cloudflare Zero Trust 里指向这台电脑的主机名。'} />
-          <Input id="tunnel-token" type="password" label="隧道令牌" autoComplete="off" maxLength={2048}
+            hint={fields.hostname || "Cloudflare Zero Trust에서 이 컴퓨터를 가리키는 호스트 이름입니다."} />
+          <Input id="tunnel-token" type="password" label="터널 토큰" autoComplete="off" maxLength={2048}
             value={token} onChange={setToken} isDisabled={active} validationBehavior="aria"
             hint={state.token_set
-              ? '已保存，留空不改。'
-              : '在 Cloudflare Zero Trust 的隧道详情页复制。'} />
+              ? "저장됨. 비워 두면 변경하지 않습니다."
+              : "Cloudflare Zero Trust의 터널 상세 페이지에서 복사하세요."} />
         </> : null}
         {!state.available
-          ? <Note tone="warning" title="找不到 cloudflared">安装官方 cloudflared，或用设置文件的 tunnel.binary 与 PEACH_CLOUDFLARED 指定路径。</Note>
+          ? <Note tone="warning" title="cloudflared를 찾을 수 없습니다">공식 cloudflared를 설치하거나 설정 파일의 tunnel.binary 및 PEACH_CLOUDFLARED로 경로를 지정하세요.</Note>
           : null}
         {state.state === 'running' && state.url
-          ? <Note tone="info" title="公网地址"><ExternalLink href={state.url}>{state.url}</ExternalLink></Note>
+          ? <Note tone="info" title="외부 접속 주소"><ExternalLink href={state.url}>{state.url}</ExternalLink></Note>
           : null}
-        {state.state === 'starting' ? <Note tone="info" title="正在连接">正在等待 cloudflared 连上 Cloudflare 边缘。</Note> : null}
+        {state.state === 'starting' ? <Note tone="info" title="연결 중">cloudflared가 Cloudflare 엣지에 연결되기를 기다리고 있습니다.</Note> : null}
         {state.error ? <ErrorText>{state.error}</ErrorText> : null}
         {action.error ? <ErrorText>{action.error}</ErrorText> : null}
       </Stack>
-      <Footer status={state.enabled ? 'Peach 重启后自动恢复。' : undefined}>
+      <Footer status={state.enabled ? "Peach를 다시 시작하면 자동으로 복구됩니다." : undefined}>
         <Button variant={state.named_available ? 'secondary' : 'primary'} onClick={toggle} {...busyProps(action.busy === 'toggle')}>
-          {active ? '停止公网入口' : '启动公网入口'}
+          {active ? "외부 접속 중지" : "외부 접속 시작"}
         </Button>
         {state.named_available
-          ? <Button type="submit" {...busyProps(action.busy === 'save')}>保存配置</Button>
+          ? <Button type="submit" {...busyProps(action.busy === 'save')}>설정 저장</Button>
           : null}
       </Footer>
     </Section>

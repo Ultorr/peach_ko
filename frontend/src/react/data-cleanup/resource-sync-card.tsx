@@ -30,8 +30,8 @@ import {
 
 const COMPARE = spriteGlyph('git-compare');
 const AGAIN = spriteGlyph('rotate-cw');
-const DISCONNECTED = '暂时无法读取进度，正在重新连接…';
-const APPLY_LABEL = '清理失效条目';
+const DISCONNECTED = "진행 상황을 읽을 수 없어 다시 연결 중…";
+const APPLY_LABEL = "유효하지 않은 항목 정리";
 
 /* 结果读数两行各自按卡数等分：来源几个都不折出半行。窄了照顶上那排读数折两列、一列。 */
 const RESULT_ROW = 'inline-grid w-full grid-flow-col auto-cols-fr gap-4 max-plain-stat-pair:grid-flow-row'
@@ -47,28 +47,28 @@ function ScanResult({ scan, partial = false }: { scan: ResourceScanState; partia
       <div className={RESULT_ROW}>
         {(scan.sources ?? []).map((source) => (
           <article key={source.location} className={plainStatClass()}>
-            <PlainStat label={SOURCE_LABELS[source.location] || '媒体来源'}
+            <PlainStat label={SOURCE_LABELS[source.location] || "미디어 소스"}
               mark={<SourceMark mark={MEDIA_SOURCE_ICONS[source.location] ?? 'database'} />}
               aside={<span className={source.online ? 'text-notification-success-foreground' : 'text-text-error-primary'}>
-                {source.online ? '可访问' : '离线，已跳过'}
+                {source.online ? "접근 가능" : "오프라인으로 건너뜀"}
               </span>}
-              figure={source.online ? `${count(source.missing)} 项` : '—'}
+              figure={source.online ? `${count(source.missing)} 개` : '—'}
               meta={sourceMeta(source)} wrapMeta />
           </article>
         ))}
       </div>
       {!partial && <div className={RESULT_ROW}>
         <article className={plainStatClass()}>
-          <PlainStat label="待永久删除" figure={`${count(purgeCount(scan))} 项`} meta="文件已不在盘上，含回收站" />
+          <PlainStat label="영구 삭제 예정" figure={`${count(purgeCount(scan))} 개`} meta="휴지통을 포함해 파일이 디스크에 없음" />
         </article>
         <article className={plainStatClass()}>
-          <PlainStat label="将标为已消失" figure={`${count(scan.vanish)} 项`} meta="带个人记录，记录留着" />
+          <PlainStat label="파일 없음으로 표시 예정" figure={`${count(scan.vanish)} 개`} meta="개인 기록이 있어 기록 유지" />
         </article>
         <article className={plainStatClass()}>
-          <PlainStat label="空文件夹" figure={`${count(scan.empty)} 个`} meta="保留来源根目录" />
+          <PlainStat label="빈 폴더" figure={`${count(scan.empty)} 개`} meta="소스 루트 폴더 유지" />
         </article>
         <article className={plainStatClass()}>
-          <PlainStat label="可清理的缓存" figure={`${count(cache.files)} 个`}
+          <PlainStat label="정리 가능한 캐시" figure={`${count(cache.files)} 개`}
             meta={cache.files ? fmtSize(cache.bytes) : ''} />
         </article>
       </div>}
@@ -90,8 +90,8 @@ export function ResourceSyncCard(
       if (out.status !== 'complete') return;
       /* 没删的几样是这一轮留下的，能删的已经删了：报警告档、写完成与没处理的数目，不说失败。 */
       const { done, left } = applyLeftovers(out);
-      if (left) toast(`已完成 ${count(done)} 项，${count(left)} 项没有处理`, { warning: true });
-      else toast('已清理失效条目');
+      if (left) toast(`완료 ${count(done)} 개 항목,${count(left)} 개 항목 미처리`, { warning: true });
+      else toast("유효하지 않은 항목을 정리했습니다");
     },
   });
   const scan = useBackgroundJob<ResourceScanState>({
@@ -106,7 +106,7 @@ export function ResourceSyncCard(
   const scanning = scan.running || scan.start.isPending;
   const cleaning = apply.running || apply.start.isPending;
   const scanned = state?.status === 'complete' || state?.status === 'failed';
-  const label = scanning ? '扫描中' : scanned ? '重新扫描' : '检查文件';
+  const label = scanning ? "스캔 중" : scanned ? "다시 스캔" : "파일 확인";
 
   /* 执行那一步只认这次检查的候选，逐条复核后再删；删了就没有撤销。 */
   const runApply = (payload: ResourceScanState) => void confirmModal({
@@ -121,7 +121,7 @@ export function ResourceSyncCard(
   const receipt = (out: ResourceApplyState) => {
     const partial = applyLeftovers(out).left > 0;
     return (
-      <Note tone={partial ? 'warning' : 'success'} title={partial ? '部分完成' : '清理结果'}>
+      <Note tone={partial ? 'warning' : 'success'} title={partial ? "일부 완료" : "정리 결과"}>
         {applyText(out, fmtSize)}
       </Note>
     );
@@ -129,15 +129,15 @@ export function ResourceSyncCard(
   let progress = null;
   let result = null;
   if (done?.status === 'failed') {
-    result = <Note tone="error" title="资源清理未完成">{done.error || '请查看任务记录，核对已处理的文件。'}</Note>;
+    result = <Note tone="error" title="리소스 정리가 완료되지 않았습니다">{done.error || "작업 기록에서 처리된 파일을 확인하세요."}</Note>;
   } else if (done) {
     result = receipt(done);
   } else if (apply.running) {
-    progress = <TaskProgress embedded label={apply.job?.message || '正在复核并清理失效条目…'} />;
+    progress = <TaskProgress embedded label={apply.job?.message || "유효하지 않은 항목을 재확인하고 정리하는 중…"} />;
   } else if (scan.start.isError) {
-    result = <Note tone="error" title="扫描失败">{errorMessage(scan.start.error)}</Note>;
+    result = <Note tone="error" title="스캔 실패">{errorMessage(scan.start.error)}</Note>;
   } else if (scan.query.isError && state) {
-    result = <Note tone="neutral" title="任务状态">{DISCONNECTED}</Note>;
+    result = <Note tone="neutral" title="작업 상태">{DISCONNECTED}</Note>;
   } else if (state?.status === 'running') {
     const line = scanLine(state);
     progress = (
@@ -147,32 +147,32 @@ export function ResourceSyncCard(
   } else if (state?.status === 'failed') {
     result = <>
       {state.sources?.length ? <ScanResult scan={state} partial /> : null}
-      <Note tone="error" title="扫描失败">{state.error || '后台扫描失败'}</Note>
+      <Note tone="error" title="스캔 실패">{state.error || "백그라운드 스캔 실패"}</Note>
     </>;
   } else if (state?.status === 'complete' && state.applied) {
     result = apply.job?.status === 'complete'
       ? receipt(apply.job)
-      : <Note tone="neutral" title="清理结果">这次检查的结果已经清理，重新扫描可再核对。</Note>;
+      : <Note tone="neutral" title="정리 결과">이번 검사 결과의 정리가 완료되었습니다. 다시 스캔하면 재확인할 수 있습니다.</Note>;
   } else if (state?.status === 'complete') {
     const changes = hasChanges(state);
     result = (
       <>
         <ScanResult scan={state} />
-        {changes ? <Note tone="neutral" title="清理内容">{applyPlanText(state)}</Note> : null}
+        {changes ? <Note tone="neutral" title="정리 대상">{applyPlanText(state)}</Note> : null}
         <div className="flex flex-wrap items-center justify-end gap-2">
           {changes
             ? <Button variant="danger" {...busyProps(cleaning)} onClick={() => runApply(state)}>
-                {cleaning ? '正在复核并清理…' : APPLY_LABEL}
+                {cleaning ? "재확인하고 정리하는 중…" : APPLY_LABEL}
               </Button>
             : <p className="mr-auto text-body-regular text-notification-success-foreground">
-                已检查可访问的来源，没有待清理的记录、空文件夹或缓存。
+                접근 가능한 소스를 확인했습니다. 정리할 기록, 빈 폴더 또는 캐시가 없습니다.
               </p>}
         </div>
       </>
     );
   }
   if (apply.start.isError && !done) {
-    result = <>{result}<Note tone="error" title="清理失败">{errorMessage(apply.start.error)}</Note></>;
+    result = <>{result}<Note tone="error" title="정리 실패">{errorMessage(apply.start.error)}</Note></>;
   }
 
   return (
@@ -181,9 +181,9 @@ export function ResourceSyncCard(
         <Button data-resource-scan leadingIcon={scanned && !scanning ? AGAIN : COMPARE} {...busyProps(scanning)}
           onClick={() => { if (!scanning) scan.start.mutate() }}>{label}</Button>
       }>
-        <FieldsetTitle id="resource-sync-title" gap="small">资源同步</FieldsetTitle>
+        <FieldsetTitle id="resource-sync-title" gap="small">리소스 동기화</FieldsetTitle>
         <p className="max-w-190 text-body-2-regular leading-5 text-text-secondary">
-          按馆藏记录逐条查找本地磁盘与网盘上的文件，列出文件已不存在的记录、空文件夹，以及不再被引用的缓存。
+          컬렉션 기록별로 로컬 디스크와 클라우드 드라이브의 파일을 찾아, 파일이 사라진 기록과 빈 폴더, 더 이상 참조되지 않는 캐시를 표시합니다.
         </p>
         <div aria-live="polite" className="mt-4 empty:hidden">{progress}</div>
       </Fieldset>

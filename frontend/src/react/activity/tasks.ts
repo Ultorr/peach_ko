@@ -82,12 +82,12 @@ export async function prefetchTasks(signal: AbortSignal): Promise<void> {
 }
 
 export const TRIGGER_LABELS: Record<string, string> = {
-  manual: '手动', scheduled: '定时', startup: '启动', cli: '命令行',
+  manual: "수동", scheduled: "예약", startup: "시작 시", cli: "명령줄",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: '排队中', running: '进行中', succeeded: '已完成',
-  failed: '失败', cancelled: '已取消', interrupted: '被打断',
+  pending: "대기 중", running: "진행 중", succeeded: "완료",
+  failed: "실패", cancelled: "취소됨", interrupted: "중단됨",
 };
 
 /** 状态的中文名。表里的状态集是封闭的，认不出来只可能是表先改了，那就原样显示。 */
@@ -96,13 +96,13 @@ export const statusLabel = (status: string): string => STATUS_LABELS[status] || 
 /* 摘要里的键来自各域自己的状态字典，是英文标识；能认出来的翻成中文，认不出的原样
    显示——瞎猜一个中文名比留着英文键更难查。 */
 const SUMMARY_LABELS: Record<string, string> = {
-  checked: '已检查', total: '总数', scanned: '已扫描', identified: '已识别',
-  candidates: '资料候选', covers: '封面', changed: '已改动', operation: '操作',
-  ok: '取得', miss: '未取得', kept: '保留', planned: '计划', done: '已处理', added: '新增',
-  written: '已写入', removed: '已移除', exit_code: '退出码', issue_count: '问题',
-  followups: '派出后继', followups_duplicate: '已在排队', followups_truncated: '超上限未派',
-  followups_depth_exceeded: '超深度未派', outcome: '结果', name: '实体',
-  matched: '图库命中', size: '尺寸', source: '来源', cover_network: '封面连不上图片主机',
+  checked: "확인 완료", total: "전체", scanned: "스캔 완료", identified: "식별 완료",
+  candidates: "메타데이터 후보", covers: "표지", changed: "변경됨", operation: "작업",
+  ok: "가져옴", miss: "가져오지 못함", kept: "유지", planned: "예정", done: "처리 완료", added: "추가",
+  written: "기록 완료", removed: "제거됨", exit_code: "종료 코드", issue_count: "문제",
+  followups: "후속 작업 등록", followups_duplicate: "이미 대기 중", followups_truncated: "상한 초과로 미등록",
+  followups_depth_exceeded: "깊이 제한 초과로 미등록", outcome: "결과", name: "개체",
+  matched: "이미지 라이브러리 일치", size: "크기", source: "소스", cover_network: "표지 이미지 서버에 연결할 수 없음",
 };
 
 /** 把一批任务按 `parent_run_id` 归到各自的父任务下。没有父的那些留在外面。 */
@@ -159,7 +159,7 @@ export function followupDetail(row: TaskRunPayload): string {
   const item = label.startsWith(prefix) ? label.slice(prefix.length) : label === row.task_label ? '' : label;
   const total = row.progress_total || 0;
   const tail = errorHeadline(row.error) || summaryText(row.result_summary)
-    || (isActive(row) && total > 0 ? `${progressText(row.progress_current, total)} 项` : '');
+    || (isActive(row) && total > 0 ? `${progressText(row.progress_current, total)} 개` : '');
   return [item, tail].filter(Boolean).join(' · ');
 }
 
@@ -167,12 +167,12 @@ export function followupDetail(row: TaskRunPayload): string {
 export function elapsedText(seconds: number | null | undefined): string {
   if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) return '';
   const whole = Math.floor(seconds);
-  if (whole < 60) return `${whole} 秒`;
+  if (whole < 60) return `${whole} 초`;
   const minutes = Math.floor(whole / 60);
-  if (minutes < 60) return `${minutes} 分 ${whole % 60} 秒`;
+  if (minutes < 60) return `${minutes} 분 ${whole % 60} 초`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 48) return `${hours} 小时 ${minutes % 60} 分`;
-  return `${Math.floor(hours / 24).toLocaleString()} 天 ${hours % 24} 小时`;
+  if (hours < 48) return `${hours} 시간 ${minutes % 60} 분`;
+  return `${Math.floor(hours / 24).toLocaleString()} 일 ${hours % 24} 시간`;
 }
 
 /** 进度读数「已做 / 总数」：服务端偶尔报出超过总数的已做数，按总数封顶。 */

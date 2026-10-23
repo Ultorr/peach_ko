@@ -126,7 +126,7 @@ export function uiSoundsEnabled():boolean{return enabled}
 /** 响一声；关着、浏览器没有 Web Audio 时什么都不做并返回 false。没有这种音效就抛错。 */
 export function playUiSound(name:string):boolean{
   const recipe=RECIPES[name];
-  if(!recipe)throw new Error(`没有「${name}」这种界面音效`);
+  if(!recipe)throw new Error(`‘${name}’ 인터페이스 효과음이 없습니다`);
   if(!enabled)return false;
   const ctx=context();
   if(!ctx)return false;

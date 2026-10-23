@@ -3,11 +3,11 @@
 
 /** `[键, 显示名]`。随机排第一：它是出厂默认，也没有方向。 */
 export const SORTS: readonly (readonly [key: string, label: string])[] = [
-  ['seed', '随机'], ['rating', '评分'], ['o', '高潮计数'], ['plays', '观看次数'], ['dur', '时长'],
-  ['size', '体积'], ['new', '入库时间'], ['played', '观看时间'],
+  ['seed', "무작위"], ['rating', "평점"], ['o', "오르가슴 횟수"], ['plays', "시청 횟수"], ['dur', "재생 시간"],
+  ['size', "파일 크기"], ['new', "라이브러리 등록일"], ['played', "시청 시각"],
 ];
 /** 只在 JAV 语境里出现的那一列。 */
-export const JAV_RELEASE_SORT: readonly [key: string, label: string] = ['release', '发行时间'];
+export const JAV_RELEASE_SORT: readonly [key: string, label: string] = ['release', "출시일"];
 export const SORT_KEYS: readonly string[] = [...SORTS, JAV_RELEASE_SORT].map(([key]) => key);
 
 /** `[desc, asc]` 两种方向的说法。 */
@@ -16,9 +16,9 @@ export type SortDirWords = Readonly<Record<string, readonly [desc: string, asc: 
 /* 方向词按列各自定义：同一个 desc 在时间列上是「从新到旧」，在时长上是「从长到短」，
    写成通用的「降序」等于让界面解释 SQL。数组是 [desc,asc]，在表里就等于这一列可翻转。 */
 export const SORT_DIR_WORDS: SortDirWords = {
-  rating: ['从高到低', '从低到高'], o: ['从多到少', '从少到多'],
-  plays: ['从多到少', '从少到多'], dur: ['从长到短', '从短到长'], size: ['从大到小', '从小到大'],
-  new: ['从新到旧', '从旧到新'], played: ['从近到远', '从远到近'], release: ['从新到旧', '从旧到新'],
+  rating: ["높은순", "낮은순"], o: ["많은순", "적은순"],
+  plays: ["많은순", "적은순"], dur: ["긴순", "짧은순"], size: ["큰 순서대로", "작은 순서대로"],
+  new: ["최신순", "오래된순"], played: ["최근순", "오래된순"], release: ["최신순", "오래된순"],
 };
 
 /* 旧键沿用：地址栏、书签和设置里存着把方向写进键名的值。方向现在单独由 `dir` 表达，

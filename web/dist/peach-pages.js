@@ -35,7 +35,7 @@ function u() {
 			keepalive: !0
 		}).catch(() => {}));
 	};
-	window.addEventListener("error", (e) => r("error", e.error, e.message, e)), window.addEventListener("unhandledrejection", (e) => r("unhandledrejection", e.reason, "Promise 未处理的异常"));
+	window.addEventListener("error", (e) => r("error", e.error, e.message, e)), window.addEventListener("unhandledrejection", (e) => r("unhandledrejection", e.reason, "처리되지 않은 Promise 예외"));
 }
 //#endregion
 //#region node_modules/scheduler/cjs/scheduler.production.js
@@ -11045,12 +11045,12 @@ function Et({ id: e, children: t }) {
 //#endregion
 //#region src/react/pages/error/error-page.tsx
 var Dt = {
-	403: "这里不能打开",
-	404: "四〇四",
-	409: "现在不能这样做"
+	403: "이 페이지를 열 수 없습니다",
+	404: "404",
+	409: "지금은 이 작업을 수행할 수 없습니다"
 };
 function Ot(e) {
-	return Dt[e ?? ""] ?? "出了点问题";
+	return Dt[e ?? ""] ?? "문제가 발생했습니다";
 }
 function kt({ data: e }) {
 	let t = Ot(e.status);
@@ -11062,7 +11062,7 @@ function kt({ data: e }) {
 		children: /* @__PURE__ */ (0, z.jsx)(Ct, {
 			href: "/",
 			className: "self-start",
-			children: "返回首页"
+			children: "홈으로 돌아가기"
 		})
 	});
 }
@@ -19196,7 +19196,7 @@ function Vp({ label: e, hint: t, tooltip: n, placeholder: r, leadingIcon: i, tra
 }
 Vp.displayName = "Input";
 function Hp({ data: e }) {
-	let [t, n] = (0, y.useState)(e.error || (e.invalid === "true" ? "访问密码不正确" : ""));
+	let [t, n] = (0, y.useState)(e.error || (e.invalid === "true" ? "접속 비밀번호가 올바르지 않습니다" : ""));
 	return /* @__PURE__ */ (0, z.jsx)(wt, {
 		title: "Peach",
 		children: /* @__PURE__ */ (0, z.jsxs)("form", {
@@ -19207,7 +19207,7 @@ function Hp({ data: e }) {
 			children: [
 				/* @__PURE__ */ (0, z.jsx)(Vp, {
 					id: "login-token",
-					label: "访问密码",
+					label: "접속 비밀번호",
 					name: "token",
 					type: "password",
 					maxLength: 256,
@@ -19230,12 +19230,12 @@ function Hp({ data: e }) {
 					name: "days",
 					value: "30",
 					defaultSelected: !0,
-					children: "保持登录"
+					children: "로그인 상태 유지"
 				}),
 				/* @__PURE__ */ (0, z.jsx)(St, {
 					type: "submit",
 					className: "w-full",
-					children: "登录"
+					children: "로그인"
 				})
 			]
 		})
@@ -19311,22 +19311,22 @@ async function Jp(e, t, n) {
 			}
 		});
 	} catch (e) {
-		throw t.signal?.aborted ? e : new qp(0, "连接不到 Peach，请确认它仍在运行后重试");
+		throw t.signal?.aborted ? e : new qp(0, "Peach에 연결할 수 없습니다. 실행 중인지 확인한 후 다시 시도하세요");
 	}
 	let i = await r.json().catch(() => null);
 	if (!r.ok) throw new qp(r.status, i?.error || n, i?.errors);
 	return i;
 }
-var Yp = (e) => Jp(Gp, { signal: e }, "没能读取设置题目"), Xp = (e) => Jp(Kp, {
+var Yp = (e) => Jp(Gp, { signal: e }, "설정 항목을 불러오지 못했습니다"), Xp = (e) => Jp(Kp, {
 	method: "POST",
 	body: JSON.stringify(e)
-}, "没能完成设置"), Zp = (e) => Jp(`${Kp}/restore`, {
+}, "설정을 완료하지 못했습니다"), Zp = (e) => Jp(`${Kp}/restore`, {
 	method: "POST",
 	body: JSON.stringify({ data_root: e })
-}, "没能使用此数据目录"), Qp = async (e) => (await Jp(Wp, {
+}, "이 데이터 폴더를 사용할 수 없습니다"), Qp = async (e) => (await Jp(Wp, {
 	method: "POST",
 	body: JSON.stringify({ initial: e })
-}, "没能打开文件夹对话框")).path, $p = (e) => e instanceof Error && e.message || "请求失败，请重试", em = 8e3, tm = /* @__PURE__ */ new WeakMap();
+}, "폴더 선택 창을 열지 못했습니다")).path, $p = (e) => e instanceof Error && e.message || "요청에 실패했습니다. 다시 시도하세요", em = 8e3, tm = /* @__PURE__ */ new WeakMap();
 function nm(e, t, n) {
 	t.classList.add("ui-fcollapse");
 	let r = (tm.get(t) || 0) + 1;
@@ -19356,8 +19356,8 @@ function im(e, t, n = () => !0) {
 var am = [
 	{
 		id: "local",
-		name: "本地磁盘",
-		label: "本地磁盘",
+		name: "로컬 디스크",
+		label: "로컬 디스크",
 		default_cost: "free",
 		cloud: !1,
 		icon: "hard-drive"
@@ -19380,8 +19380,8 @@ var am = [
 	},
 	{
 		id: "guangya",
-		name: "光鸭云盘",
-		label: "光鸭云盘",
+		name: "Guangya 클라우드",
+		label: "Guangya 클라우드",
 		default_cost: "free",
 		cloud: !0,
 		icon: "database"
@@ -19396,8 +19396,8 @@ var am = [
 	},
 	{
 		id: "mounted",
-		name: "其他已挂载网盘",
-		label: "其他已挂载网盘",
+		name: "기타 마운트된 클라우드 드라이브",
+		label: "기타 마운트된 클라우드 드라이브",
 		default_cost: "metered",
 		cloud: !0,
 		icon: "database"
@@ -19609,28 +19609,28 @@ function wm({ mark: e }) {
 function Tm({ done: e }) {
 	let t = (0, y.useRef)(null);
 	return (0, y.useEffect)(() => {
-		document.title = "Peach · 设置完成", t.current?.focus();
+		document.title = "Peach · 설정 완료", t.current?.focus();
 	}, []), (0, y.useEffect)(() => {
 		let t = e.redirect;
 		if (!t) return;
 		let n = setTimeout(() => location.assign(t), em);
 		return () => clearTimeout(n);
 	}, [e.redirect]), /* @__PURE__ */ (0, z.jsxs)(wt, {
-		title: "设置完成",
-		lede: "正在启动馆藏。",
+		title: "설정 완료",
+		lede: "컬렉션을 시작하는 중입니다.",
 		children: [
 			/* @__PURE__ */ (0, z.jsx)("p", {
 				className: "text-body-regular text-text-primary",
-				children: e.restored ? "已连接已有数据目录。" : e.scan_requested ? "首次扫描已排队，在后台整理媒体库，期间可以照常使用 Peach。" : "稍后在配置页开始扫描媒体库。"
+				children: e.restored ? "기존 데이터 폴더에 연결되었습니다." : e.scan_requested ? "첫 스캔이 대기열에 추가되었습니다. 백그라운드에서 미디어 라이브러리를 정리하는 동안에도 Peach를 사용할 수 있습니다." : "나중에 설정 페이지에서 미디어 라이브러리 스캔을 시작하세요."
 			}),
 			/* @__PURE__ */ (0, z.jsx)(Ct, {
 				ref: t,
 				href: e.url,
 				className: "self-start",
-				children: e.history_guide ? "导入浏览器历史记录" : "进入 Peach"
+				children: e.history_guide ? "브라우저 방문 기록 가져오기" : "Peach 시작"
 			}),
 			/* @__PURE__ */ (0, z.jsx)(Sm, {
-				summary: "运行信息",
+				summary: "실행 정보",
 				children: /* @__PURE__ */ (0, z.jsx)(bm, { children: e.facts.map((e) => /* @__PURE__ */ (0, z.jsxs)(xm, {
 					term: e.term,
 					children: [e.value, e.download_url ? /* @__PURE__ */ (0, z.jsx)(ym, {
@@ -20747,8 +20747,8 @@ function _g({ index: e, cost: t, error: n, onChange: r }) {
 		"data-media-read-policy": e,
 		className: "flex w-full flex-col gap-1.5 @lg:w-48",
 		children: [/* @__PURE__ */ (0, z.jsxs)(dg, {
-			"aria-label": `媒体读取策略 ${e + 1}`,
-			placeholder: "选择读取策略",
+			"aria-label": `미디어 읽기 정책 ${e + 1}`,
+			placeholder: "읽기 정책 선택",
 			isRequired: !0,
 			validationBehavior: "aria",
 			isInvalid: !!n,
@@ -20758,16 +20758,16 @@ function _g({ index: e, cost: t, error: n, onChange: r }) {
 			},
 			children: [/* @__PURE__ */ (0, z.jsx)(fg, {
 				id: "free",
-				children: "正常读取"
+				children: "일반 읽기"
 			}), /* @__PURE__ */ (0, z.jsx)(fg, {
 				id: "metered",
-				children: "代理流量保护"
+				children: "프록시 트래픽 보호"
 			})]
 		}), n ? /* @__PURE__ */ (0, z.jsx)(vm, { children: n }) : null]
 	});
 }
 function vg() {
-	return /* @__PURE__ */ (0, z.jsx)(_m, { children: "按挂载工具实际配置选择；代理流量保护会限制自动媒体读取。" });
+	return /* @__PURE__ */ (0, z.jsx)(_m, { children: "마운트 도구의 실제 설정에 맞게 선택하세요. 프록시 트래픽 보호는 자동 미디어 읽기를 제한합니다." });
 }
 function yg({ initial: e, blank: t, pickFolder: n, describe: r, focusAfterPick: i = !1 }) {
 	let [a, o] = (0, y.useState)(e), [s, c] = (0, y.useState)([]), [l, u] = (0, y.useState)(null), [d, f] = (0, y.useState)(null), p = (0, y.useRef)(!1), m = (0, y.useRef)([]);
@@ -20828,7 +20828,7 @@ function bg({ label: e, path: t, onPath: n, error: r, inputRef: i, picking: a, o
 				/* @__PURE__ */ (0, z.jsx)(Vp, {
 					className: "min-w-0 flex-1",
 					"aria-label": e,
-					placeholder: "本机文件夹路径",
+					placeholder: "로컬 폴더 경로",
 					value: t,
 					onChange: n,
 					ref: (e) => {
@@ -20845,7 +20845,7 @@ function bg({ label: e, path: t, onPath: n, error: r, inputRef: i, picking: a, o
 				}) : null,
 				/* @__PURE__ */ (0, z.jsx)(ng, {
 					icon: pg,
-					"aria-label": "选择文件夹",
+					"aria-label": "폴더 선택",
 					onClick: o,
 					...eg(a)
 				}),
@@ -20853,7 +20853,7 @@ function bg({ label: e, path: t, onPath: n, error: r, inputRef: i, picking: a, o
 					variant: "danger",
 					iconOnly: !0,
 					leadingIcon: Mp,
-					"aria-label": "移除这个文件夹",
+					"aria-label": "이 폴더 제거",
 					onClick: s
 				}) : null
 			]
@@ -20866,7 +20866,7 @@ function bg({ label: e, path: t, onPath: n, error: r, inputRef: i, picking: a, o
 function xg({ index: e, value: t, onChange: n, options: r = mg }) {
 	return /* @__PURE__ */ (0, z.jsx)(dg, {
 		className: "w-full @lg:w-60",
-		"aria-label": `媒体来源 ${e + 1}`,
+		"aria-label": `미디어 소스 ${e + 1}`,
 		selectedKey: t,
 		onSelectionChange: (e) => {
 			e !== null && n(String(e));
@@ -20878,7 +20878,7 @@ function xg({ index: e, value: t, onChange: n, options: r = mg }) {
 		}, e))
 	});
 }
-function Sg({ value: e, onChange: t, label: n = "Windows 中的对应路径", placeholder: r = "例如 B:\\" }) {
+function Sg({ value: e, onChange: t, label: n = "Windows의 대응 경로", placeholder: r = "예: B:\\" }) {
 	return /* @__PURE__ */ (0, z.jsx)(Vp, {
 		label: n,
 		placeholder: r,
@@ -20905,7 +20905,7 @@ function Cg({ label: e, password: t, confirmation: n, onPassword: r, onConfirmat
 	}), /* @__PURE__ */ (0, z.jsx)(Vp, {
 		id: "access-confirm",
 		type: "password",
-		label: "确认访问密码",
+		label: "접근 비밀번호 확인",
 		autoComplete: "new-password",
 		maxLength: 256,
 		value: n,
@@ -20921,10 +20921,10 @@ function Cg({ label: e, password: t, confirmation: n, onPassword: r, onConfirmat
 //#region src/react/settings/remote-reporting-settings.tsx
 function wg({ value: e, onChange: t, busy: n = !1 }) {
 	return /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(hm, { children: /* @__PURE__ */ (0, z.jsx)(fm, {
-		label: "发送版本统计与错误诊断（推荐）",
-		description: "上传版本、系统信息、故障类型、代码位置与发生次数。",
+		label: "버전 통계 및 오류 진단 보내기(권장)",
+		description: "버전, 시스템 정보, 오류 유형, 코드 위치 및 발생 횟수를 업로드합니다.",
 		children: /* @__PURE__ */ (0, z.jsx)(Om, {
-			"aria-label": "发送版本统计与错误诊断（推荐）",
+			"aria-label": "버전 통계 및 오류 진단 보내기(권장)",
 			isSelected: e.usage && e.errors,
 			onChange: (n) => t({
 				...e,
@@ -20935,7 +20935,7 @@ function wg({ value: e, onChange: t, busy: n = !1 }) {
 		})
 	}) }), e.available ? null : /* @__PURE__ */ (0, z.jsx)(gm, {
 		divided: !0,
-		children: /* @__PURE__ */ (0, z.jsx)(_m, { children: "上传服务未配置。" })
+		children: /* @__PURE__ */ (0, z.jsx)(_m, { children: "업로드 서비스가 설정되지 않았습니다." })
 	})] });
 }
 //#endregion
@@ -20959,7 +20959,7 @@ function Eg(e, t) {
 	};
 }
 function Dg(e) {
-	return e.length ? e.length === 1 ? `完成设置后扫描并补全资料：${e[0]}` : `完成设置后扫描这 ${e.length} 个文件夹并补全资料` : "完成设置后扫描并补全资料";
+	return e.length ? e.length === 1 ? `설정 완료 후 스캔 및 정보 보완:${e[0]}` : `설정 완료 후 ${e.length} 개 폴더 스캔 및 정보 보완` : "설정 완료 후 스캔 및 정보 보완";
 }
 var Og = (e) => Array.isArray(e) ? e.filter(Boolean).join(" ") : e ?? "";
 function kg({ setup: e, onDone: t }) {
@@ -21116,7 +21116,7 @@ function kg({ setup: e, onDone: t }) {
 								/* @__PURE__ */ (0, z.jsx)(_g, {
 									index: r,
 									cost: t.cost ?? "",
-									error: A && !t.cost ? "请选择媒体读取策略" : void 0,
+									error: A && !t.cost ? "미디어 읽기 정책을 선택하세요" : void 0,
 									onChange: (e) => o.edit(r, { cost: e })
 								}),
 								e.media_root ? /* @__PURE__ */ (0, z.jsx)(Sg, {
@@ -21134,7 +21134,7 @@ function kg({ setup: e, onDone: t }) {
 						leadingIcon: Ap,
 						className: "self-start",
 						onClick: o.add,
-						children: "添加媒体库"
+						children: "미디어 라이브러리 추가"
 					}),
 					ue ? /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
 						/* @__PURE__ */ (0, z.jsx)(vg, {}),
@@ -21159,11 +21159,11 @@ function kg({ setup: e, onDone: t }) {
 							className: "flex min-w-0 flex-col gap-0.5",
 							children: [/* @__PURE__ */ (0, z.jsx)(Et, {
 								id: "setup-access-title",
-								children: "访问密码"
+								children: "접속 비밀번호"
 							}), /* @__PURE__ */ (0, z.jsx)("p", {
 								id: "setup-access-description",
 								className: "text-body-2-regular text-text-secondary",
-								children: "开启后，访问 Peach 需要先登录。"
+								children: "켜면 Peach에 접속할 때 먼저 로그인해야 합니다."
 							})]
 						}), /* @__PURE__ */ (0, z.jsx)(Om, {
 							"aria-labelledby": "setup-access-title",
@@ -21172,21 +21172,21 @@ function kg({ setup: e, onDone: t }) {
 							onChange: u
 						})]
 					}),
-					/* @__PURE__ */ (0, z.jsx)(_m, { children: "未设置密码时，能连接到 Peach 的设备可直接进入。" }),
+					/* @__PURE__ */ (0, z.jsx)(_m, { children: "비밀번호를 설정하지 않으면 Peach에 연결할 수 있는 기기에서 바로 접속할 수 있습니다." }),
 					l ? /* @__PURE__ */ (0, z.jsx)(Cg, {
-						label: "访问密码",
+						label: "접속 비밀번호",
 						password: d,
 						confirmation: p,
 						onPassword: f,
 						onConfirmation: m,
 						passwordError: ie(Og(S.access_password)),
-						passwordHint: "请输入 8–256 个字符。",
+						passwordHint: "8~256자를 입력하세요.",
 						confirmationInvalid: !!S.access_password
 					}) : null
 				]
 			}),
 			/* @__PURE__ */ (0, z.jsx)(Tt, { children: /* @__PURE__ */ (0, z.jsx)(Sm, {
-				summary: "高级设置",
+				summary: "고급 설정",
 				defaultOpen: M > 0,
 				children: /* @__PURE__ */ (0, z.jsx)("div", {
 					className: "flex flex-col gap-4",
@@ -21198,7 +21198,7 @@ function kg({ setup: e, onDone: t }) {
 				children: [
 					/* @__PURE__ */ (0, z.jsx)(Et, {
 						id: "setup-options-title",
-						children: "完成设置后"
+						children: "설정 완료 후"
 					}),
 					/* @__PURE__ */ (0, z.jsxs)("div", {
 						className: "flex flex-col gap-1.5",
@@ -21206,7 +21206,7 @@ function kg({ setup: e, onDone: t }) {
 							isSelected: h,
 							onChange: g,
 							children: Dg(le)
-						}), /* @__PURE__ */ (0, z.jsx)(_m, { children: "读取已有 NFO 和封面，采集缺失资料。符合自动规则的资料会在处理完成后落库，其余候选留在复核。" })]
+						}), /* @__PURE__ */ (0, z.jsx)(_m, { children: "기존 NFO와 표지를 읽고 누락된 정보를 수집합니다. 자동 적용 규칙에 맞는 정보는 처리 완료 후 라이브러리에 반영하며, 나머지 후보는 검토 목록에 남깁니다." })]
 					}),
 					/* @__PURE__ */ (0, z.jsxs)("section", {
 						"aria-labelledby": "setup-history-title",
@@ -21215,35 +21215,35 @@ function kg({ setup: e, onDone: t }) {
 							/* @__PURE__ */ (0, z.jsxs)("h3", {
 								id: "setup-history-title",
 								className: "flex items-center gap-2 text-body-medium text-text-primary",
-								children: ["浏览器历史记录", /* @__PURE__ */ (0, z.jsx)("span", {
+								children: ["브라우저 방문 기록", /* @__PURE__ */ (0, z.jsx)("span", {
 									className: "text-body-2-regular text-text-tertiary",
-									children: "可选"
+									children: "선택 사항"
 								})]
 							}),
 							/* @__PURE__ */ (0, z.jsx)(kp, {
 								isSelected: _,
 								onChange: v,
-								children: "接下来导入浏览器历史记录"
+								children: "이어서 브라우저 방문 기록 가져오기"
 							}),
-							/* @__PURE__ */ (0, z.jsx)(_m, { children: "用于生成口味分析。完成设置后选择读取这台电脑，或导入其他设备的记录；也可稍后从「口味」进入。" })
+							/* @__PURE__ */ (0, z.jsx)(_m, { children: "취향 분석에 사용됩니다. 설정을 완료한 후 이 컴퓨터의 기록을 읽거나 다른 기기의 기록을 가져올 수 있습니다. 나중에 「취향」에서도 시작할 수 있습니다." })
 						]
 					})
 				]
 			}),
 			E ? /* @__PURE__ */ (0, z.jsx)(vm, { children: E }) : null,
 			b ? /* @__PURE__ */ (0, z.jsxs)(Tt, { children: [
-				/* @__PURE__ */ (0, z.jsx)(Et, { children: "版本统计与错误诊断" }),
+				/* @__PURE__ */ (0, z.jsx)(Et, { children: "버전 통계 및 오류 진단" }),
 				/* @__PURE__ */ (0, z.jsx)(wg, {
 					value: b,
 					onChange: x
 				}),
-				/* @__PURE__ */ (0, z.jsx)(_m, { children: "馆藏与口味明细上传默认关闭，可在「应用与维护」查看并选择。" })
+				/* @__PURE__ */ (0, z.jsx)(_m, { children: "컬렉션 및 취향 상세 정보 업로드는 기본적으로 꺼져 있습니다. 「앱 및 유지 관리」에서 확인하고 선택할 수 있습니다." })
 			] }) : null,
 			/* @__PURE__ */ (0, z.jsx)(St, {
 				type: "submit",
 				className: "self-start",
 				...eg(O),
-				children: "完成设置"
+				children: "설정 완료"
 			})
 		]
 	});
@@ -21269,7 +21269,7 @@ function Ag({ onDone: e }) {
 		},
 		noValidate: !0,
 		children: [/* @__PURE__ */ (0, z.jsx)(Vp, {
-			label: "已有数据目录",
+			label: "기존 데이터 폴더",
 			value: t,
 			onChange: n,
 			isRequired: !0,
@@ -21280,12 +21280,12 @@ function Ag({ onDone: e }) {
 			hint: r ? /* @__PURE__ */ (0, z.jsx)("span", {
 				role: "alert",
 				children: r
-			}) : "选择包含 config.toml 和 database 文件夹的数据目录。"
+			}) : "config.toml과 database 폴더가 있는 데이터 폴더를 선택하세요."
 		}), /* @__PURE__ */ (0, z.jsx)(St, {
 			type: "submit",
 			className: "self-start",
 			...eg(a),
-			children: a ? "正在连接数据目录…" : "使用此目录"
+			children: a ? "데이터 폴더에 연결 중…" : "이 폴더 사용"
 		})]
 	});
 }
@@ -21305,13 +21305,13 @@ function jg() {
 			});
 		}), () => e.abort();
 	}, [n]), e.kind === "done" ? /* @__PURE__ */ (0, z.jsx)(Tm, { done: e.done }) : /* @__PURE__ */ (0, z.jsxs)(wt, {
-		title: "欢迎使用 Peach",
-		lede: "添加媒体库，开始整理馆藏。",
+		title: "Peach에 오신 것을 환영합니다",
+		lede: "미디어 라이브러리를 추가하고 컬렉션을 정리하세요.",
 		busy: e.kind === "loading",
 		children: [
 			e.kind === "denied" ? /* @__PURE__ */ (0, z.jsx)(Up, {
 				tone: "error",
-				children: "请在运行 Peach 的这台电脑上打开设置。"
+				children: "Peach가 실행 중인 이 컴퓨터에서 설정을 여세요."
 			}) : null,
 			e.kind === "failed" ? /* @__PURE__ */ (0, z.jsx)(Up, {
 				tone: "error",
@@ -21320,7 +21320,7 @@ function jg() {
 					onClick: () => {
 						t({ kind: "loading" }), r((e) => e + 1);
 					},
-					children: "重试"
+					children: "다시 시도"
 				}),
 				children: e.message
 			}) : null,
@@ -21328,7 +21328,7 @@ function jg() {
 				variant: "secondary",
 				className: "self-start",
 				onClick: () => a((e) => !e),
-				children: i ? "返回首次设置" : "使用已有数据目录"
+				children: i ? "초기 설정으로 돌아가기" : "기존 데이터 폴더 사용"
 			}), i ? /* @__PURE__ */ (0, z.jsx)(Ag, { onDone: (e) => t({
 				kind: "done",
 				done: e

@@ -110,8 +110,8 @@ const count = (value: number | undefined) => Number(value || 0).toLocaleString()
 
 /** 扫描推进到哪儿了。 */
 export const scanLine = (state: ResourceScanState) => (state.total_sources
-  ? `已扫描 ${state.completed_sources || 0}/${state.total_sources} 个来源`
-  : '正在扫描来源');
+  ? `스캔 완료 ${state.completed_sources || 0}/${state.total_sources} 개 소스`
+  : "소스를 스캔하는 중");
 
 /** 永久删除那一档的条数：`missing` 减去标为已消失的。 */
 export const purgeCount = (scan: ResourceScanState) =>
@@ -119,29 +119,29 @@ export const purgeCount = (scan: ResourceScanState) =>
 
 /** 标为已消失那一档的那一句；没有这一档时是空串。 */
 const vanishText = (scan: ResourceScanState) => (scan.vanish
-  ? `${count(scan.vanish)} 条带个人记录的标为已消失，记录留着，可在孤儿记录里接到新文件或彻底删除。`
+  ? `${count(scan.vanish)} 개 항목은 개인 기록을 유지하며 파일 없음으로 표시합니다. 연결되지 않은 기록에서 새 파일에 연결하거나 영구 삭제할 수 있습니다.`
   : '');
 
 /** 不可撤销那一句：有标为已消失那一档时，只说删除的这几样。 */
-const irreversible = (scan: ResourceScanState) => (scan.vanish ? '这几样不可撤销。' : '这一步不可撤销。');
+const irreversible = (scan: ResourceScanState) => (scan.vanish ? "이 삭제 및 정리 작업은 되돌릴 수 없습니다." : "이 작업은 되돌릴 수 없습니다.");
 
 /** 结果面板里那一句清理内容。 */
 export const applyPlanText = (scan: ResourceScanState) =>
-  `将永久删除文件已不在盘上的 ${count(purgeCount(scan))} 条记录和 ${count(scan.empty)} 个空文件夹，`
-  + `并清理 ${count(scan.cache?.files)} 个闲置缓存。${irreversible(scan)}${vanishText(scan)}`;
+  `영구 삭제 대상: 디스크에 파일이 없는 기록 ${count(purgeCount(scan))} 개와 ${count(scan.empty)} 개의 빈 폴더,`
+  + `정리 대상: ${count(scan.cache?.files)} 개의 미사용 캐시.${irreversible(scan)}${vanishText(scan)}`;
 
 /** 确认弹层的正文：比结果面板多说回收站里的也算、来源根目录保留。 */
 export const applyConfirmText = (scan: ResourceScanState) =>
-  `将永久删除文件已不在盘上的 ${count(purgeCount(scan))} 条记录（含回收站里的）、${count(scan.empty)} 个空文件夹，`
-  + `并清理 ${count(scan.cache?.files)} 个闲置缓存。来源根目录保留。${irreversible(scan)}${vanishText(scan)}`;
+  `영구 삭제 대상: 디스크에 파일이 없는 기록 ${count(purgeCount(scan))} 개(휴지통 포함), 빈 폴더:${count(scan.empty)} 개,`
+  + `정리 대상: ${count(scan.cache?.files)} 개의 미사용 캐시. 소스 루트 폴더는 유지합니다.${irreversible(scan)}${vanishText(scan)}`;
 
 /** 一个来源那张读数卡的脚注。 */
 export const sourceMeta = (source: ResourceSource) => (source.online
-  ? [`找不到文件 · 共 ${count(source.total)} 项`,
-    source.vanish ? `${count(source.vanish)} 项带个人记录` : '',
-    source.empty ? `空文件夹 ${count(source.empty)} 个` : '',
-    source.unreadable ? `${count(source.unreadable)} 个目录读取失败，已跳过` : ''].filter(Boolean).join(' · ')
-  : `馆藏中有 ${count(source.total)} 项`);
+  ? [`파일을 찾을 수 없음 · 총 ${count(source.total)} 개`,
+    source.vanish ? `${count(source.vanish)} 개 항목에 개인 기록 있음` : '',
+    source.empty ? `빈 폴더 ${count(source.empty)} 개` : '',
+    source.unreadable ? `${count(source.unreadable)} 개 폴더를 읽지 못해 건너뛰었습니다` : ''].filter(Boolean).join(' · ')
+  : `컬렉션에 ${count(source.total)} 개`);
 
 /** 执行结束后留在原地的那几样：文件其实还在、目录这会儿读不了、缓存正被占用。 */
 export function applyLeftovers(out: ResourceApplyState) {
@@ -151,11 +151,11 @@ export function applyLeftovers(out: ResourceApplyState) {
   const done = Number(out.purged || 0) + Number(out.vanished || 0) + Number(out.reattached || 0)
     + Number(out.dirs_removed || 0) + Number(out.cache_removed || 0);
   const left = blocked.length + dirErrors + cacheBlocked.length;
-  const names = blocked.slice(0, 3).map((item) => `「${item.name}」`).join('、') + (blocked.length > 3 ? ' 等' : '');
+  const names = blocked.slice(0, 3).map((item) => `「${item.name}」`).join('、') + (blocked.length > 3 ? " 등" : '');
   const rest = [
-    blocked.length ? `${count(blocked.length)} 条记录没有删除（${names}）` : '',
-    dirErrors ? `${count(dirErrors)} 个文件夹没有删除` : '',
-    cacheBlocked.length ? `${count(cacheBlocked.length)} 个缓存没有清理` : '',
+    blocked.length ? `${count(blocked.length)} 개 기록은 삭제하지 않았습니다(${names}）` : '',
+    dirErrors ? `${count(dirErrors)} 개 폴더 미삭제` : '',
+    cacheBlocked.length ? `${count(cacheBlocked.length)} 개 캐시 미정리` : '',
   ].filter(Boolean).join('，');
   return { done, left, rest };
 }
@@ -163,9 +163,9 @@ export function applyLeftovers(out: ResourceApplyState) {
 /** 执行结果那一句。有没处理的几样时接在后面，说重新检查后可再试。 */
 export const applyText = (out: ResourceApplyState, formatSize: (bytes: number) => string) => {
   const { rest } = applyLeftovers(out);
-  const summary = `已永久删除 ${count(out.purged)} 条失效记录和 ${count(out.dirs_removed)} 个空文件夹，`
-    + `清理 ${count(out.cache_removed)} 个缓存，释放 ${formatSize(out.bytes_reclaimed || 0)}。`
-    + (out.vanished ? `${count(out.vanished)} 条带个人记录的已标为已消失，可在孤儿记录里处理。` : '')
-    + (out.reattached ? `${count(out.reattached)} 条的记录已接到库里的另一个版本。` : '');
-  return rest ? `${summary}${rest}，重新检查后可再试。` : summary;
+  const summary = `영구 삭제 완료: ${count(out.purged)} 개의 유효하지 않은 기록과 ${count(out.dirs_removed)} 개의 빈 폴더,`
+    + `정리 완료: ${count(out.cache_removed)} 개 캐시, 확보 공간 ${formatSize(out.bytes_reclaimed || 0)}。`
+    + (out.vanished ? `${count(out.vanished)} 개 항목은 개인 기록을 유지하며 파일 없음으로 표시했습니다. 연결되지 않은 기록에서 처리할 수 있습니다.` : '')
+    + (out.reattached ? `${count(out.reattached)} 개 항목의 기록을 라이브러리의 다른 버전에 연결했습니다.` : '');
+  return rest ? `${summary}${rest}. 다시 확인한 뒤 재시도할 수 있습니다.` : summary;
 };

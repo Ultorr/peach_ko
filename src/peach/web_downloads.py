@@ -20,7 +20,7 @@ def _values(credentials: CredentialStore, provider: str) -> dict:
     try:
         credential = credentials.load(provider)
     except CredentialError as error:
-        raise DownloadError("config", f"本机凭据文件读不出来，请在设置页重新填写：{error}") from None
+        raise DownloadError("config", f"로컬 인증 정보 파일을 읽을 수 없습니다. 설정 페이지에서 다시 입력하세요: {error}") from None
     return dict(credential.values) if credential else {}
 
 
@@ -45,7 +45,7 @@ def build_download_service(*, database: LedgerDatabase, state_root: Path,
         if key == "pikpak":
             return PikPakProvider(lambda: _values(credentials, PIKPAK_CREDENTIAL),
                                   persist=lambda values: credentials.save(PIKPAK_CREDENTIAL, values))
-        raise DownloadError("config", f"不认识的云下载渠道：{key}")
+        raise DownloadError("config", f"알 수 없는 클라우드 다운로드 채널: {key}")
 
     service = DownloadService(database=database, state_root=state_root, credentials=credentials,
                               providers=providers, landing=Landing(push_discovery),
@@ -60,7 +60,7 @@ def build_download_service(*, database: LedgerDatabase, state_root: Path,
 def _service(contract) -> DownloadService:
     service = getattr(contract, "downloads", None)
     if service is None:
-        raise ValueError("云下载没有启用")
+        raise ValueError("클라우드 다운로드가 활성화되지 않았습니다")
     return service
 
 
@@ -77,7 +77,7 @@ def q_downloads(contract, args) -> dict:
 
 def w_download_submit(contract, body) -> dict:
     if not isinstance(body, dict):
-        raise ValueError("请求体必须是一个对象")
+        raise ValueError("요청 본문은 객체여야 합니다")
     return submit_offline_download(
         _service(contract), magnet=str(body.get("magnet") or ""),
         provider=str(body.get("provider") or ""), target=body.get("target") or None,
@@ -86,14 +86,14 @@ def w_download_submit(contract, body) -> dict:
 
 def w_download_cancel(contract, body) -> dict:
     if not isinstance(body, dict) or not str(body.get("id") or "").isdigit():
-        raise ValueError("缺少任务编号")
+        raise ValueError("작업 번호가 없습니다")
     task = _service(contract).cancel(int(body["id"]))
     return {"ok": True, "task": task.payload()}
 
 
 def w_download_postprocess(contract, body) -> dict:
     if not isinstance(body, dict) or not str(body.get("id") or "").isdigit():
-        raise ValueError("缺少任务编号")
+        raise ValueError("작업 번호가 없습니다")
     task = _service(contract).retry_postprocess(int(body["id"]))
     return {"ok": True, "task": task.payload()}
 
@@ -131,7 +131,7 @@ def save_settings(service: DownloadService, body: dict, declared_roots) -> dict:
     在报告里给出建议值，其他字段照常保存。没有令牌时 `report` 为 None。
     """
     if not isinstance(body, dict):
-        raise ValueError("设置必须是一个对象")
+        raise ValueError("설정은 객체여야 합니다")
     token = str(body.get("token") or "").strip()
     config = service.save_settings(body, declared_roots)
     if token:
@@ -244,10 +244,10 @@ def _browser_login(service: DownloadService):
 def pikpak_browser_start(service: DownloadService, declared_roots) -> dict:
     """拉起登录窗口，立刻回设置块；页面看 `pikpak_browser.state` 轮询，不在这里等。"""
     if not service.available:
-        raise ValueError("云下载只在账本写入端可用")
+        raise ValueError("클라우드 다운로드는 기록 데이터베이스 쓰기 담당 기기에서만 사용할 수 있습니다")
     login = _browser_login(service)
     if login is None:
-        raise ValueError("浏览器登录没有启用")
+        raise ValueError("브라우저 로그인이 활성화되지 않았습니다")
     login.start()
     return settings_payload(service, declared_roots)
 

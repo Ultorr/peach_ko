@@ -30,11 +30,11 @@ export function catalogFilterSkeletonHtml(views: readonly CatalogView[], state: 
     + `</div><div data-catalog-tier="studios">`
     + slots('<span data-catalog-placeholder="studio" aria-hidden="true"><span></span><span>&nbsp;</span></span>')
     + `</div></div>`
-    + `<div role="group" aria-label="筛选与排序" data-filter-glass="" data-glass-pane="" data-filter-frame=""`
+    + `<div role="group" aria-label="필터 및 정렬" data-filter-glass="" data-glass-pane="" data-filter-frame=""`
     + ` data-catalog-frame="" class="sticky top-topbar z-10 mb-5.5 flex flex-col mx-4">`
-    + `<div role="group" aria-label="视图与标签" data-filter-row="top"`
+    + `<div role="group" aria-label="보기 및 태그" data-filter-row="top"`
     + ` class="flex h-12 min-w-0 items-center overscroll-x-contain px-3 py-2 gap-1.5 overflow-visible">`
-    + `<div data-catalog-scroll=""><div role="group" aria-label="视图" data-catalog-views="">${viewHtml}`
+    + `<div data-catalog-scroll=""><div role="group" aria-label="보기" data-catalog-views="">${viewHtml}`
     + `<span data-entity-sep="" aria-hidden="true"></span></div>`
     + `<div data-catalog-tags=""><span data-catalog-placeholder="tag" aria-hidden="true">`
     + '<span></span>'.repeat(EMPTY_SLOTS) + `</span></div></div></div>`

@@ -104,8 +104,8 @@ COMPRESSION_EXCLUDED_TYPES = (
 
 #: Starlette 自己抛的那几种 HTTPException 带的是英文 detail，给人看之前换成中文。
 _DEFAULT_DETAILS = {
-    "Not Found": "这个地址下没有页面。",
-    "Method Not Allowed": "这个地址不接受这种请求。",
+    "Not Found": "이 주소에는 페이지가 없습니다.",
+    "Method Not Allowed": "이 주소에서는 해당 요청을 허용하지 않습니다.",
 }
 
 
@@ -323,7 +323,7 @@ def create_app(
         filename="feed-schedule.json",
         default=FollowScheduleConfig(enabled=True,
                                      interval_minutes=feeds.DEFAULT_INTERVAL_MINUTES),
-        unavailable_message="订阅源拉取只在写入端可用",
+        unavailable_message="구독 피드 가져오기는 쓰기 담당 기기에서만 사용할 수 있습니다",
     )
     contract.feed_scheduler = feed_scheduler
     from .web_job_recovery import RecoveryService
@@ -482,7 +482,7 @@ def create_app(
 
     @app.exception_handler(AssetLoginRequired)
     def _asset_login_required_handler(request: Request, exc: AssetLoginRequired):
-        return PlainTextResponse("需要 ?t=口令", status_code=401)
+        return PlainTextResponse("?t=접속토큰이 필요합니다", status_code=401)
 
     # 挂在 Starlette 的基类上：路由没匹配到的 404 是它抛的，不是 FastAPI 子类，
     # 只挂子类的话地址栏敲错一个字母仍会看到一行 JSON。
@@ -507,7 +507,7 @@ def create_app(
     @app.exception_handler(Exception)
     def _server_exception_handler(request: Request, exc: Exception):
         headers = _server_error_headers(request, exc)
-        return JSONResponse({'error': '服务处理失败，请导出诊断报告',
+        return JSONResponse({'error': '서비스 처리에 실패했습니다. 진단 보고서를 내보내세요',
                              'error_id': headers['X-Peach-Error-ID']}, status_code=500, headers=headers)
 
     # 第三方前端依赖固定版本并随 Peach 自托管；局域网断网时仍可播放。

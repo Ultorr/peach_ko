@@ -28,5 +28,5 @@ export function installErrorReporting(): void {
     }).catch(() => {});
   };
   window.addEventListener('error', event => send('error', event.error, event.message, event));
-  window.addEventListener('unhandledrejection', event => send('unhandledrejection', event.reason, 'Promise 未处理的异常'));
+  window.addEventListener('unhandledrejection', event => send('unhandledrejection', event.reason, "처리되지 않은 Promise 예외"));
 }

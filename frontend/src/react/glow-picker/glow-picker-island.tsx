@@ -38,13 +38,13 @@ function GlowPicker({ host: at }: { host: GlowPickerHost }) {
   return (
     <>
       <header data-glow-head="" data-glow-presets="" hidden={!glow.on}>
-        <span>光晕</span>
+        <span>빛 번짐</span>
         {/* 这里重置的是配色，不是整份光晕：强度和颗粒一起清掉会让人以为按错了键。整份恢复默认在详细设置那一屏。 */}
-        <button type="button" data-glow-preset-reset="" onClick={() => resetGlowColors(store)}>重置</button>
+        <button type="button" data-glow-preset-reset="" onClick={() => resetGlowColors(store)}>초기화</button>
       </header>
-      <GlowPresetGrid store={store} label="光晕" hidden={!glow.on} />
-      <p data-glow-head="" data-glow-sub=""><span>强调色</span></p>
-      <div data-accent-grid="" role="group" aria-label="强调色">
+      <GlowPresetGrid store={store} label="빛 번짐" hidden={!glow.on} />
+      <p data-glow-head="" data-glow-sub=""><span>강조색</span></p>
+      <div data-accent-grid="" role="group" aria-label="강조색">
         {/* 强调色那一排同样不带颜色：球拿的就是这一档真会写上去的 400 与 600 两级。 */}
         {ACCENT_CHOICES.map(([key, label]) => (
           <button type="button" key={key} data-glow-chip="" data-accent={key} aria-pressed={key === accent}
@@ -53,7 +53,7 @@ function GlowPicker({ host: at }: { host: GlowPickerHost }) {
           </button>
         ))}
       </div>
-      <footer><button type="button" className="geist-button primary" data-glow-detail="" onClick={() => at.openDetails()}>详细设置</button></footer>
+      <footer><button type="button" className="geist-button primary" data-glow-detail="" onClick={() => at.openDetails()}>상세 설정</button></footer>
     </>
   );
 }

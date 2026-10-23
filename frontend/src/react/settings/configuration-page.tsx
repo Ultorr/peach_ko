@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 配置页（`/settings/library`）：这台运行 Peach 的电脑上那些要「保存配置」的多字段表单。
  * 每个分区各占一格页签，一次只摆一组；本机配置权限与账本写入权限由服务端分别判定。
  * 设置弹层里的「Peach 配置」入口指到这里。
@@ -30,8 +31,8 @@ export function ConfigurationPage({ receipt, reopenTutorial, section = '', diagn
   if (!data) {
     return (
       <div className="ui-configpage">
-        <Note tone="error" title="配置读取失败">
-          {config.error ? errorMessage(config.error) : '未取得配置，请刷新页面重试。'}
+        <Note tone="error" title="설정을 불러오지 못했습니다">
+          {config.error ? errorMessage(config.error) : "설정을 불러오지 못했습니다. 페이지를 새로 고침하여 다시 시도하세요."}
         </Note>
       </div>
     );
@@ -114,19 +115,19 @@ function ConfigurationGroups(
   };
   return (
     <div ref={workspace} className="ui-configpage">
-      <div className="ui-board-local-nav" role="tablist" aria-label="配置分区" data-section-nav="" data-section-items=""
+      <div className="ui-board-local-nav" role="tablist" aria-label="설정 섹션" data-section-nav="" data-section-items=""
         aria-orientation={narrow ? 'horizontal' : 'vertical'}>
         {groups.map(({ title }, i) => (
           <button key={title} ref={(node) => { buttons.current[i] = node }} type="button" role="tab"
             id={`${prefix}-tab-${i}`} aria-controls={`${prefix}-panel-${i}-0`} aria-selected={i === at}
             tabIndex={i === at ? 0 : -1} onClick={() => choose(title)} onKeyDown={(event) => move(event, i)}>
-            {title}
+            {koreanLabel(title)}
           </button>
         ))}
       </div>
       {groups.map(({ title, body }, i) => (
         <Fragment key={title}>
-          <h2 className="ui-configgroup">{title}</h2>
+          <h2 className="ui-configgroup">{koreanLabel(title)}</h2>
           {body({ index: i, id: `${prefix}-panel-${i}-0`, labelledBy: `${prefix}-tab-${i}`, active: i === at })}
         </Fragment>
       ))}

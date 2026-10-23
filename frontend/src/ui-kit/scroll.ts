@@ -247,7 +247,7 @@ export function moveGlidePane(
 }
 
 /** Geist Scroller: one-axis overflow with edge fades as the scroll affordance. */
-export function scrollerHtml(content:string,{className='',label='可滚动内容',overflow='y'}={}){
+export function scrollerHtml(content:string,{className='',label="스크롤 가능한 콘텐츠",overflow='y'}={}){
   const axis=new Set(['x','y','both']).has(overflow)?overflow:'y';
   return `<div class="ui-geist-scroller${className?` ${esc(className)}`:''}" data-geist-scroller>
     <div class="ui-geist-scroller-overlay" aria-hidden="true"></div>

@@ -41,6 +41,6 @@ export function RetryNote({ message, onRetry }: { message: string; onRetry: () =
   };
   return (
     <div data-media-error="" onClick={click}
-      dangerouslySetInnerHTML={{ __html: noteHtml(message, { variant: 'error', actionLabel: '重试' }) }} />
+      dangerouslySetInnerHTML={{ __html: noteHtml(message, { variant: 'error', actionLabel: "다시 시도" }) }} />
   );
 }

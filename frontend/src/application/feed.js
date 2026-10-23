@@ -15,11 +15,11 @@ export const feedState = { FEED_SKELETON_CARDS: undefined, feedNewSkeletonHtml: 
 export function feedNewCoverHtml(item){
   if(item.has_cover)return coverImage(item,'big');
   if(!item.cover_url)return item.cover_fetching
-    ?`<span class="nopic" data-feed-cover-state="fetching">${loadingDotsHtml('抓取中')}</span>`
-    :'<span class="nopic" data-feed-cover-state="missing">无封面</span>';
+    ?`<span class="nopic" data-feed-cover-state="fetching">${loadingDotsHtml("가져오는 중")}</span>`
+    :"<span class=\"nopic\" data-feed-cover-state=\"missing\">표지 없음</span>";
   return coverImage(item,'big').replace(/ src="[^"]*"/,
     ` src="${esc(item.cover_url)}" referrerpolicy="no-referrer" data-panel-prior="1"`)
-    .replace('data-drop="self"', 'data-drop="initial" data-initial="无封面" data-drop-class="nopic"');
+    .replace('data-drop="self"', "data-drop=\"initial\" data-initial=\"표지 없음\" data-drop-class=\"nopic\"");
 }
 
 export function feedNewCardHtml(item){
@@ -29,20 +29,20 @@ export function feedNewCardHtml(item){
     .join('');
   const cover=feedNewCoverHtml(item);
   // 番号与标题排在同一个两行的标题块里，和资产卡一样：番号加粗打头，标题接在后面截断。
-  const name=item.code||String(item.title||'').trim()||'未命名新作';
+  const name=item.code||String(item.title||'').trim()||"이름 없는 신작";
   const heading=item.code
     ?javTitleHtml({is_jav:true,code:item.code,name:item.code,display_title:item.title||''})
     :esc(name);
   const open=item.code
-    ?`<a class="feednewopen" href="/works/${encodeURIComponent(item.code)}" aria-label="打开 ${esc(name)} 的作品详情"></a>`:'';
+    ?`<a class="feednewopen" href="/works/${encodeURIComponent(item.code)}" aria-label="${esc(name)} 항목 상세 열기"></a>`:'';
   return `<article class="card feednewcard${item.read?' isread':''}" data-feed-id="${item.id}">
     ${open}<div class="pic" style="--card-ratio:${COVER_FRONT_RATIO}">${cover}
       <div class="hovertools feednewtools">
-        <button type="button" data-feed-action="${item.wanted?'unwant':'want'}" aria-pressed="${!!item.wanted}" title="${item.wanted?'取消想要':'想要'}" aria-label="想要 ${esc(name)}">${icon('star')}</button>
-        <button type="button" data-feed-action="ignore" title="不想看" aria-label="不想看 ${esc(name)}">${icon('x')}</button>
-        <button type="button" data-feed-action="read" title="标为已看过" aria-label="标为已看过 ${esc(name)}">${icon('check')}</button></div></div>
+        <button type="button" data-feed-action="${item.wanted?'unwant':'want'}" aria-pressed="${!!item.wanted}" title="${item.wanted?"위시리스트에서 제거":"위시리스트"}" aria-label="위시리스트 ${esc(name)}">${icon('star')}</button>
+        <button type="button" data-feed-action="ignore" title="관심 없음" aria-label="관심 없음 ${esc(name)}">${icon('x')}</button>
+        <button type="button" data-feed-action="read" title="시청 완료로 표시" aria-label="시청 완료로 표시 ${esc(name)}">${icon('check')}</button></div></div>
     <div class="meta">${feedIdentity(item)}<div class="mtext"><span class="t">${heading}</span>
-      <div class="s mono">${label||(item.title?'':'资料还没取到')}</div></div></div></article>`;
+      <div class="s mono">${label||(item.title?'':"아직 정보를 가져오지 못했습니다")}</div></div></div></article>`;
 }
 
 export function installEntityShapeBootstrap(){
@@ -81,8 +81,8 @@ export function prepareHomeFeed(host){
 
 export function feedNetworkNote(unreachable,items){
   if(!(unreachable>0)||!items.some(item=>!item.has_cover))return '';
-  return noteHtml(`${unreachable} 部新作的封面连不上 DMM 图片主机，中国移动宽带常见。把 DMM / FANZA 的连接方式设成 Peach 代理，下一轮会自动重取。`,
-    {variant:'warning',className:'feednetwork',actionLabel:'配置连接方式',actionHref:'/sources'});
+  return noteHtml(`${unreachable}개 신작의 표지를 DMM 이미지 서버에서 가져오지 못했습니다. 중국이동 인터넷에서 자주 발생합니다. DMM / FANZA 연결 방식을 Peach 프록시로 설정하면 다음 수집 시 자동으로 다시 가져옵니다.`,
+    {variant:'warning',className:'feednetwork',actionLabel:"연결 방식 설정",actionHref:'/sources'});
 }
 
 export function feedRowHtml(data){

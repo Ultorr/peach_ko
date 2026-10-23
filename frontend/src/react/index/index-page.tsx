@@ -37,32 +37,32 @@ import { TagAlphabet, TagCloud, TagDock, TagFilters, type TagEntry } from './ind
 /* 厂牌与事务所是两种实体，不是同一份数据的两种筛选：厂牌出片，事务所出人。所以这个开关切的
    是地址。场记板归厂牌，公文包归事务所，字形各说各的那一件事。 */
 const MAKER_TABS: BoardTab<'studios' | 'agencies'>[] = [
-  { value: 'studios', label: '厂牌', symbol: 'clapperboard' },
-  { value: 'agencies', label: '事务所', symbol: 'briefcase' },
+  { value: 'studios', label: "스튜디오", symbol: 'clapperboard' },
+  { value: 'agencies', label: "소속사", symbol: 'briefcase' },
 ];
 /* 本地与在线是两套词表：计数口径、类别划分和点开去哪儿都不同，所以也是页面级的 Tabs。 */
 const SCOPE_TABS: BoardTab<IndexScope>[] = [
-  { value: 'local', label: '本地', symbol: 'hard-drive' },
-  { value: 'online', label: '在线', symbol: 'rss' },
+  { value: 'local', label: "로컬", symbol: 'hard-drive' },
+  { value: 'online', label: "온라인", symbol: 'rss' },
 ];
 const PEOPLE_TABS: BoardTab<'performers' | 'creators' | 'online'>[] = [
-  { value: 'performers', label: '艺人', symbol: 'user-round' },
-  { value: 'creators', label: '卖家', symbol: 'user-round' },
-  { value: 'online', label: '在线', symbol: 'rss' },
+  { value: 'performers', label: "아티스트", symbol: 'user-round' },
+  { value: 'creators', label: "판매자", symbol: 'user-round' },
+  { value: 'online', label: "온라인", symbol: 'rss' },
 ];
 
 /* 公司那一格摆的是标识而不是脸，沿用艺人那套词就是提示说着「竖幅头像」、屏幕上摆着方标识。
    档位仍是同一个设置值，分开的只有说法。 */
 const LAYOUTS: Record<'people' | 'company', readonly (readonly [PeopleLayout, string, string])[]> = {
-  people: [['big', '大图 · 竖幅头像', 'maximize'], ['compact', '紧凑 · 圆形头像', 'layout-grid']],
-  company: [['big', '大图 · 完整标识', 'maximize'], ['compact', '紧凑 · 圆形标识', 'layout-grid']],
+  people: [['big', "큰 이미지 · 세로 프로필", 'maximize'], ['compact', "간결하게 · 원형 프로필", 'layout-grid']],
+  company: [['big', "큰 이미지 · 전체 로고", 'maximize'], ['compact', "간결하게 · 원형 로고", 'layout-grid']],
 };
 
 function LayoutSwitch(
   { kind, layout, onChange }: { kind: IndexKind; layout: PeopleLayout; onChange(layout: PeopleLayout): void },
 ) {
   return (
-    <RadioGroup aria-label={`${INDEX_TITLES[kind]}索引版式`} orientation="horizontal" value={layout}
+    <RadioGroup aria-label={`${INDEX_TITLES[kind]}목록 배치`} orientation="horizontal" value={layout}
       onChange={(next) => onChange(next as PeopleLayout)} data-index-layout=""
       className={`flex-none max-board-narrow:order-3 ${SEGMENTED_TRACK}`}>
       {LAYOUTS[isCompany(kind) ? 'company' : 'people'].map(([value, label, symbol]) => {
@@ -183,13 +183,13 @@ export function IndexPage(props: IndexProps) {
   const changeLayout = (next: PeopleLayout) => { setLayout(next); props.savePreference({ layout: next }) };
 
   const tabs = kind === 'tags'
-    ? <BoardTabs tabs={SCOPE_TABS} value={scope} label="词表" onChange={(next) => {
+    ? <BoardTabs tabs={SCOPE_TABS} value={scope} label="용어 목록" onChange={(next) => {
       setPicked(new Set());
       // 在线标签全是英文，字母表才是它的形态；切过去时顺手换上，不必再点一次。
       go({ scope: next, category: 'all', view: next === 'online' ? 'alphabet' : view });
     }} />
     : isCompany(kind)
-        ? <BoardTabs tabs={MAKER_TABS} value={kind as 'studios' | 'agencies'} label="公司类型"
+        ? <BoardTabs tabs={MAKER_TABS} value={kind as 'studios' | 'agencies'} label="회사 유형"
           onChange={(next) => go({ kind: next })} />
         : null;
 
@@ -216,8 +216,8 @@ export function IndexPage(props: IndexProps) {
     }
     if (result.isError) {
       return (
-        <EmptyState icon={spriteGlyph('alert')} title={`没能读取${title}`}
-          actions={<Button variant="secondary" onClick={() => void result.refetch()}>重试</Button>}>
+        <EmptyState icon={spriteGlyph('alert')} title={`불러오기 실패：${title}`}
+          actions={<Button variant="secondary" onClick={() => void result.refetch()}>다시 시도</Button>}>
           {requestErrorMessage(result.error)}
         </EmptyState>
       );
@@ -246,10 +246,10 @@ export function IndexPage(props: IndexProps) {
         <LibraryShortcuts kind={kind === 'tags' ? 'tag' : kind === 'studios' ? 'studio' : kind === 'agencies' ? 'agency' : kind === 'creators' ? 'creator' : 'performer'} />
         {/* 窄屏一行放不下四样东西：标题与过滤框一行，开关另起一行。 */}
         <span aria-hidden className="hidden h-0 basis-full max-board-narrow:order-2 max-board-narrow:block" />
-        <IndexSearch label={`过滤${title}`} value={q} onQuery={(next) => { if (next !== q) go({ q: next }, !!next) }} />
+        <IndexSearch label={`필터: ${title}`} value={q} onQuery={(next) => { if (next !== q) go({ q: next }, !!next) }} />
       </div>
       {kind === 'performers' || kind === 'creators' ? (
-        <BoardTabs tabs={PEOPLE_TABS} value={onlineAuthors ? 'online' : kind} label="人物名册"
+        <BoardTabs tabs={PEOPLE_TABS} value={onlineAuthors ? 'online' : kind} label="인물 목록"
           onChange={(next) => {
             if (next === 'online') props.exitSelectMode();
             go({ kind: next === 'online' ? 'performers' : next,
@@ -258,7 +258,7 @@ export function IndexPage(props: IndexProps) {
       ) : null}
       {tabs}
       {kind === 'performers' && scope === 'local' ? (
-        <div aria-label="身份分类" className={IDENTITY_ROW_CLASS}>
+        <div aria-label="인물 분류" className={IDENTITY_ROW_CLASS}>
           {IDENTITY_CATEGORIES.filter((entry) => entry[0] === category || hasEntries(entry)).map(([key, label]) => (
             <Button key={key} variant={category === key ? 'primary' : 'secondary'} size="small"
               aria-pressed={category === key} onClick={() => go({ category: key })}>{label}</Button>
@@ -281,7 +281,7 @@ export function IndexPage(props: IndexProps) {
           <Button variant="secondary" data-index-more="" className="min-w-31"
             disabled={result.isFetchingNextPage} aria-busy={result.isFetchingNextPage || undefined}
             onClick={() => void result.fetchNextPage()}>
-            {result.isFetchingNextPage ? <LoadingDots inline label="继续载入中…" /> : '载入更多'}
+            {result.isFetchingNextPage ? <LoadingDots inline label="추가로 불러오는 중…" /> : "더 불러오기"}
           </Button>
         </div>
       ) : null}
@@ -295,7 +295,7 @@ export function IndexPage(props: IndexProps) {
 }
 
 const LABELS: Record<IndexKind, string> = {
-  tags: '标签', performers: '艺人', creators: '卖家', studios: '厂牌', agencies: '事务所',
+  tags: "태그", performers: "아티스트", creators: "판매자", studios: "스튜디오", agencies: "소속사",
 };
 
 /** 空馆藏、筛选无结果与在线来源还没有内容分别给出可执行的去处。文案同目录页的空态
@@ -305,24 +305,24 @@ function IndexEmpty(
 ) {
   if (filtered) {
     return (
-      <EmptyState icon={spriteGlyph('search')} title="没有符合条件的内容"
-        actions={<ButtonLink variant="primary" href="/?loc=&thumb=0">查看全部内容</ButtonLink>}>
-        清除筛选或搜索条件后查看全部内容。
+      <EmptyState icon={spriteGlyph('search')} title="조건에 맞는 콘텐츠가 없습니다"
+        actions={<ButtonLink variant="primary" href="/?loc=&thumb=0">모든 콘텐츠 보기</ButtonLink>}>
+        필터나 검색 조건을 지우면 모든 콘텐츠를 볼 수 있습니다.
       </EmptyState>
     );
   }
   // 在线那一档数的是来源上的东西，名字也跟着来源的说法：艺人页在线摆的是关注来源里的创作者。
-  const label = online && kind === 'performers' ? '创作者' : LABELS[kind];
+  const label = online && kind === 'performers' ? "크리에이터" : LABELS[kind];
   const follow = (
-    <ButtonLink variant={!configurable || online ? 'primary' : 'secondary'} href="/subscriptions?tab=add">添加关注</ButtonLink>
+    <ButtonLink variant={!configurable || online ? 'primary' : 'secondary'} href="/subscriptions?tab=add">팔로우 추가</ButtonLink>
   );
   return (
-    <EmptyState icon={spriteGlyph(kind === 'tags' ? 'tags' : 'user-round')} title={`还没有${label}`}
+    <EmptyState icon={spriteGlyph(kind === 'tags' ? 'tags' : 'user-round')} title={`아직 없음: ${label}`}
       actions={online ? follow : <>
-        {configurable ? <Button variant="primary" data-empty-settings="">添加内容</Button> : null}
+        {configurable ? <Button variant="primary" data-empty-settings="">콘텐츠 추가</Button> : null}
         {follow}
       </>}>
-      {online ? `添加关注来源并获取内容后，这里会显示来源上的${label}。` : '添加内容并补充资料后，这里会显示对应信息。'}
+      {online ? `팔로우 소스를 추가하고 콘텐츠를 가져오면 여기에 표시됩니다: ${label}。` : "콘텐츠를 추가하고 정보를 보완하면 관련 정보가 표시됩니다."}
     </EmptyState>
   );
 }

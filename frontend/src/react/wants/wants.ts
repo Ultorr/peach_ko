@@ -13,7 +13,7 @@ export const wantFollowKey = (itemId: number) => ['wants', 'follow', itemId] as 
 
 /** 清单上的四段，次序就是页签里排的次序。 */
 export const PHASES = [
-  ['searching', '待找'], ['unreleased', '未发售'], ['given_up', '暂时放弃'], ['acquired', '已入库'],
+  ['searching', "검색 대기"], ['unreleased', "출시 전"], ['given_up', "잠시 포기"], ['acquired', "라이브러리에 추가됨"],
 ] as const;
 export type Phase = (typeof PHASES)[number][0];
 
@@ -80,13 +80,13 @@ export const resetWants = (ids: number[], signal?: AbortSignal) =>
 export const invalidateWants = () => queryClient.invalidateQueries({ queryKey: WANTS_KEY });
 
 /** 一条想要叫什么：番号打头，没有番号的关注条目用标题。 */
-export const wantName = (want: Want) => want.code || want.title || `关注条目 ${want.follow_item_id ?? want.id}`;
+export const wantName = (want: Want) => want.code || want.title || `팔로우 항목 ${want.follow_item_id ?? want.id}`;
 
 /** 「待找」那一段的说明：新片查不到不计数，老片查满三次就暂时放弃。 */
 export function searchNote(want: Want): string {
-  if (want.phase === 'acquired') return want.acquired_at ? `入库于 ${want.acquired_at.slice(0, 10)}` : '已入库';
-  if (want.phase === 'unreleased') return want.release_date ? `${want.release_date} 发售` : '还没发售';
-  if (want.phase === 'given_up') return `查过 ${want.search_count} 次都没找到`;
-  if (want.fresh) return '新片：查不到也一直留在待找';
-  return want.search_count ? `查过 ${want.search_count} 次` : '还没查过';
+  if (want.phase === 'acquired') return want.acquired_at ? `등록일: ${want.acquired_at.slice(0, 10)}` : "라이브러리에 추가됨";
+  if (want.phase === 'unreleased') return want.release_date ? `${want.release_date} 출시` : "아직 출시되지 않음";
+  if (want.phase === 'given_up') return `검색 횟수: ${want.search_count} 회 모두 찾지 못함`;
+  if (want.fresh) return "신작: 찾지 못해도 검색 대기 상태로 유지";
+  return want.search_count ? `검색 횟수: ${want.search_count} 회` : "아직 검색하지 않음";
 }

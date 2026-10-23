@@ -218,10 +218,10 @@ def failure_details(stage: str, error: BaseException) -> str:
     try:
         from .support_bundle import save_bundle
         report = save_bundle()
-        return f"{error}\n\n诊断报告：{report}"
+        return f"{error}\n\n진단 보고서: {report}"
     except Exception as report_error:
         event("report-failed", report_error)
-        return f"{error}\n\n错误日志：{path}" if path else f"{error}\n\n错误日志未能写入，请保留此弹窗。"
+        return f"{error}\n\n오류 로그: {path}" if path else f"{error}\n\n오류 로그를 저장하지 못했습니다. 이 알림 창을 보관하세요."
 
 
 def tray_main() -> int:
@@ -233,7 +233,7 @@ def tray_main() -> int:
         message = failure_details("tray-import", error)
         if os.name == "nt":
             import ctypes
-            ctypes.windll.user32.MessageBoxW(None, message, "Peach 启动失败", 0x10)
+            ctypes.windll.user32.MessageBoxW(None, message, "Peach 시작 실패", 0x10)
         elif sys.stderr is not None:
             print(message, file=sys.stderr)
         return 1

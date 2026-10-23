@@ -6,8 +6,9 @@ import { Button } from '@/components/base/buttons/button';
 import { LinkButton } from '@/components/base/buttons/link-button';
 import { cx } from '@/utils/cx';
 import { errorMessage } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import type { LibraryProcessingProps } from '../bundle';
-import { DISCONNECTED_TEXT, processingActive, remainingTime, type LibraryProcessingData } from './library-processing';
+import { DISCONNECTED_TEXT, processingActive, processingError, remainingTime, type LibraryProcessingData } from './library-processing';
 import { ProcessingControls } from './processing-controls';
 import { useLibraryProcessingJob } from './use-library-processing';
 import { ProcessingLine } from './processing-line';
@@ -20,7 +21,7 @@ function expandedFor(jobId?: string): boolean {
 /** 圆环只表达当前阶段的实际完成率；未知总量使用静态任务图标。 */
 function Gauge({ value, max }: { value: number; max: number }) {
   const percent = Math.max(0, Math.min(100, value / max * 100));
-  return <svg role="progressbar" aria-label="当前阶段完成率" aria-valuemin={0} aria-valuemax={100}
+  return <svg role="progressbar" aria-label="현재 단계 완료율" aria-valuemin={0} aria-valuemax={100}
     aria-valuenow={percent} viewBox="0 0 32 32" fill="none" className="size-8 shrink-0 -rotate-90 text-border-focus-ring">
     <circle cx="16" cy="16" r="13" stroke="currentColor" strokeWidth="3" className="opacity-20" />
     <circle cx="16" cy="16" r="13" stroke="currentColor" strokeWidth="3" pathLength={100}
@@ -58,9 +59,9 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false }: 
   }, [measure]);
   if (!problem && !active && !failed) return null;
   const warning = !!problem || !!state?.stalled;
-  const title = failed ? '扫描与资料采集未完成' : state?.status === 'paused' ? '扫描与采集已暂停' : '扫描与采集';
+  const title = failed ? "스캔 및 정보 수집 미완료" : state?.status === 'paused' ? "스캔 및 수집 일시 중지됨" : "스캔 및 수집";
   return <aside ref={panel} data-processing-dock="" data-processing-tone={failed ? 'error' : warning ? 'warning' : 'neutral'}
-    aria-label="扫描任务" role={failed ? 'alert' : 'status'}
+    aria-label="스캔 작업" role={failed ? 'alert' : 'status'}
     className={cx('flex min-w-0 flex-col gap-3 border bg-background-primary-default p-4',
       failed ? 'border-current/35 text-text-error-primary'
         : warning ? 'border-current/35 text-status-yellow-text'
@@ -74,29 +75,29 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false }: 
         {active ? <p data-processing-eta="" className="text-caption-1-regular text-text-secondary tabular-nums wrap-anywhere">{remainingTime(state!)}</p> : null}
       </div>
       <Button size="small" variant="secondary" iconOnly leadingIcon={expanded ? RiArrowDownSLine : RiArrowUpSLine}
-        aria-label={expanded ? '收起任务详情' : '展开任务详情'} aria-expanded={expanded} onClick={toggle} />
+        aria-label={expanded ? "작업 상세 접기" : "작업 상세 펼치기"} aria-expanded={expanded} onClick={toggle} />
     </div>
     {expanded ? <div className={cx('flex min-w-0 flex-col gap-2 border-t pt-3',
       failed ? 'border-border-error-default/20' : warning ? 'border-current/20' : 'border-separator-border')}>
-      {state?.steps?.length ? <ol aria-label="处理步骤" className="flex min-w-0 flex-col gap-1.5">
+      {state?.steps?.length ? <ol aria-label="처리 단계" className="flex min-w-0 flex-col gap-1.5">
         {state.steps.map(step => <li key={step.id} data-processing-step={step.status}
           aria-current={step.status === 'current' ? 'step' : undefined}
           className={cx('flex min-h-8 items-center gap-2 text-body-2-regular',
             step.status === 'current' ? 'text-text-primary' : 'text-text-tertiary')}>
           {step.status === 'complete' ? <RiCheckLine aria-hidden className="size-4 shrink-0" />
             : <RiCheckboxBlankCircleLine aria-hidden className={cx('size-4 shrink-0', step.status === 'current' && 'text-border-focus-ring')} />}
-          <VisuallyHidden>{step.status === 'complete' ? '已完成：' : step.status === 'current' ? '当前：' : '待处理：'}</VisuallyHidden>
-          {step.status === 'complete' ? <s className="wrap-anywhere">{step.label}</s> : <span className="wrap-anywhere">{step.label}</span>}
+          <VisuallyHidden>{step.status === 'complete' ? "완료:" : step.status === 'current' ? "현재: " : "대기:"}</VisuallyHidden>
+          {step.status === 'complete' ? <s className="wrap-anywhere">{koreanLabel(step.label)}</s> : <span className="wrap-anywhere">{koreanLabel(step.label)}</span>}
         </li>)}
       </ol> : null}
-      <p className="text-body-2-regular wrap-anywhere">{problem || (failed ? state?.error || '请查看并处理未完成项' : <ProcessingLine state={state!} />)}</p>
-      {active && state?.stage && !state.steps?.length ? <p className="text-caption-1-regular text-text-tertiary">当前阶段 · {state.stage}</p> : null}
-      {state?.stalled && !problem ? <p className="text-caption-1-regular">当前步骤耗时较长，正在等待进展</p> : null}
+      <p className="text-body-2-regular wrap-anywhere">{problem || (failed ? processingError(state?.error || "미완료 항목을 확인하고 처리하세요") : <ProcessingLine state={state!} />)}</p>
+      {active && state?.stage && !state.steps?.length ? <p className="text-caption-1-regular text-text-tertiary">현재 단계 · {koreanLabel(state.stage)}</p> : null}
+      {state?.stalled && !problem ? <p className="text-caption-1-regular">현재 단계가 오래 걸리고 있어 진행 상황을 기다리는 중입니다</p> : null}
     </div> : null}
     <div className="flex flex-wrap items-center justify-between gap-2">
       {active ? <ProcessingControls state={state!} disabled={!!problem} /> : null}
       <LinkButton href="/data-cleanup#libraryProcessing" variant="secondary" size="small" trailingIcon={RiArrowRightLine}>
-        {problem || failed ? '查看并处理' : '任务详情'}
+        {problem || failed ? "확인 및 처리" : "작업 상세"}
       </LinkButton>
     </div>
   </aside>;

@@ -35,7 +35,7 @@ const TILE_PINNED = [
 ];
 
 export function RadialCard(
-  { title, rows, empty, unit = '个视频' }: { title: string; rows: RadialSlice[]; empty: string; unit?: string },
+  { title, rows, empty, unit = "개 동영상" }: { title: string; rows: RadialSlice[]; empty: string; unit?: string },
 ) {
   /* 钉住的那一段和指针扫过的那一段分开记：扫过去要能回到钉住的那一段，合成一个状态的话
      鼠标一离开就把用户点下的选择也擦了。 */

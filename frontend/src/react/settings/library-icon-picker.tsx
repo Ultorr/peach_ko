@@ -15,18 +15,18 @@ import { SourceMark } from './section';
 /* 一行七枚、六行排完。第一枚是「不另选」：网盘库自动用网盘标识，本地路径没有可识别的
    来源，就是默认那枚磁盘。其余按题材成组：身体与情欲、身份与装扮、场景与情境、媒介与归档。 */
 export const LIBRARY_ICON_CHOICES = [
-  ['', '自动识别'], ['hard-drive', '磁盘'], ['database', '资料库'], ['heart', '心动'], ['heart-hand', '亲密'], ['flame', '热情'], ['cherry', '樱桃'],
-  ['lollipop', '甜心'], ['candy', '糖果'], ['banana', '香蕉'], ['droplets', '湿润'], ['venus', '女性'], ['mars', '男性'], ['venus-and-mars', '情侣'],
-  ['gem', '精选'], ['crown', '女王'], ['ribbon', '丝带'], ['shirt', '制服'], ['graduation-cap', '学生'], ['stethoscope', '护士'], ['glasses', '眼镜'],
-  ['footprints', '足迹'], ['hand', '手部'], ['flower', '花朵'], ['venetian-mask', '角色扮演'], ['rabbit', '兔女郎'], ['paw-print', '兽耳'], ['dumbbell', '健身'],
-  ['bed-double', '卧室'], ['bath', '浴室'], ['key-round', '私密'], ['wine', '微醺'], ['cigarette', '烟'], ['moon', '夜色'], ['sparkles', '幻想'],
-  ['camera', '写真'], ['video', '影片'], ['film', '电影'], ['image', '图集'], ['gamepad-2', '游戏'], ['star', '收藏'], ['tags', '主题'],
+  ['', "자동 감지"], ['hard-drive', "디스크"], ['database', "자료실"], ['heart', "설렘"], ['heart-hand', "친밀함"], ['flame', "열정"], ['cherry', "체리"],
+  ['lollipop', "스위트하트"], ['candy', "사탕"], ['banana', "바나나"], ['droplets', "촉촉함"], ['venus', "여성"], ['mars', "남성"], ['venus-and-mars', "커플"],
+  ['gem', "엄선"], ['crown', "여왕"], ['ribbon', "리본"], ['shirt', "제복"], ['graduation-cap', "학생"], ['stethoscope', "간호사"], ['glasses', "안경"],
+  ['footprints', "발자국"], ['hand', "손"], ['flower', "꽃"], ['venetian-mask', "역할극"], ['rabbit', "바니걸"], ['paw-print', "동물 귀"], ['dumbbell', "피트니스"],
+  ['bed-double', "침실"], ['bath', "욕실"], ['key-round', "비밀"], ['wine', "살짝 취함"], ['cigarette', "담배"], ['moon', "밤"], ['sparkles', "환상"],
+  ['camera', "화보"], ['video', "영상"], ['film', "영화"], ['image', "이미지 모음"], ['gamepad-2', "게임"], ['star', "즐겨찾기"], ['tags', "주제"],
 ] as const;
 
 /** 不另选时的字形与说法：网盘库跟着来源走（115、PikPak 的站标），本地路径没有什么可识别，就是默认磁盘。 */
 export function libraryAutoChoice(kind: string): [string, string] {
   const mark = kind !== 'local' ? MEDIA_SOURCE_ICONS[kind] : '';
-  return mark ? [mark, '自动识别'] : ['hard-drive', '默认'];
+  return mark ? [mark, "자동 감지"] : ['hard-drive', "기본값"];
 }
 
 /** 「不另选」在单选组里的取值。存下来是空串，而空串做单选值时 React Aria 当作没有选中。 */
@@ -49,10 +49,10 @@ export function LibraryIconPicker({ value, label, kind = 'local', onChange }: {
       </Button>
       <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen} placement="bottom start" offset={4}
         className={MENU_POPOVER_SURFACE}>
-        <Dialog aria-label={`${label}候选`} className="flex w-72 flex-col gap-3 outline-none">
-          <Heading slot="title" className="px-1 text-body-medium text-text-primary">选择媒体库图标</Heading>
+        <Dialog aria-label={`${label}후보`} className="flex w-72 flex-col gap-3 outline-none">
+          <Heading slot="title" className="px-1 text-body-medium text-text-primary">미디어 라이브러리 아이콘 선택</Heading>
           {/* 格子里只放图标，名字走 aria-label：带着字的话 42 个候选要排十几行。 */}
-          <RadioGroup aria-label="候选图标" value={draft || AUTO} onChange={(next) => setDraft(next === AUTO ? '' : next)}
+          <RadioGroup aria-label="아이콘 후보" value={draft || AUTO} onChange={(next) => setDraft(next === AUTO ? '' : next)}
             className="inline-grid grid-cols-7 gap-1">
             {LIBRARY_ICON_CHOICES.map(([key, name]) => (
               <Radio key={key || AUTO} value={key || AUTO} aria-label={key ? name : autoLabel}
@@ -62,8 +62,8 @@ export function LibraryIconPicker({ value, label, kind = 'local', onChange }: {
             ))}
           </RadioGroup>
           <div className="flex justify-end gap-2 border-t border-separator-border pt-2.5">
-            <Button variant="secondary" onClick={() => setOpen(false)}>取消</Button>
-            <Button disabled={draft === value} onClick={() => { onChange(draft); setOpen(false); }}>应用</Button>
+            <Button variant="secondary" onClick={() => setOpen(false)}>취소</Button>
+            <Button disabled={draft === value} onClick={() => { onChange(draft); setOpen(false); }}>적용</Button>
           </div>
         </Dialog>
       </Popover>

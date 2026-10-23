@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 设置面板：顶栏齿轮打开的那一屏浮层，左栏分区、右边一组组设置行。
  *
  * 常驻面 `settings-panel`（`router/managed-routes.tsx` 的常驻表）：第一次打开时壳的 `loadSettingsPanel` 建一枚
@@ -42,16 +43,16 @@ const SECTIONS = [
 ] as const;
 
 const SORT_OPTIONS: readonly Choice[] = [
-  ['seed', '随机'], ['rating', '评分'], ['o', '高潮计数'], ['plays', '观看次数'],
-  ['dur', '时长'], ['size', '体积'], ['new', '入库时间'], ['played', '观看时间'],
+  ['seed', "무작위"], ['rating', "평점"], ['o', "오르가슴 횟수"], ['plays', "시청 횟수"],
+  ['dur', "재생 시간"], ['size', "파일 크기"], ['new', "라이브러리 등록일"], ['played', "시청 시각"],
 ];
-const DIRECTION_OPTIONS: readonly Choice[] = [['desc', '降序'], ['asc', '升序']];
-const JAV_IMAGE_OPTIONS: readonly Choice[] = [['cover', '官方封面', ''], ['thumbnail', '预览图', '']];
+const DIRECTION_OPTIONS: readonly Choice[] = [['desc', "내림차순"], ['asc', "오름차순"]];
+const JAV_IMAGE_OPTIONS: readonly Choice[] = [['cover', "공식 표지", ''], ['thumbnail', "미리보기 이미지", '']];
 /* 新作那一行收不收合集由服务端按账本里的设置筛，这里的开关只是镜像：真相在 `/api/settings`。 */
 const FEED_COMPILATIONS = [
-  ['feedHideGroupSetting', 'feedHideGroupCompilations', '大合集', '隐藏大合集'],
-  ['feedHideSoloSetting', 'feedHideSoloCompilations', '单人合集', '隐藏单人合集'],
-  ['feedHideExcerptSetting', 'feedHideExcerpts', '切片', '隐藏切片'],
+  ['feedHideGroupSetting', 'feedHideGroupCompilations', "종합 모음집", "종합 모음집 숨기기"],
+  ['feedHideSoloSetting', 'feedHideSoloCompilations', "개인별 모음집", "개인별 모음집 숨기기"],
+  ['feedHideExcerptSetting', 'feedHideExcerpts', "클립", "클립 숨기기"],
 ] as const;
 type CompilationKey = typeof FEED_COMPILATIONS[number][1];
 
@@ -221,24 +222,28 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
 
   /* 整块是一个 tablist：小标题写成 presentation，不占 tab 的位置，方向键从头走到尾。 */
   return (
-    <div data-settings-nav="" data-glass-pane="" role="tablist" aria-label="设置分区" ref={nav}
+    <div data-settings-nav="" data-glass-pane="" role="tablist" aria-label="설정 섹션" ref={nav}
       onPointerLeave={(event) => { if (event.pointerType !== 'touch') place(buttons.current[shown.current], true) }}>
       <span data-settings-glide="" aria-hidden="true" hidden ref={glide} />
-      <p data-settings-nav-caption="" role="presentation">设置</p>
+      <p data-settings-nav-caption="" role="presentation">설정</p>
       {SECTIONS.map(([title, icon], index) => (
         <button type="button" role="tab" key={title} id={tabId(index)} aria-controls={groupId(index)}
           aria-selected={index === tab} tabIndex={index === tab ? 0 : -1}
           ref={(node) => { buttons.current[index] = node }}
           onClick={() => onSelect(index)} onKeyDown={(event) => keys(event, index)}
           onPointerEnter={(event) => { if (event.pointerType !== 'touch') place(event.currentTarget, true) }}>
-          {icon === 'jav' ? <Icon name={icon} /> : <RemixIcon name={icon} />}{title}
+          {icon === 'jav' ? <Icon name={icon} /> : <RemixIcon name={icon} />}{koreanLabel(title)}
         </button>
       ))}
       <div data-settings-service="" role="presentation">
         <button type="button" disabled={configurable !== true} onClick={openConfiguration}
-          title={configurable === false ? '请在运行 Peach 的设备上打开 Peach 配置' : undefined}>
-          <Icon name="folder-cog" />Peach 配置<Icon name="chevron-right" />
+          title={configurable === false ? "Peach가 실행 중인 기기에서 Peach 설정을 여세요" : undefined}>
+          <Icon name="folder-cog" />Peach 설정<Icon name="chevron-right" />
         </button>
+        <div className="peach-react">
+          <ButtonLink variant="secondary" href="https://github.com/Ultorr/peach_ko/tree/korean-0.46.1"
+            target="_blank" rel="noopener noreferrer">한국어판 소스·라이선스</ButtonLink>
+        </div>
       </div>
     </div>
   );
@@ -247,7 +252,7 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
 function Group({ index, tab, children }: { index: number; tab: number; children: ReactNode }) {
   return (
     <section data-setting-group="" id={groupId(index)} role="tabpanel" aria-labelledby={tabId(index)} hidden={index !== tab}>
-      <h3>{SECTIONS[index][0]}</h3>
+      <h3>{koreanLabel(SECTIONS[index][0])}</h3>
       {children}
     </section>
   );
@@ -331,30 +336,30 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
       onClick={(event) => { if (event.target === event.currentTarget) close() }}>
       <div data-settings-card="" ref={card}>
         <div data-settings-head="" ref={head}>
-          <h2 id="settingsTitle">{SECTIONS[shown.tab][0]}</h2>
-            <SettingsDialogClose id="settingsClose" label="关闭设置" onPress={() => close()} />
+          <h2 id="settingsTitle">{koreanLabel(SECTIONS[shown.tab][0])}</h2>
+            <SettingsDialogClose id="settingsClose" label="설정 닫기" onPress={() => close()} />
         </div>
         <SettingsNav tab={shown.tab} epoch={epoch} configurable={shown.configurable} onSelect={select}
           openConfiguration={() => { close(false); current.openConfiguration() }} />
         <div data-settings-scroll="" ref={scroll}>
           <Group index={0} tab={shown.tab}>
-            <Row title="主题">
-              <IconSwitch id="themeSetting" name="theme" legend="主题" options={current.themeOptions} value={settings.theme}
+            <Row title="테마">
+              <IconSwitch id="themeSetting" name="theme" legend="테마" options={current.themeOptions} value={settings.theme}
                 attr="data-theme-choice" variant="themeswitch" epoch={epoch}
                 onChoose={(choice) => { settings.theme = choice; save(); current.changed('theme') }} />
             </Row>
             <div data-setting-row="">
-              <label htmlFor="glassContrastSetting"><b>增加对比度</b></label>
+              <label htmlFor="glassContrastSetting"><b>대비 높이기</b></label>
               <input type="checkbox" id="glassContrastSetting" data-toggle="" role="switch" checked={current.highContrast()}
                 onChange={(event) => current.setHighContrast(event.target.checked)} />
             </div>
-            <ToggleRow id="uiSoundsSetting" title="界面音效" checked={settings.uiSounds}
+            <ToggleRow id="uiSoundsSetting" title="인터페이스 효과음" checked={settings.uiSounds}
               onToggle={(on) => { settings.uiSounds = on; save(); current.changed('uiSounds') }} />
-            <ToggleRow id="homeGlowSetting" title="侧栏光晕" checked={settings.homeGlow.on}
+            <ToggleRow id="homeGlowSetting" title="사이드바 빛 번짐" checked={settings.homeGlow.on}
               onToggle={(on) => { settings.homeGlow.on = on; save(); current.changed('glow') }} />
             <GlowSettings host={current} />
             <section data-sidebar-setting="" aria-labelledby="sidebarOrderTitle">
-              <span><b id="sidebarOrderTitle">导航入口与顺序</b></span>
+              <span><b id="sidebarOrderTitle">탐색 메뉴 및 순서</b></span>
               <SidebarOrder host={current} />
             </section>
           </Group>
@@ -362,17 +367,17 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
           <JavGroup host={current} tab={shown.tab} epoch={epoch} />
           <Group index={3} tab={shown.tab}>
             <SearchHistoryRow host={current} epoch={epoch} />
-            <Row title="相关推荐数量">
+            <Row title="관련 추천 수">
               <div id="relatedLimitSetting">
-                <NumberSetting key={epoch} id="relatedLimitSetting" label="相关推荐数量" value={settings.relatedLimit}
+                <NumberSetting key={epoch} id="relatedLimitSetting" label="관련 추천 수" value={settings.relatedLimit}
                   onApply={(value) => { settings.relatedLimit = value; save() }} />
               </div>
             </Row>
-            <Row title="口味与记录"><div className="peach-react"><ButtonLink variant="secondary" href="/taste" onClick={() => close(false)}>打开口味与记录</ButtonLink></div></Row>
+            <Row title="취향 및 기록"><div className="peach-react"><ButtonLink variant="secondary" href="/taste" onClick={() => close(false)}>취향 및 기록 열기</ButtonLink></div></Row>
           </Group>
           <Group index={4} tab={shown.tab}>
-            <ToggleRow id="censorSetting" title="SFW 模式" describedBy="sfwDescription" checked={current.censored()}
-              description="隐藏敏感画面，停止悬停预览。"
+            <ToggleRow id="censorSetting" title="SFW 모드" describedBy="sfwDescription" checked={current.censored()}
+              description="민감한 화면을 숨기고 마우스를 올렸을 때 미리보기를 중지합니다."
               onToggle={(on) => current.setCensored(on)} />
           </Group>
         </div>
@@ -394,7 +399,7 @@ function decorateDirection(field: HTMLElement, ascending: boolean): void {
   }
   setIconSwap(mark, ascending ? 'a' : 'b');
   const label = mark.querySelector('[data-sort-direction-label]');
-  if (label) label.textContent = ascending ? '升序' : '降序';
+  if (label) label.textContent = ascending ? "오름차순" : "내림차순";
 }
 
 function BrowseGroup({ host: current, tab, epoch }: GroupProps) {
@@ -404,24 +409,24 @@ function BrowseGroup({ host: current, tab, epoch }: GroupProps) {
   const ascending = settings.defaultSortDirection === 'asc';
   return (
     <Group index={1} tab={tab}>
-      <Row title="每批加载作品">
+      <Row title="한 번에 불러올 항목 수">
         <div id="batchSizeSetting">
-          <NumberSetting key={epoch} id="batchSizeSetting" label="每批作品" value={settings.batchSize}
+          <NumberSetting key={epoch} id="batchSizeSetting" label="한 번에 불러올 항목" value={settings.batchSize}
             onApply={(value) => { settings.batchSize = value || 60; save(); current.changed('batchSize') }} />
         </div>
       </Row>
-      <Row title="默认排序" kind="sort">
+      <Row title="기본 정렬" kind="sort">
         <div data-setting-sort-controls="">
-          <SelectField id="defaultSortSetting" label="默认排序" options={SORT_OPTIONS} value={settings.defaultSort} epoch={epoch}
+          <SelectField id="defaultSortSetting" label="기본 정렬" options={SORT_OPTIONS} value={settings.defaultSort} epoch={epoch}
             onPick={(value) => { settings.defaultSort = value; save(); current.changed('defaultSort') }} />
-          <SelectField id="defaultSortDirectionSetting" label="默认排序方向" options={DIRECTION_OPTIONS}
+          <SelectField id="defaultSortDirectionSetting" label="기본 정렬 방향" options={DIRECTION_OPTIONS}
             value={ascending ? 'asc' : 'desc'} hidden={random} disabled={random} epoch={epoch}
             onPick={(value) => { settings.defaultSortDirection = value; save(); current.changed('sortDirection') }}
             decorate={(field) => decorateDirection(field, ascending)} />
         </div>
       </Row>
-      <Row title="视频卡片大小">
-        <IconSwitch id="javSizeSetting" name="video-size" legend="视频卡片大小" options={current.videoLayouts}
+      <Row title="동영상 카드 크기">
+        <IconSwitch id="javSizeSetting" name="video-size" legend="동영상 카드 크기" options={current.videoLayouts}
           value={current.videoLayout()} attr="data-video-layout" variant="javimageswitch" text epoch={epoch}
           onChoose={(layout) => current.setVideoLayout(layout)} />
       </Row>
@@ -435,18 +440,18 @@ function JavGroup({ host: current, tab, epoch }: GroupProps) {
   const save = () => current.store.save();
   return (
     <Group index={2} tab={tab}>
-      <h4 data-settings-subheading="">作品显示</h4>
-      <Row title="默认图片">
-        <IconSwitch id="javImageSetting" name="jav-image" legend="默认图片" options={JAV_IMAGE_OPTIONS}
+      <h4 data-settings-subheading="">항목 표시</h4>
+      <Row title="기본 이미지">
+        <IconSwitch id="javImageSetting" name="jav-image" legend="기본 이미지" options={JAV_IMAGE_OPTIONS}
           value={settings.javImage} attr="data-jav-image-choice" variant="javimageswitch" text epoch={epoch}
           onChoose={(choice) => { settings.javImage = normalizeJavImage(choice); save(); current.changed('javImage') }} />
       </Row>
-      <label data-setting-row=""><span><b>合并分卷与版本</b></span>
+      <label data-setting-row=""><span><b>분할 파일 및 버전 합치기</b></span>
         <input type="checkbox" id="groupCollapseSetting" data-toggle="" role="switch" checked={settings.groupCollapse}
           onChange={(event) => { settings.groupCollapse = event.target.checked; save(); current.changed('groupCollapse') }} />
       </label>
-      <h4 data-settings-subheading="">新作显示</h4>
-      <ToggleRow id="feedAutoScrollSetting" title="新作自动滚动" checked={settings.feedAutoScroll}
+      <h4 data-settings-subheading="">신작 표시</h4>
+      <ToggleRow id="feedAutoScrollSetting" title="신작 자동 스크롤" checked={settings.feedAutoScroll}
         onToggle={(on) => { settings.feedAutoScroll = on; save(); current.changed('feedAutoScroll') }} />
       {FEED_COMPILATIONS.map(([id, key, label, title]) => (
         <CompilationToggle key={id} host={current} id={id} settingKey={key} label={label} title={title} />
@@ -471,9 +476,9 @@ function CompilationToggle({ host: current, id, settingKey, label, title }: {
         settings[settingKey] = saved[settingKey] === true;
         current.store.save();
         current.changed('feedCompilations');
-        current.receipt(on ? `新作已收起${label}` : `新作已列出${label}`);
+        current.receipt(on ? `신작을 접었습니다${label}` : `신작을 표시했습니다${label}`);
       },
-      onError: (error) => current.failure(`保存${label}开关`, error),
+      onError: (error) => current.failure(`저장${label}켜기/끄기`, error),
       onSettled: () => { setPending(null); setActionBusy(box.current, false) },
     });
   };
@@ -491,21 +496,21 @@ function PlaybackRows({ host: current, epoch }: Omit<GroupProps, 'tab'>) {
   const save = () => current.store.save();
   return (
     <>
-      <Row title="悬停预览延迟">
+      <Row title="마우스 오버 미리보기 지연">
         <div id="hoverDelaySetting">
-          <NumberSetting key={epoch} id="hoverDelaySetting" label="悬停预览延迟" value={settings.hoverDelaySeconds}
+          <NumberSetting key={epoch} id="hoverDelaySetting" label="마우스 오버 미리보기 지연" value={settings.hoverDelaySeconds}
             onApply={(value) => {
               settings.hoverDelaySeconds = boundedPreference(value, 0, 60, 5); save(); current.changed('hoverDelay');
             }} />
         </div>
       </Row>
-      <ToggleRow id="detailAutoplaySetting" title="打开详情自动播放" checked={settings.detailAutoplay}
+      <ToggleRow id="detailAutoplaySetting" title="상세 정보 열 때 자동 재생" checked={settings.detailAutoplay}
         onToggle={(on) => { settings.detailAutoplay = on; save() }} />
-      <ToggleRow id="miniplayerSetting" title="离开详情后小窗播放" checked={settings.miniplayer}
+      <ToggleRow id="miniplayerSetting" title="상세 정보에서 나가면 작은 창으로 재생" checked={settings.miniplayer}
         onToggle={(on) => { settings.miniplayer = on; save(); current.changed('miniplayer') }} />
-      <Row title="快进 / 快退步长">
+      <Row title="앞으로/뒤로 건너뛰기 간격">
         <div id="seekSecondsSetting">
-          <NumberSetting key={epoch} id="seekSecondsSetting" label="快进 / 快退" value={settings.seekSeconds}
+          <NumberSetting key={epoch} id="seekSecondsSetting" label="앞으로/뒤로 건너뛰기" value={settings.seekSeconds}
             onApply={(value) => { settings.seekSeconds = value || 10; save(); current.changed('seekSeconds') }} />
         </div>
       </Row>
@@ -518,9 +523,9 @@ function SearchHistoryRow({ host: current, epoch }: { host: SettingsPanelHost; e
   const save = useSaveSettings();
   /* 条数跟着账本走（`/api/settings`），所有访问端看到同一个数；本地那份只是镜像。 */
   return (
-    <Row title="搜索记录数量">
+    <Row title="검색 기록 수">
       <div id="searchHistoryLimitSetting">
-        <NumberSetting key={epoch} id="searchHistoryLimitSetting" label="搜索记录" value={settings.searchHistoryLimit}
+        <NumberSetting key={epoch} id="searchHistoryLimitSetting" label="검색 기록" value={settings.searchHistoryLimit}
           onApply={(value) => {
             settings.searchHistoryLimit = boundedPreference(value, 0, 50, 10);
             current.store.save();

@@ -157,8 +157,8 @@ export const isCompany = (kind: string) => kind === 'studio' || kind === 'agency
 export const isPeople = (kind: string) => kind === 'performer' || kind === 'creator';
 
 export const entityFeedTip = (on: boolean) => on
-  ? '已订阅新作，点击取消订阅'
-  : '订阅新作';
+  ? "새 항목 구독 중, 클릭하여 구독 취소"
+  : "새 항목 구독";
 
 /** 这条实体名下已有的写法，统称排第一。 */
 export function nameChoices(entity: EntityHeroData): string[] {
@@ -178,7 +178,7 @@ export function agencyOf(entity: EntityHeroData): { name: string; linked: boolea
 export function performerLinkName(link: HeroLink, agency: string): string {
   const text = officialLinkText(link, 'performer'), home = foldName(agency);
   const own = home && [link.label, text].map(foldName).some((said) => said && (home.includes(said) || said.includes(home)));
-  return own ? `${agency} 官方资料` : (text || link.label || '');
+  return own ? `${agency} 공식 정보` : (text || link.label || '');
 }
 
 /** 链接前那枚圆标：常见社媒走雪碧图里的品牌字形，其余取服务端合成的站点圆标，取不到露出地球。 */
@@ -203,11 +203,11 @@ export function heroLinks(entity: EntityHeroData, kind: string): LinkView[] {
   const names = [entity.canonical_name, ...(entity.aliases || [])];
   const links = (entity.links || []).map((x): LinkView => {
     if (x.gone) {
-      const why = x.retired_year ? `已于 ${x.retired_year} 年隐退` : '链接已失效';
+      const why = x.retired_year ? `은퇴 시기: ${x.retired_year} 년` : "유효하지 않은 링크";
       return { type: 'gone', title: `${performerLinkName(x, agency)} · ${why}` };
     }
     const url = x.url || '';
-    if (!(x.clickable && /^https?:\/\//i.test(url))) return { type: 'private', label: x.label || x.hostname || '已记录' };
+    if (!(x.clickable && /^https?:\/\//i.test(url))) return { type: 'private', label: x.label || x.hostname || "기록됨" };
     if (isPeople(kind) && x.link_kind !== 'social') {
       return { type: 'icon', url, title: performerLinkName(x, agency), mark: siteMark(x) };
     }
@@ -227,7 +227,7 @@ function foldPrivate(links: LinkView[]): LinkView[] {
   if (hidden.length < 2) return links;
   return [
     ...links.filter((link) => link.type !== 'private'),
-    { type: 'private', label: `${hidden.length.toLocaleString()} 个不公开来源`, sources: hidden.map((link) => link.label) },
+    { type: 'private', label: `${hidden.length.toLocaleString()} 개의 비공개 출처`, sources: hidden.map((link) => link.label) },
   ];
 }
 
@@ -247,10 +247,10 @@ export interface FactRow {
 /** 公司资料每格表达独立事实；没有数据的格子不显示。 */
 export function companyFactRows(profile: EntityHeroData['company_profile']): FactRow[] {
   const fields = [
-    ['legal_name', '公司名称', 'briefcase'], ['founded', '公司成立', 'calendar'],
-    ['launched', '品牌启动', 'flag'], ['country', '国家／地区', 'globe'],
-    ['location', '所在地', 'globe'], ['operator', '运营公司', 'briefcase'], ['parent', '母公司', 'briefcase'],
-    ['group', '所属集团', 'briefcase'], ['distributor', '发行商', 'film'],
+    ['legal_name', "회사명", 'briefcase'], ['founded', "회사 설립일", 'calendar'],
+    ['launched', "브랜드 출범일", 'flag'], ['country', "국가／지역", 'globe'],
+    ['location', "소재지", 'globe'], ['operator', "운영 회사", 'briefcase'], ['parent', "모회사", 'briefcase'],
+    ['group', "소속 그룹", 'briefcase'], ['distributor', "배급사", 'film'],
   ] as const;
   return fields.flatMap(([key, label, glyph]) => profile?.[key]?.value?.trim()
     ? [{ label, glyph, parts: [{ text: profile[key]!.value, tone: 'plain' as const }] }]
@@ -262,21 +262,21 @@ export function factRows(p: HeroProfile | null | undefined): FactRow[] {
   if (!p) return [];
   const rows: FactRow[] = [];
   // 年龄由服务端按生日算、与生日成对下发；只拿到生日时那一行只写生日。
-  if (p.birth_date) rows.push({ glyph: 'cake', label: '生日', parts: [
+  if (p.birth_date) rows.push({ glyph: 'cake', label: "생일", parts: [
     { text: p.birth_date, tone: 'num' },
-    ...(Number.isFinite(p.age) ? [{ text: `· ${p.age} 岁`, tone: 'sub' as const }] : [])] });
+    ...(Number.isFinite(p.age) ? [{ text: `· ${p.age} 세`, tone: 'sub' as const }] : [])] });
   const size = ([['T', p.height], ['B', p.bust], ['W', p.waist], ['H', p.hip]] as const)
     .filter(([, value]) => value).map(([letter, value]) => `${letter}${value}`).join(' · ');
-  const cup = p.cup ? `${size ? '· ' : ''}${p.cup} 罩杯` : '';
-  if (size || cup) rows.push({ glyph: 'ruler', label: '身材', parts: [
+  const cup = p.cup ? `${size ? '· ' : ''}${p.cup} 컵` : '';
+  if (size || cup) rows.push({ glyph: 'ruler', label: "신체 치수", parts: [
     ...(size ? [{ text: size, tone: 'num' as const }] : []), ...(cup ? [{ text: cup, tone: 'sub' as const }] : [])] });
-  if (p.debut_date || p.debut_title) rows.push({ glyph: 'flag', label: '出道', clip: p.debut_title || undefined, parts: [
+  if (p.debut_date || p.debut_title) rows.push({ glyph: 'flag', label: "데뷔", clip: p.debut_title || undefined, parts: [
     ...(p.debut_date ? [{ text: p.debut_date, tone: 'num' as const }] : []),
     ...(p.debut_title ? [{ text: p.debut_title, tone: 'sub' as const }] : [])] });
   const active = p.active || {};
-  if (active.from) rows.push({ glyph: 'calendar-range', label: '生涯', parts: [{
-    text: `${active.from}${active.ongoing ? ' – 至今' : active.to ? ` – ${active.to}` : ''}`, tone: 'num' }] });
-  if ((p.tags || []).length) rows.push({ glyph: 'tags', label: '标签', parts: [], tags: p.tags });
+  if (active.from) rows.push({ glyph: 'calendar-range', label: "활동 기간", parts: [{
+    text: `${active.from}${active.ongoing ? " – 현재" : active.to ? ` – ${active.to}` : ''}`, tone: 'num' }] });
+  if ((p.tags || []).length) rows.push({ glyph: 'tags', label: "태그", parts: [], tags: p.tags });
   return rows;
 }
 

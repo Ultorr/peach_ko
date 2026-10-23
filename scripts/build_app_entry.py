@@ -112,7 +112,7 @@ def installer_command(argv: list[str]) -> int:
     if len(argv) == 3 and argv[1] == "--installer-migrate":
         from peach.desktop_installer import migrate_install
         return migrate_install(Path(argv[2]))
-    raise ValueError("安装辅助参数无效")
+    raise ValueError("설치 도우미 인수가 유효하지 않습니다")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -120,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     if "--data-root" in argv:
         index = argv.index("--data-root")
         if index + 1 >= len(argv):
-            raise ValueError("--data-root 缺少目录")
+            raise ValueError("--data-root에 폴더가 지정되지 않았습니다")
         os.environ["PEACH_DATA_ROOT"] = argv[index + 1]
         del argv[index:index + 2]
         sys.argv = argv
@@ -132,7 +132,7 @@ def main(argv: list[str] | None = None) -> int:
         from peach.support_bundle import save_bundle
         path = save_bundle(Path(argv[2]) if len(argv) == 3 else None)
         if len(argv) == 2 and os.name == "nt":
-            ctypes.windll.user32.MessageBoxW(None, f"诊断报告已保存：\n{path}", "Peach 诊断报告", 0x40)
+            ctypes.windll.user32.MessageBoxW(None, f"진단 보고서를 저장했습니다:\n{path}", "Peach 진단 보고서", 0x40)
         elif sys.stdout is not None:
             print(path)
         return 0
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     except Exception as error:
         message = error_reporting.failure_details("desktop-entry", error)
         if os.name == "nt":
-            ctypes.windll.user32.MessageBoxW(None, message, "Peach 启动失败", 0x10)
+            ctypes.windll.user32.MessageBoxW(None, message, "Peach 시작 실패", 0x10)
         elif sys.stderr is not None:
             print(message, file=sys.stderr)
         raise SystemExit(1)

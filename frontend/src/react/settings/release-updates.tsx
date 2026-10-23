@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 检查更新：当前与最新版本、下载安装进度，准备好之后确认重启。
  *
  * 更新任务进行中每秒问一次状态，空闲时 30 秒一次；连续 120 次问不到就停下并说明原因。 */
@@ -36,8 +37,8 @@ export function ReleaseUpdates({ initial, initialJob }: { initial: ReleaseState;
     if (mounted.current) setJob(result);
   };
   const confirmRestart = () => void confirmModal({
-    title: '更新已准备好', body: `Peach ${job.version || ''} 将在重启后安装。`,
-    confirmLabel: '立即重启', cancelLabel: '稍后', onConfirm: restart,
+    title: "업데이트 준비 완료", body: `Peach ${job.version || ''} 버전은 다시 시작한 후 설치됩니다.`,
+    confirmLabel: "지금 다시 시작", cancelLabel: "나중에", onConfirm: restart,
   });
 
   useEffect(() => {
@@ -58,13 +59,13 @@ export function ReleaseUpdates({ initial, initialJob }: { initial: ReleaseState;
         setJob(result);
         failures = 0;
         if (result.state === 'complete') {
-          setData((current) => ({ ...current, current_version: result.version || current.current_version, state: 'current', message: '已是最新测试版。' }));
+          setData((current) => ({ ...current, current_version: result.version || current.current_version, state: 'current', message: "최신 테스트 버전입니다." }));
         }
         const automatic = await apiGet<{ result?: ReleaseState }>('/api/configuration/automatic-updates', controller.signal);
         if (!controller.signal.aborted && automatic.result) setData(automatic.result);
       } catch {
         failures += 1;
-        if (failures >= MAX_FAILURES && !controller.signal.aborted) setPollError('尚未连接到 Peach，请检查托盘后刷新页面。');
+        if (failures >= MAX_FAILURES && !controller.signal.aborted) setPollError("아직 Peach에 연결되지 않았습니다. 트레이를 확인한 후 페이지를 새로 고치세요.");
       }
       if (!controller.signal.aborted && failures < MAX_FAILURES) timer = setTimeout(poll, delay);
     };
@@ -86,44 +87,44 @@ export function ReleaseUpdates({ initial, initialJob }: { initial: ReleaseState;
     ? `${((job.downloaded || 0) / 1048576).toFixed(1)} / ${(job.total / 1048576).toFixed(1)} MB`
     : `${job.progress}%`;
   return (
-    <Section title="检查更新">
+    <Section title="업데이트 확인">
       <FactList>
-        <Fact term="当前版本">{data.current_version}</Fact>
-        <Fact term="安装方式">{data.installation}</Fact>
-        <Fact term="更新通道">{data.channel}</Fact>
-        <Fact term="最新版本">{data.latest_version || (data.state === 'unchecked' ? '尚未检查' : '未取得')}</Fact>
-        {data.package_kind ? <Fact term="下载内容">
-          {data.package_kind === 'update' ? '应用更新包' : '应用与工具'}
+        <Fact term="현재 버전">{data.current_version}</Fact>
+        <Fact term="설치 방식">{koreanLabel(data.installation)}</Fact>
+        <Fact term="업데이트 채널">{data.channel}</Fact>
+        <Fact term="최신 버전">{data.latest_version || (data.state === 'unchecked' ? "아직 확인하지 않음" : "가져오지 못함")}</Fact>
+        {data.package_kind ? <Fact term="다운로드 내용">
+          {data.package_kind === 'update' ? "앱 업데이트 패키지" : "앱 및 도구"}
           {data.asset_size ? ` · ${(data.asset_size / 1048576).toFixed(1)} MB` : ''}
         </Fact> : null}
       </FactList>
       {data.package_kind === 'update'
-        ? <Help>应用更新包复用已安装工具；工具缺失、损坏或版本变化时会另行下载所需工具包。</Help>
-        : data.package_kind === 'full' ? <Help>本次更新包含媒体工具。</Help> : null}
+        ? <Help>앱 업데이트 패키지는 설치된 도구를 재사용합니다. 도구가 없거나 손상되었거나 버전이 바뀌면 필요한 도구 패키지를 별도로 다운로드합니다.</Help>
+        : data.package_kind === 'full' ? <Help>이번 업데이트에는 미디어 도구가 포함되어 있습니다.</Help> : null}
       {/* 还没检查过时「最新版本」那一行已经写着「尚未检查」，下面不再说一遍。 */}
       {data.state === 'unchecked' && !data.checked_at && !error && job.state === 'idle' ? null : <Stack divided>
-        {data.checked_at ? <Help>检查于 {new Date(data.checked_at * 1000).toLocaleString()}</Help> : null}
+        {data.checked_at ? <Help>확인 시각: {new Date(data.checked_at * 1000).toLocaleString()}</Help> : null}
         {data.state === 'available' && !error
-          ? <Note tone="info" title="有可用更新">{data.message}</Note>
+          ? <Note tone="info" title="업데이트 가능">{data.message}</Note>
           : error || data.state === 'error'
             ? <ErrorText>{error || data.message}</ErrorText>
             : data.state === 'unchecked' ? null : <Help role="status">{data.message}</Help>}
         {job.state === 'error' ? <ErrorText>{job.message}</ErrorText> : null}
         {job.state !== 'idle' && job.state !== 'error' ? (
           <div aria-live="polite" className="flex flex-col gap-2">
-            <Progress label="更新准备进度" value={job.progress} stops={STOPS} />
-            <Help>下载 → 校验 → 解压 → 准备安装 · {job.message}</Help>
+            <Progress label="업데이트 준비 진행률" value={job.progress} stops={STOPS} />
+            <Help>다운로드 → 검증 → 압축 해제 → 설치 준비 · {job.message}</Help>
             <Help>{reading}</Help>
           </div>
         ) : null}
       </Stack>}
-      <Footer status={<ExternalLink href={data.release_url}>查看发布页</ExternalLink>}>
-        {job.state === 'ready' ? <Button onClick={confirmRestart}>重启安装</Button> : null}
+      <Footer status={<ExternalLink href={data.release_url}>릴리스 페이지 보기</ExternalLink>}>
+        {job.state === 'ready' ? <Button onClick={confirmRestart}>다시 시작하여 설치</Button> : null}
         {data.state === 'available' && data.installation === '独立测试包' && job.state !== 'ready'
-          ? <Button onClick={download} {...busyProps(running || action.busy === 'download')}>下载并安装</Button>
+          ? <Button onClick={download} {...busyProps(running || action.busy === 'download')}>다운로드 및 설치</Button>
           : null}
         <Button variant={job.state === 'ready' || (data.state === 'available' && data.installation === '独立测试包') ? 'secondary' : 'primary'}
-          disabled={running} onClick={check} {...busyProps(action.busy === 'check')}>检查更新</Button>
+          disabled={running} onClick={check} {...busyProps(action.busy === 'check')}>업데이트 확인</Button>
       </Footer>
     </Section>
   );

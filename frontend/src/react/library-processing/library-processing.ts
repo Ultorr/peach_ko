@@ -4,6 +4,7 @@
  * 轮询也由 Query 合成一份，进度、失败与完成状态由服务端统一提供。
  * 端点在 `frontend/src` 里只在这里声明一次（`tests/test_frontend_build.py` 盯着）。 */
 import { apiGet } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import { elapsedText, progressText } from '../activity/tasks';
 import { queryClient } from '../query';
 
@@ -90,21 +91,21 @@ export const processingActive = (state?: LibraryProcessingData) =>
 /** 时间向分钟取整；区间两端始终使用同一单位。 */
 export function remainingTime(state: LibraryProcessingData): string {
   if (!processingActive(state)) return '';
-  if (state.status === 'paused') return '已暂停，继续后更新预估';
-  if (state.status === 'pausing') return '正在暂停，当前步骤结束后暂停';
-  if (state.stalled) return '等待当前文件响应，剩余时间待更新';
+  if (state.status === 'paused') return "일시 중지됨. 재개 후 예상 시간이 갱신됩니다";
+  if (state.status === 'pausing') return "일시 중지 중. 현재 단계가 끝나면 일시 중지됩니다";
+  if (state.stalled) return "현재 파일의 응답을 기다리는 중. 남은 시간은 갱신 예정입니다";
   const low = state.eta_seconds_min, high = state.eta_seconds_max;
   if (low == null || high == null || !Number.isFinite(low) || !Number.isFinite(high) || low < 0 || high < low)
-    return '正在估算剩余时间…';
-  if (high < 60) return '预计剩余不到 1 分钟';
+    return "남은 시간 계산 중…";
+  if (high < 60) return "예상 남은 시간: 1분 미만";
   const unit = high >= 86400 ? 86400 : high >= 3600 ? 3600 : 60;
-  const label = unit === 86400 ? '天' : unit === 3600 ? '小时' : '分钟';
+  const label = unit === 86400 ? "일" : unit === 3600 ? "시간" : "분";
   const precision = unit === 60 ? 1 : 10;
   const start = Math.max(1 / precision, Math.floor(low / unit * precision) / precision);
   const end = Math.max(start, Math.ceil(high / unit * precision) / precision);
   const span = start === end ? `${end}` : `${start}–${end}`;
-  const rough = state.eta_initial || state.eta_kind !== 'measured' ? '（粗估）' : '';
-  return `预计剩余约 ${span} ${label}${rough}${state.eta_scope ? ` · ${state.eta_scope}` : ''}`;
+  const rough = state.eta_initial || state.eta_kind !== 'measured' ? "(대략적인 추정)" : '';
+  return `예상 남은 시간: 약 ${span} ${label}${rough}${state.eta_scope ? ` · ${koreanLabel(state.eta_scope)}` : ''}`;
 }
 
 export const fetchLibraryProcessing = (signal?: AbortSignal) =>
@@ -124,7 +125,7 @@ export const RUNNING_POLL_MS = 2000;
 export const IDLE_POLL_MS = 10_000;
 
 /** 读失败时页面上留的那句话。上一份数据不撤，下一轮轮询自己会接上。 */
-export const DISCONNECTED_TEXT = '连接中断，正在重新读取处理进度';
+export const DISCONNECTED_TEXT = "연결이 끊겨 처리 진행 상황을 다시 불러오는 중입니다";
 
 export function pollInterval(
   data: LibraryProcessingData | undefined, watching: boolean,
@@ -134,47 +135,52 @@ export function pollInterval(
 }
 
 const ACTION_LABELS: Record<string, string> = {
-  scanning_files: '扫描文件',
-  reading_local: '检查配套文件',
-  reading_local_cover: '读取配套图片',
-  querying_metadata: '查询外部资料',
-  fetching_cover: '采集缺失封面',
-  generating_preview: '生成视频预览',
-  writing_candidates: '保存资料候选',
+  scanning_files: "파일 스캔",
+  reading_local: "연관 파일 확인",
+  reading_local_cover: "연관 이미지 읽기",
+  querying_metadata: "외부 정보 조회",
+  fetching_cover: "누락된 표지 수집",
+  generating_preview: "동영상 미리보기 생성",
+  writing_candidates: "정보 후보 저장",
 };
 
 /* 来源说「没有」按类型报一个数，不进问题清单：馆藏里大量独立资源和创作者作品
    任何目录站都收不到，它们不是待办。键与 `library_processing.MISS_MESSAGES` 同源。 */
 const NOTE_LABELS: Record<string, string> = {
-  querying_metadata: '没有资料',
-  fetching_cover: '没有封面',
+  querying_metadata: "정보 없음",
+  fetching_cover: "표지 없음",
 };
 
 export function notesLine(notes: Record<string, number>): string {
   const parts = Object.entries(notes)
     .filter(([key, count]) => NOTE_LABELS[key] && count > 0)
-    .map(([key, count]) => `${NOTE_LABELS[key]} ${count.toLocaleString()} 部`);
-  return parts.length ? `外部来源${parts.join('、')}，7 天内不再问。` : '';
+    .map(([key, count]) => `${NOTE_LABELS[key]} ${count.toLocaleString()} 개`);
+  return parts.length ? `외부 출처:${parts.join('、')}, 7일 동안 다시 조회하지 않습니다.` : '';
 }
 
 /** 此刻在做什么：哪个文件、哪一步、等了多久。 */
 export function currentLine(state: LibraryProcessingData): string {
-  if (state.status === 'paused') return '已暂停';
-  if (state.status === 'pausing') return '正在暂停';
-  const action = ACTION_LABELS[state.current_action || ''] || state.stage || '正在处理';
-  const waited = state.waited_seconds ? ` · 已等待 ${elapsedText(state.waited_seconds)}` : '';
+  if (state.status === 'paused') return "일시 중지됨";
+  if (state.status === 'pausing') return "일시 중지 중";
+  const action = ACTION_LABELS[state.current_action || ''] || koreanLabel(state.stage || "처리 중");
+  const waited = state.waited_seconds ? ` · 대기 시간 ${elapsedText(state.waited_seconds)}` : '';
   return state.current_asset_name
-    ? `当前：${state.current_asset_name} · ${action}${waited}`
+    ? `현재: ${state.current_asset_name} · ${action}${waited}`
     : action + waited;
 }
 
 /** 已知总量显示实际完成数；扫描目录期间显示持续发现的文件数。 */
 export function processingLine(state: LibraryProcessingData): string {
-  const count = state.total ? `${progressText(state.checked, state.total)} 项`
+  const count = state.total ? `${progressText(state.checked, state.total)} 개`
     : state.current_action === 'scanning_files' || state.stage === '扫描文件'
-      ? `已发现 ${(state.scanned || 0).toLocaleString()} 个文件` : '';
+      ? `발견: ${(state.scanned || 0).toLocaleString()} 개 파일` : '';
   return currentLine(state) + (count ? ` · ${count}` : '');
 }
+
+export const processingError = (message: string): string => koreanLabel(message)
+  .replace(/^(\d+) 项都卡在来源限流上，等一会儿再跑一次。$/, '$1개 항목 모두 소스의 요청 제한으로 대기 중입니다. 잠시 후 다시 실행하세요.')
+  .replace(/^(\d+) 项需要处理，其中 (\d+) 项是来源限流，等一会儿再跑；其余可重试未完成的部分。$/, '$1개 항목을 처리해야 합니다. 이 중 $2개는 소스의 요청 제한으로 대기 중입니다. 잠시 후 다시 실행하세요. 나머지 미완료 항목은 다시 시도할 수 있습니다.')
+  .replace(/^(\d+) 项需要处理，可重试未完成的部分。$/, '$1개 항목을 처리해야 합니다. 미완료 항목을 다시 시도할 수 있습니다.');
 
 /** 折叠起来的问题清单：一句结论 + 逐条明细 + 完整日志的地址。没有问题时是 `null`。 */
 export interface IssueDetails {
@@ -189,11 +195,11 @@ export function issueDetails(state: LibraryProcessingData): IssueDetails | null 
   if (!issues.length) return null;
   return {
     label: state.issues_truncated
-      ? `问题清单：共 ${state.issue_count || 0} 项，展开查看前 ${issues.length} 项`
-      : `问题清单：共 ${state.issue_count || 0} 项`,
+      ? `문제 목록: 총 ${state.issue_count || 0} 건, 펼치면 처음 ${issues.length} 개`
+      : `문제 목록: 총 ${state.issue_count || 0} 개`,
     items: issues.map((issue, at) => ({
       key: `${issue.asset_id ?? 'source'}-${at}`,
-      label: issue.title || (issue.asset_id ? `视频 ${issue.asset_id}` : '媒体来源'),
+      label: issue.title || (issue.asset_id ? `동영상 ${issue.asset_id}` : "미디어 소스"),
       href: issue.asset_id ? `/assets/${issue.asset_id}` : '',
       note: issue.message,
       hint: issue.path || '',
@@ -223,10 +229,10 @@ export function announceCompletion(
     if (state.job_id) localStorage.setItem(ANNOUNCED_KEY, state.job_id);
   } catch { /* 存储不可用时照常提示，最多重复一次 */ }
   if (state.requested_stage === 'previews') {
-    toast(`视频预览已生成：${state.previews || 0} 部`);
+    toast(`동영상 미리보기 생성 완료:${state.previews || 0} 개`);
     return;
   }
-  toast(`扫描与资料采集已完成：识别 ${state.identified || 0} 个番号，`
-    + `整理 ${state.candidates || 0} 组资料候选，自动落库 ${state.auto_applied || 0} 条`
-    + (state.previews ? `，生成 ${state.previews} 部视频预览` : ''));
+  toast(`스캔 및 정보 수집 완료: 식별 ${state.identified || 0} 개 품번,`
+    + `정리 ${state.candidates || 0} 개 정보 후보 그룹, 자동으로 라이브러리에 추가 ${state.auto_applied || 0} 개`
+    + (state.previews ? `, 생성 ${state.previews} 개 동영상 미리보기` : ''));
 }

@@ -29,7 +29,7 @@ export function LibrarySharingSettings({ initial, receipt }: {
     apiSend<LibrarySharingState>('/api/configuration/library-sharing', {
       enabled, schema: value.schema, consent: accepted, preview_token: preview?.token,
     }, 'POST', signal), (saved) => {
-    setValue(saved); setPreview(null); setAccepted(false); setReviewing(false); receipt('已保存馆藏与口味上传选项');
+    setValue(saved); setPreview(null); setAccepted(false); setReviewing(false); receipt("컬렉션 및 취향 업로드 옵션을 저장했습니다");
   });
   const downloadPreview = () => {
     const url = URL.createObjectURL(new Blob([previewText], { type: 'application/json' }));
@@ -41,34 +41,34 @@ export function LibrarySharingSettings({ initial, receipt }: {
     }
   };
   return <>
-    <Rows><SettingsRow label="上传馆藏与口味明细" description={value.notice}>
-      <Switch aria-label="上传馆藏与口味明细" isSelected={value.enabled}
+    <Rows><SettingsRow label="컬렉션 및 취향 상세 정보 업로드" description={value.notice}>
+      <Switch aria-label="컬렉션 및 취향 상세 정보 업로드" isSelected={value.enabled}
         onChange={(enabled) => enabled ? setReviewing(true) : save(false)}
         {...busyProps(action.busy === 'save')} />
     </SettingsRow></Rows>
-    {!value.available ? <Stack divided><Help>上传服务未配置。</Help></Stack> : null}
+    {!value.available ? <Stack divided><Help>업로드 서비스가 설정되지 않았습니다.</Help></Stack> : null}
     {value.enabled && value.last_attempt?.status === 'failed'
-      ? <Stack divided><ErrorText>馆藏与口味上传失败，自动重试。</ErrorText></Stack> : null}
+      ? <Stack divided><ErrorText>컬렉션 및 취향 업로드에 실패했습니다. 자동으로 재시도합니다.</ErrorText></Stack> : null}
     {preview ? <Stack divided>
-      <Help>当前预览包含 {preview.data.library.length} 部有编号作品、{preview.data.coverage.uncoded_items} 条无编号馆藏的汇总，约 {(preview.bytes / 1024).toFixed(1)} KiB。不含账号、设备、文件路径和浏览器历史记录等个人数据。</Help>
-      <Disclosure summary="上传数据预览" defaultOpen>
-        <CodeBlock code={previewText} language="json" label="馆藏与口味上传预览" maxCharacters={24000} />
+      <Help>현재 미리보기에는 번호가 있는 항목 {preview.data.library.length} 개의 정보와 번호가 없는 컬렉션 항목{preview.data.coverage.uncoded_items} 개의 요약 정보가 포함되어 있으며, 크기는 약 {(preview.bytes / 1024).toFixed(1)} KiB입니다. 계정, 기기, 파일 경로, 브라우저 방문 기록 등의 개인 데이터는 포함되지 않습니다.</Help>
+      <Disclosure summary="업로드 데이터 미리보기" defaultOpen>
+        <CodeBlock code={previewText} language="json" label="컬렉션 및 취향 업로드 미리보기" maxCharacters={24000} />
       </Disclosure>
-      {previewText.length > 24000 ? <Help>显示前 24,000 个字符，下载可查看完整内容。</Help> : null}
-      <Button variant="secondary" onClick={downloadPreview}>下载完整预览</Button>
-      {!value.enabled ? <Checkbox isSelected={accepted} onChange={setAccepted}>我已查看上传预览，同意上传馆藏与口味明细</Checkbox> : null}
+      {previewText.length > 24000 ? <Help>처음 24,000자만 표시됩니다. 다운로드하면 전체 내용을 볼 수 있습니다.</Help> : null}
+      <Button variant="secondary" onClick={downloadPreview}>전체 미리보기 다운로드</Button>
+      {!value.enabled ? <Checkbox isSelected={accepted} onChange={setAccepted}>업로드 미리보기를 확인했으며 컬렉션 및 취향 상세 정보 업로드에 동의합니다</Checkbox> : null}
     </Stack> : null}
     {action.error ? <Stack divided><ErrorText>{action.error}</ErrorText></Stack> : null}
     <Footer>
       <Button variant="secondary" onClick={() => { setReviewing(true); void action.run('preview',
         (signal) => apiGet<Preview>('/api/configuration/library-sharing/preview', signal),
         (data) => { setPreview(data); setAccepted(false) }) }}
-        {...busyProps(action.busy === 'preview')}>预览上传内容</Button>
+        {...busyProps(action.busy === 'preview')}>업로드 내용 미리보기</Button>
       {!value.enabled && preview ? <Button disabled={!accepted} onClick={() => save(true)}
-        {...busyProps(action.busy === 'save')}>同意并开启上传</Button> : null}
+        {...busyProps(action.busy === 'save')}>동의하고 업로드 켜기</Button> : null}
       {reviewing && !value.enabled ? <Button variant="secondary" onClick={() => {
         setReviewing(false); setPreview(null); setAccepted(false);
-      }}>取消</Button> : null}
+      }}>취소</Button> : null}
     </Footer>
   </>;
 }

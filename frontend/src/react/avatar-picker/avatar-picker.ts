@@ -91,7 +91,7 @@ async function sendBytes<T>(url: string, file: File): Promise<T> {
   const response = await fetch(url, { method: 'POST', credentials: 'same-origin', body: file });
   const payload = await response.json().catch(() => null) as (T & { error?: string }) | null;
   if (response.ok) return payload as T;
-  throw new ApiError(payload?.error || `请求失败（${response.status}）`, response.status, payload);
+  throw new ApiError(payload?.error || `요청 실패 (${response.status}）`, response.status, payload);
 }
 
 /** 一张候选按 `aspect` 取景的那一块：有取景区就在它里面取，没有就整张图居中。
@@ -138,25 +138,25 @@ export function pickerNote(name: string, data: AvatarChoices | undefined): strin
   const elsewhere = data.matched_names.filter((one) => one !== name);
   if (elsewhere.length) {
     const named = `「${elsewhere.slice(0, NOTE_NAMES).join('」「')}」`;
-    const more = elsewhere.length > NOTE_NAMES ? `等 ${elsewhere.length.toLocaleString()} 个名字` : '';
-    return `${name}：图库里按${named}${more}找到的。`;
+    const more = elsewhere.length > NOTE_NAMES ? `등 ${elsewhere.length.toLocaleString()} 개의 이름` : '';
+    return `${name}: 이미지 라이브러리에서${named}${more}(으)로 찾았습니다.`;
   }
   return data.choices.length
-    ? `${name}：换上的那张留在本机，随时能换回来。`
-    : `${name}：还没有候选图片，可输入番号、图片地址或从本机选择。`;
+    ? `${name}: 사용한 이미지는 이 기기에 저장되므로 언제든 다시 선택할 수 있습니다.`
+    : `${name}: 후보 이미지가 없습니다. 품번이나 이미지 주소를 입력하거나 이 기기에서 선택하세요.`;
 }
 
 /** 超过两天按天数说：「124 小时」要人自己去除。 */
 const indexAge = (hours: number): string =>
-  hours < 48 ? `${Math.max(1, Math.round(hours))} 小时` : `${Math.floor(hours / 24)} 天`;
+  hours < 48 ? `${Math.max(1, Math.round(hours))} 시간` : `${Math.floor(hours / 24)} 일`;
 
 /** 图库索引没取过或已过期、这一次也一张图库图都没拿到时的那句提示；别的情形是空串。
  *  没取过和过期是两回事：过期的索引照样在查，只是新收的人像查不到。 */
 export function indexNote(data: AvatarChoices | undefined): string {
   if (!data || !data.index_stale || data.choices.some((one) => one.source === 'gfriends')) return '';
   return data.index_age_hours === null
-    ? '图库索引还没取过，只能从用过的图里选。'
-    : `图库索引 ${indexAge(data.index_age_hours)}没更新，新收的人像这里还查不到。`;
+    ? "이미지 라이브러리 색인을 아직 가져오지 않아 이전에 사용한 이미지만 선택할 수 있습니다."
+    : `이미지 라이브러리 색인이 ${indexAge(data.index_age_hours)}동안 갱신되지 않아 새로 추가된 인물 사진은 아직 검색되지 않습니다.`;
 }
 
 /** 多人合演的作品：格子上标人数，框选时提醒先找到她自己的脸。 */
@@ -164,25 +164,25 @@ export const sharedCast = (choice: AvatarChoice): boolean => choice.cast > 1;
 
 export const cropNote = (choice: AvatarChoice): string =>
   sharedCast(choice)
-    ? `${choice.label}：${choice.cast.toLocaleString()} 人合演，先找到她自己的脸，再拖动方框选一块。`
-    : `${choice.label}：拖动方框选一块，滚轮或角上那枚方块改大小。`;
+    ? `${choice.label}：${choice.cast.toLocaleString()} 명이 함께 출연합니다. 해당 인물의 얼굴을 찾은 뒤 사각형을 드래그해 영역을 선택하세요.`
+    : `${choice.label}: 사각형을 드래그해 영역을 선택하고, 휠이나 모서리의 조절점으로 크기를 바꾸세요.`;
 
 const SOURCE_LABELS: Record<string, string> = {
-  gfriends: '图库', history: '用过的', asset: '作品画面', code: '番号封面',
-  url: '地址', upload: '本机', social: '社媒头像', online: '在线作品',
+  gfriends: "이미지 라이브러리", history: "사용 이력", asset: "항목 장면", code: "품번 표지",
+  url: "주소", upload: "이 기기", social: "SNS 프로필 사진", online: "온라인 항목",
 };
 
 /** 底图那一排每一格的名字：封面一格，九宫格九格按位置数。 */
 export function baseLabel(ref: string): string {
   if (ref.startsWith('follow:')) {
     const what = ref.split(':')[2];
-    return what === 'cover' ? '作品封面' : `内容图片 ${Number(what.replace('image', '') || 0) + 1}`;
+    return what === 'cover' ? "항목 표지" : `콘텐츠 이미지 ${Number(what.replace('image', '') || 0) + 1}`;
   }
-  if (ref.startsWith('cover:')) return '封面';
+  if (ref.startsWith('cover:')) return "표지";
   const what = ref.split(':')[2] || '';
-  if (what === 'cover') return '封面';
+  if (what === 'cover') return "표지";
   const cell = Number(what.replace('cell', ''));
-  return Number.isFinite(cell) ? `第 ${cell + 1} 格` : what;
+  return Number.isFinite(cell) ? `제 ${cell + 1} 칸` : what;
 }
 
 /** 一格的完整说明，进 `title`：哪儿来的、多大、按谁找到的。作品画面再接上服务端的说明：
@@ -190,6 +190,6 @@ export function baseLabel(ref: string): string {
 export const choiceDetail = (choice: AvatarChoice): string =>
   `${SOURCE_LABELS[choice.source] || choice.source} · ${choice.label}`
   + (choice.width ? ` · ${choice.width}×${choice.height}` : '')
-  + (sharedCast(choice) ? ` · ${choice.cast.toLocaleString()} 人合演` : '')
-  + (choice.found_by ? ` · 按「${choice.found_by}」找到` : '')
+  + (sharedCast(choice) ? ` · ${choice.cast.toLocaleString()} 명 공동 출연` : '')
+  + (choice.found_by ? ` · 검색명 「${choice.found_by}」` : '')
   + (choice.source === 'asset' && choice.detail && choice.detail !== choice.label ? ` · ${choice.detail}` : '');

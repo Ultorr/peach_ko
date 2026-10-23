@@ -103,7 +103,7 @@ function PhotoLightbox({ slides, index, Swiper, host: actions }: {
       pagination: {
         el: pagination.current, clickable: true, dynamicBullets: true, dynamicMainBullets: 3,
         renderBullet: (at: number, className: string) =>
-          `<button type="button" class="${className}" aria-label="查看第 ${at + 1} 张图片"></button>`,
+          `<button type="button" class="${className}" aria-label="이미지 보기: ${at + 1} 번째 이미지"></button>`,
       },
       navigation: { prevEl: back.current, nextEl: fwd.current },
       on: {
@@ -192,10 +192,10 @@ function PhotoLightbox({ slides, index, Swiper, host: actions }: {
     setBroken((prev) => new Set(prev).add(at));
   };
   const apply = (raw: number | 'fit') => zoom.current?.apply(raw);
-  const revealLabel = '<span>在资源管理器中显示</span>';
+  const revealLabel = "<span>파일 탐색기에서 표시</span>";
 
   return (
-    <dialog ref={box} aria-label="图片浏览" data-photo-lightbox="" data-has-strip={many ? '' : undefined}
+    <dialog ref={box} aria-label="이미지 탐색" data-photo-lightbox="" data-has-strip={many ? '' : undefined}
       onCancel={(event) => { event.preventDefault(); closePhotoLightbox() }}
       onClick={(event) => {
         // 主画布铺满视口后，黑色留白属于 zoom 容器而不是最外层；两者都视为背景。
@@ -204,16 +204,16 @@ function PhotoLightbox({ slides, index, Swiper, host: actions }: {
         if (detail.current?.dismissOutside(target)) return;
         if (target === box.current || target.classList.contains('swiper-zoom-container')) closePhotoLightbox();
       }}>
-      <button type="button" data-photo-close="" aria-label="关闭" onClick={closePhotoLightbox}
+      <button type="button" data-photo-close="" aria-label="닫기" onClick={closePhotoLightbox}
         dangerouslySetInnerHTML={{ __html: icon('x') }} />
-      <div ref={mainEl} className="swiper" data-photo-main="" role="region" aria-roledescription="轮播"
-        aria-label="图片浏览">
+      <div ref={mainEl} className="swiper" data-photo-main="" role="region" aria-roledescription="슬라이드 쇼"
+        aria-label="이미지 탐색">
         <div className="swiper-wrapper">
           {slides.map((item, at) => (
             <div key={at} className="swiper-slide">
               <div className="swiper-zoom-container">
                 {lost.has(at)
-                  ? <span data-photo-missing="">图片取不到</span>
+                  ? <span data-photo-missing="">이미지를 불러올 수 없습니다</span>
                   : <img src={broken.has(at) ? item.thumb : item.src} alt={item.name ?? ''} loading="lazy"
                     referrerPolicy="no-referrer" onLoad={(event) => loaded(at, event.currentTarget)}
                     onError={() => failed(at)} />}
@@ -222,29 +222,29 @@ function PhotoLightbox({ slides, index, Swiper, host: actions }: {
           ))}
         </div>
         {/* 方向只翻图标，不转整个按钮。两枚都画朝左那一枚，朝右的在样式里转半圈。 */}
-        <button ref={back} type="button" data-photo-nav="back" aria-label="上一张"
+        <button ref={back} type="button" data-photo-nav="back" aria-label="이전 이미지"
           dangerouslySetInnerHTML={{ __html: icon('chevron-left') }} />
-        <button ref={fwd} type="button" data-photo-nav="fwd" aria-label="下一张"
+        <button ref={fwd} type="button" data-photo-nav="fwd" aria-label="다음 이미지"
           dangerouslySetInnerHTML={{ __html: icon('chevron-left') }} />
       </div>
       <div data-photo-bar="">
         <button ref={toggle} type="button" data-photo-detail-toggle="" aria-expanded="false" aria-controls={detailId}
-          aria-haspopup="dialog" aria-label="图片详情" title="图片详情" dangerouslySetInnerHTML={{ __html: icon('info') }} />
+          aria-haspopup="dialog" aria-label="이미지 상세" title="이미지 상세" dangerouslySetInnerHTML={{ __html: icon('info') }} />
         <div>
           <div data-photo-count="" aria-live="polite">{`${active + 1} / ${slides.length}`}</div>
-          {many ? <div ref={pagination} data-photo-pagination="" aria-label="选择图片" /> : null}
+          {many ? <div ref={pagination} data-photo-pagination="" aria-label="이미지 선택" /> : null}
         </div>
         <div data-photo-zoom="">
-          <button type="button" data-zoom-step="-1" aria-label="缩小"
+          <button type="button" data-zoom-step="-1" aria-label="축소"
             onClick={() => apply(percent - PHOTO_ZOOM_STEP)} dangerouslySetInnerHTML={{ __html: icon('zoom-out') }} />
           <input ref={range} type="range" min={PHOTO_ZOOM_MIN} max={PHOTO_ZOOM_MAX} step="1" value={percent}
-            aria-label="缩放" onChange={(event) => apply(Number(event.currentTarget.value))} />
-          <button type="button" data-zoom-step="1" aria-label="放大"
+            aria-label="확대/축소" onChange={(event) => apply(Number(event.currentTarget.value))} />
+          <button type="button" data-zoom-step="1" aria-label="확대"
             onClick={() => apply(percent + PHOTO_ZOOM_STEP)} dangerouslySetInnerHTML={{ __html: icon('zoom-in') }} />
           <b data-photo-zoom-readout="">{`${percent}%`}</b>
-          <button type="button" data-photo-scale="fit" aria-label="适应窗口" title="适应窗口"
+          <button type="button" data-photo-scale="fit" aria-label="창에 맞추기" title="창에 맞추기"
             onClick={() => apply('fit')} dangerouslySetInnerHTML={{ __html: icon('maximize') }} />
-          <button type="button" data-photo-scale="original" aria-label="原大小" title="原大小"
+          <button type="button" data-photo-scale="original" aria-label="원본 크기" title="원본 크기"
             onClick={() => apply(100)}>1:1</button>
         </div>
       </div>
@@ -259,7 +259,7 @@ function PhotoLightbox({ slides, index, Swiper, host: actions }: {
         </div>
         <button type="button" data-photo-reveal="" hidden={!asset || !actions}
           onClick={(event) => void reveal(event.currentTarget)}
-          dangerouslySetInnerHTML={{ __html: (busy ? spinnerHtml('正在定位') : icon('folder-open')) + revealLabel }} />
+          dangerouslySetInnerHTML={{ __html: (busy ? spinnerHtml("위치 확인 중") : icon('folder-open')) + revealLabel }} />
         <span data-photo-status="" aria-live="polite">{status.at === active ? status.text : ''}</span>
       </section>
       <div ref={stripEl} className="swiper" data-photo-strip="">

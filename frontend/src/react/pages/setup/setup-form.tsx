@@ -38,9 +38,9 @@ function folderErrors(value: SetupErrors[string], count: number): { rows: string
 }
 
 function scanLabel(paths: string[]): string {
-  if (!paths.length) return '完成设置后扫描并补全资料';
-  if (paths.length === 1) return `完成设置后扫描并补全资料：${paths[0]}`;
-  return `完成设置后扫描这 ${paths.length} 个文件夹并补全资料`;
+  if (!paths.length) return "설정 완료 후 스캔 및 정보 보완";
+  if (paths.length === 1) return `설정 완료 후 스캔 및 정보 보완:${paths[0]}`;
+  return `설정 완료 후 ${paths.length} 개 폴더 스캔 및 정보 보완`;
 }
 
 const text = (value: SetupErrors[string]) => (Array.isArray(value) ? value.filter(Boolean).join(' ') : value ?? '');
@@ -178,7 +178,7 @@ export function SetupForm({ setup, onDone }: { setup: SetupQuestions; onDone: (d
                 <SourceSelect index={index} value={row.location} options={sources}
                   onChange={(location) => folders.edit(index, { location, cost: location === 'local' ? 'free' : '' })} />
                 <MediaReadPolicy index={index} cost={row.cost ?? ''}
-                  error={requireReadPolicy && !row.cost ? '请选择媒体读取策略' : undefined}
+                  error={requireReadPolicy && !row.cost ? "미디어 읽기 정책을 선택하세요" : undefined}
                   onChange={(cost) => folders.edit(index, { cost })} />
                 {setup.media_root
                   ? <WindowsRootInput label={setup.media_root.label} placeholder={setup.media_root.placeholder}
@@ -188,7 +188,7 @@ export function SetupForm({ setup, onDone }: { setup: SetupQuestions; onDone: (d
             ))}
           </div>
           <Button ref={addButton} variant="secondary" leadingIcon={RiAddLine} className="self-start" onClick={folders.add}>
-            添加媒体库
+            미디어 라이브러리 추가
           </Button>
           {cloud ? (
             <>
@@ -208,49 +208,49 @@ export function SetupForm({ setup, onDone }: { setup: SetupQuestions; onDone: (d
       <CardGroup labelledBy="setup-access-title">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 flex-col gap-0.5">
-            <GroupTitle id="setup-access-title">访问密码</GroupTitle>
-            <p id="setup-access-description" className="text-body-2-regular text-text-secondary">开启后，访问 Peach 需要先登录。</p>
+            <GroupTitle id="setup-access-title">접속 비밀번호</GroupTitle>
+            <p id="setup-access-description" className="text-body-2-regular text-text-secondary">켜면 Peach에 접속할 때 먼저 로그인해야 합니다.</p>
           </div>
           <Switch aria-labelledby="setup-access-title" aria-describedby="setup-access-description"
             isSelected={accessOn} onChange={setAccessOn} />
         </div>
-        <Help>未设置密码时，能连接到 Peach 的设备可直接进入。</Help>
+        <Help>비밀번호를 설정하지 않으면 Peach에 연결할 수 있는 기기에서 바로 접속할 수 있습니다.</Help>
         {accessOn
-          ? <PasswordPair label="访问密码" password={password} confirmation={confirmation}
+          ? <PasswordPair label="접속 비밀번호" password={password} confirmation={confirmation}
               onPassword={setPassword} onConfirmation={setConfirmation}
-              passwordError={announce(text(errors.access_password))} passwordHint="请输入 8–256 个字符。"
+              passwordError={announce(text(errors.access_password))} passwordHint="8~256자를 입력하세요."
               confirmationInvalid={Boolean(errors.access_password)} />
           : null}
       </CardGroup>
 
       <CardGroup>
-        <Disclosure key={advancedOpenings} summary="高级设置" defaultOpen={advancedOpenings > 0}>
+        <Disclosure key={advancedOpenings} summary="고급 설정" defaultOpen={advancedOpenings > 0}>
           <div className="flex flex-col gap-4">{others.filter(visible).map(field)}</div>
         </Disclosure>
       </CardGroup>
 
       <CardGroup labelledBy="setup-options-title">
-        <GroupTitle id="setup-options-title">完成设置后</GroupTitle>
+        <GroupTitle id="setup-options-title">설정 완료 후</GroupTitle>
         <div className="flex flex-col gap-1.5">
           <Checkbox isSelected={scanNow} onChange={setScanNow}>{scanLabel(filled)}</Checkbox>
-          <Help>读取已有 NFO 和封面，采集缺失资料。符合自动规则的资料会在处理完成后落库，其余候选留在复核。</Help>
+          <Help>기존 NFO와 표지를 읽고 누락된 정보를 수집합니다. 자동 적용 규칙에 맞는 정보는 처리 완료 후 라이브러리에 반영하며, 나머지 후보는 검토 목록에 남깁니다.</Help>
         </div>
         <section aria-labelledby="setup-history-title" className="flex flex-col gap-1.5 border-t border-separator-border pt-4">
           <h3 id="setup-history-title" className="flex items-center gap-2 text-body-medium text-text-primary">
-            浏览器历史记录<span className="text-body-2-regular text-text-tertiary">可选</span>
+            브라우저 방문 기록<span className="text-body-2-regular text-text-tertiary">선택 사항</span>
           </h3>
-          <Checkbox isSelected={historyGuide} onChange={setHistoryGuide}>接下来导入浏览器历史记录</Checkbox>
-          <Help>用于生成口味分析。完成设置后选择读取这台电脑，或导入其他设备的记录；也可稍后从「口味」进入。</Help>
+          <Checkbox isSelected={historyGuide} onChange={setHistoryGuide}>이어서 브라우저 방문 기록 가져오기</Checkbox>
+          <Help>취향 분석에 사용됩니다. 설정을 완료한 후 이 컴퓨터의 기록을 읽거나 다른 기기의 기록을 가져올 수 있습니다. 나중에 「취향」에서도 시작할 수 있습니다.</Help>
         </section>
       </CardGroup>
 
       {failure ? <ErrorText>{failure}</ErrorText> : null}
       {reporting ? <CardGroup>
-        <GroupTitle>版本统计与错误诊断</GroupTitle>
+        <GroupTitle>버전 통계 및 오류 진단</GroupTitle>
         <ReportingChoices value={reporting} onChange={setReporting} />
-        <Help>馆藏与口味明细上传默认关闭，可在「应用与维护」查看并选择。</Help>
+        <Help>컬렉션 및 취향 상세 정보 업로드는 기본적으로 꺼져 있습니다. 「앱 및 유지 관리」에서 확인하고 선택할 수 있습니다.</Help>
       </CardGroup> : null}
-      <Button type="submit" className="self-start" {...busyProps(busy)}>完成设置</Button>
+      <Button type="submit" className="self-start" {...busyProps(busy)}>설정 완료</Button>
     </form>
   );
 }

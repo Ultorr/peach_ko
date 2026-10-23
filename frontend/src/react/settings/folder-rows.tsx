@@ -39,18 +39,18 @@ export function MediaReadPolicy({ index, cost, error, onChange }: {
   index: number; cost: SourceCost | ''; error?: string; onChange(cost: SourceCost): void;
 }) {
   return <div data-media-read-policy={index} className="flex w-full flex-col gap-1.5 @lg:w-48">
-    <Select aria-label={`媒体读取策略 ${index + 1}`} placeholder="选择读取策略" isRequired
+    <Select aria-label={`미디어 읽기 정책 ${index + 1}`} placeholder="읽기 정책 선택" isRequired
       validationBehavior="aria" isInvalid={Boolean(error)} selectedKey={cost || null}
       onSelectionChange={(key) => { if (key === 'free' || key === 'metered') onChange(key); }}>
-      <SelectItem id="free">正常读取</SelectItem>
-      <SelectItem id="metered">代理流量保护</SelectItem>
+      <SelectItem id="free">일반 읽기</SelectItem>
+      <SelectItem id="metered">프록시 트래픽 보호</SelectItem>
     </Select>
     {error ? <ErrorText>{error}</ErrorText> : null}
   </div>;
 }
 
 export function MediaReadPolicyHelp() {
-  return <Help>按挂载工具实际配置选择；代理流量保护会限制自动媒体读取。</Help>;
+  return <Help>마운트 도구의 실제 설정에 맞게 선택하세요. 프록시 트래픽 보호는 자동 미디어 읽기를 제한합니다.</Help>;
 }
 
 export interface FolderRowValue { path: string; location: string }
@@ -153,13 +153,13 @@ export function FolderRow({ label, path, onPath, error, inputRef, picking, onPic
   return (
     <div data-folder-row className="@container flex flex-col gap-2 rounded-2lg border border-separator-border bg-background-primary-default p-3">
       <div className="flex items-start gap-2">
-        <Input className="min-w-0 flex-1" aria-label={label} placeholder="本机文件夹路径"
+        <Input className="min-w-0 flex-1" aria-label={label} placeholder="로컬 폴더 경로"
           value={path} onChange={onPath} ref={attach}
           onBlur={() => requestAnimationFrame(showTail)}
           validationBehavior="aria" isInvalid={Boolean(error)} hint={error || undefined} />
         {status ? <div className="flex h-9 shrink-0 items-center">{status}</div> : null}
-        <IconButton icon={FolderSearchIcon} aria-label="选择文件夹" onClick={onPick} {...busyProps(picking)} />
-        {onRemove ? <Button variant="danger" iconOnly leadingIcon={RiDeleteBinLine} aria-label="移除这个文件夹" onClick={onRemove} /> : null}
+        <IconButton icon={FolderSearchIcon} aria-label="폴더 선택" onClick={onPick} {...busyProps(picking)} />
+        {onRemove ? <Button variant="danger" iconOnly leadingIcon={RiDeleteBinLine} aria-label="이 폴더 제거" onClick={onRemove} /> : null}
       </div>
       <div className="flex flex-wrap items-end gap-2">
         {children}
@@ -177,7 +177,7 @@ export function SourceSelect({ index, value, onChange, options = MEDIA_SOURCES }
   options?: readonly SourceOption[];
 }) {
   return (
-    <Select className="w-full @lg:w-60" aria-label={`媒体来源 ${index + 1}`} selectedKey={value}
+    <Select className="w-full @lg:w-60" aria-label={`미디어 소스 ${index + 1}`} selectedKey={value}
       onSelectionChange={(key) => { if (key !== null) onChange(String(key)); }}>
       {options.map(([kind, name]) => (
         <SelectItem key={kind} id={kind} textValue={name}><SourceMark mark={sourceMark(kind)} />{name}</SelectItem>
@@ -187,7 +187,7 @@ export function SourceSelect({ index, value, onChange, options = MEDIA_SOURCES }
 }
 
 /** 非 Windows 上每行多出的那一格：账本里的 Windows 形态路径。 */
-export function WindowsRootInput({ value, onChange, label = 'Windows 中的对应路径', placeholder = '例如 B:\\' }: {
+export function WindowsRootInput({ value, onChange, label = "Windows의 대응 경로", placeholder = "예: B:\\" }: {
   value: string;
   onChange: (root: string) => void;
   label?: string;

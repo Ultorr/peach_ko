@@ -69,21 +69,21 @@ def _validated_paths(row: dict, *, windows: bool) -> tuple[PureWindowsPath, Pure
     text = str(row.get("path", "")).strip()
     root = text if windows else str(row.get("root", "")).strip()
     if any(ord(char) < 32 for char in text + root):
-        raise ValueError("路径不能包含控制字符")
+        raise ValueError("경로에 제어 문자를 사용할 수 없습니다")
     if not platform.is_windows_path(root) or ".." in PureWindowsPath(root).parts:
-        raise ValueError("Windows 中的对应路径必须包含盘符，例如 B:\\；网络共享请先映射为 Windows 盘符")
+        raise ValueError("Windows 대응 경로에는 드라이브 문자가 필요합니다(예: B:\\). 네트워크 공유는 Windows 드라이브 문자에 먼저 연결하세요")
     path = PureWindowsPath(text) if windows else PurePosixPath(text)
     if not text or not (platform.is_windows_path(text) if windows else text.startswith("/")):
-        raise ValueError("请填写本机挂载点的绝对路径")
+        raise ValueError("로컬 마운트 지점의 절대 경로를 입력하세요")
     if ".." in path.parts:
-        raise ValueError("挂载点不能包含上级目录 ..")
+        raise ValueError("마운트 지점에 상위 폴더 표시(..)를 사용할 수 없습니다")
     return PureWindowsPath(root), path
 
 
 def validate(raws: object, *, windows: bool) -> tuple[dict, dict, list[str]]:
     """离线来源允许保存；绝对路径、盘符根与来源间重叠在保存前校验。"""
     if not isinstance(raws, list) or not raws or len(raws) > 100:
-        return {}, {}, ["请添加 1 到 100 个媒体文件夹"]
+        return {}, {}, ["미디어 폴더를 1~100개 추가하세요"]
     locations: dict[str, list[str]] = {}
     mounts: dict[str, list[str]] = {}
     errors = [""] * len(raws)
@@ -91,19 +91,19 @@ def validate(raws: object, *, windows: bool) -> tuple[dict, dict, list[str]]:
     for index, row in enumerate(raws):
         try:
             if not isinstance(row, dict):
-                raise ValueError("媒体来源格式不正确")
+                raise ValueError("미디어 소스 형식이 올바르지 않습니다")
             location = row.get("location")
             if not isinstance(location, str) or location not in dict(SOURCE_OPTIONS):
-                raise ValueError("请选择列表中的媒体来源")
+                raise ValueError("목록에서 미디어 소스를 선택하세요")
             if "cost" in row and row["cost"] not in ("free", "metered"):
-                raise ValueError("请选择代理流量保护设置")
+                raise ValueError("프록시 트래픽 보호 설정을 선택하세요")
             declared, path = _validated_paths(row, windows=windows)
             for other_root, other_path in seen:
                 if (declared == other_root or declared.is_relative_to(other_root)
                         or other_root.is_relative_to(declared)):
-                    raise ValueError("Windows 中的对应路径与另一文件夹重复或重叠")
+                    raise ValueError("Windows 대응 경로가 다른 폴더와 중복되거나 겹칩니다")
                 if path == other_path or path.is_relative_to(other_path) or other_path.is_relative_to(path):
-                    raise ValueError("本机挂载点与另一行重复或重叠")
+                    raise ValueError("로컬 마운트 지점이 다른 항목과 중복되거나 겹칩니다")
             seen.append((declared, path))
             locations.setdefault(location, []).append(str(declared))
             if not windows:

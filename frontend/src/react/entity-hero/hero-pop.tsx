@@ -153,7 +153,7 @@ export function FeedSwitch({ following, busy, onToggle, tip }: {
     <label ref={label} data-entry-feed="" onPointerEnter={showTip}
       onPointerLeave={() => { if (!input.current?.matches(':focus-visible')) restore() }}>
       <Glyph name="rss" />
-      <input ref={input} type="checkbox" role="switch" aria-label="订阅新作" aria-describedby="entityFeedTip"
+      <input ref={input} type="checkbox" role="switch" aria-label="새 항목 구독" aria-describedby="entityFeedTip"
         data-entity-feed="" checked={following} aria-busy={busy || undefined} aria-disabled={busy || undefined}
         onChange={(event) => { if (!busy) onToggle(event.currentTarget.checked) }}
         onKeyDown={(event) => { if (event.key === 'Escape') { dismissed.current = true; hideTip() } }}

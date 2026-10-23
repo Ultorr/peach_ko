@@ -39,7 +39,7 @@ import {
   type AmaneBridge, type Check, type CoverJob, type ScrapingData, type Source,
 } from './scraping';
 
-const NETWORKS = [['peach', 'Peach 代理'], ['direct', '直接连接']] as const;
+const NETWORKS = [['peach', "Peach 프록시"], ['direct', "직접 연결"]] as const;
 
 /** 连接方式的选项。账本里存着这两种以外的值（旧版写下的、手改的）时把它原样列成一项，
  *  下拉框照实显示现在是什么，不落到空占位上。 */
@@ -55,7 +55,7 @@ export function linkHost(url: string): string {
     return url;
   }
 }
-const COOKIE_METHODS = [['paste', '粘贴 Cookie'], ['file', '导入文件']] as const;
+const COOKIE_METHODS = [['paste', "쿠키 붙여넣기"], ['file', "파일 가져오기"]] as const;
 
 function GitHubMark() {
   return <SiteMark source="github" />;
@@ -93,7 +93,7 @@ function SourceCard({ source, toast }: { source: Source } & ScrapingProps) {
           (row) => (row.source === result.saved.source ? result.saved : row)),
       });
       forgetSecrets();
-      toast(revoke ? 'Cookie 已撤销' : '来源设置已保存');
+      toast(revoke ? "쿠키가 삭제되었습니다" : "출처 설정이 저장되었습니다");
     },
   });
   const check = useMutation({
@@ -132,7 +132,7 @@ function SourceCard({ source, toast }: { source: Source } & ScrapingProps) {
       // 超限的多半根本不是 Cookie 文件。在浏览器里就拦住，不拿它去占一次请求。
       input.value = '';
       setFileName('');
-      setFileProblem('Cookie 文本超过 256 KiB');
+      setFileProblem("쿠키 텍스트가 256 KiB를 초과합니다");
       return;
     }
     try {
@@ -140,7 +140,7 @@ function SourceCard({ source, toast }: { source: Source } & ScrapingProps) {
       setCookieText(text);
       setFileName(selected.name);
     } catch {
-      setFileProblem('Cookie 文件未读取，请重新选择');
+      setFileProblem("쿠키 파일을 읽지 못했습니다. 다시 선택하세요");
     }
   }
 
@@ -159,40 +159,40 @@ function SourceCard({ source, toast }: { source: Source } & ScrapingProps) {
       </span>
     }>
       <Rows>
-        <SettingsRow label="连接方式">
+        <SettingsRow label="연결 방식">
           {/* 定宽：账本里的长取值按内容撑宽会把左边的「连接方式」挤成竖排，定宽后取值在框里截断。 */}
-          <Select aria-label="连接方式" className="w-44 min-w-0" selectedKey={network}
+          <Select aria-label="연결 방식" className="w-44 min-w-0" selectedKey={network}
             onSelectionChange={(key) => { if (key !== null) setNetwork(String(key)) }}>
             {networkOptions(network).map(([key, name]) => <SelectItem key={key} id={key}>{name}</SelectItem>)}
           </Select>
         </SettingsRow>
       </Rows>
       {source.cooldown_until && source.cooldown_until > Date.now() / 1000 ? (
-        <Note tone="warning">来源正在冷却，截止 {new Date(source.cooldown_until * 1000).toLocaleString('zh-CN')}</Note>
+        <Note tone="warning">출처 요청 대기 중. 대기 종료: {new Date(source.cooldown_until * 1000).toLocaleString('ko-KR')}</Note>
       ) : null}
       {detailed ? <Stack divided>
         {network === 'peach'
           ? <span className="self-start">
               <LinkButton href="/settings/library#peachProxy" size="small" trailingIcon={RiArrowRightLine}>
-                配置 Peach 代理
+                Peach 프록시 설정
               </LinkButton>
             </span>
           : null}
         {/* 由本机浏览器过验证的来源不收 Cookie：浏览器自己带着会话。留着「撤销 Cookie」让人清掉旧的。 */}
         {source.browser
           ? <p className="text-body-2-regular text-text-secondary">
-              人机验证由本机浏览器自动完成；需要点击时窗口会弹出。这台机器上不需要 Cookie。
+              사람 인증은 이 기기의 브라우저에서 자동으로 처리합니다. 클릭이 필요하면 창이 나타납니다. 이 기기에서는 쿠키가 필요하지 않습니다.
             </p>
           : null}
         {source.accepts_cookie && !source.browser ? <>
           <p className="text-body-2-regular text-text-secondary">
             {source.cookie_saved
-              ? 'Cookie 已保存；登录是否有效要到抓取时才知道。'
-              : '需要登录时，任选一种方式提供 Cookie。'}
+              ? "쿠키가 저장되었습니다. 로그인 유효 여부는 수집 시 확인됩니다."
+              : "로그인이 필요하면 다음 방식 중 하나로 쿠키를 제공하세요."}
           </p>
           {/* 两种方式互斥，交上去的只能是其中一种：切换时把另一种的输入清掉，
               不让看不见的那一份跟着提交。 */}
-          <RadioGroup aria-label="提供 Cookie 的方式（二选一）" value={method}
+          <RadioGroup aria-label="쿠키 제공 방식(둘 중 하나 선택)" value={method}
             onChange={(next) => { setMethod(next); forgetSecrets() }}
             className={SEGMENTED_TRACK}>
             {COOKIE_METHODS.map(([value, label]) => (
@@ -204,11 +204,11 @@ function SourceCard({ source, toast }: { source: Source } & ScrapingProps) {
           {method === 'paste'
             ? <Input type="password" label="Cookie" autoComplete="off" value={cookie} onChange={setCookie} />
             : <div className="flex flex-col gap-2">
-                <FieldLabel>Netscape Cookie 文件（.txt）</FieldLabel>
+                <FieldLabel>Netscape 쿠키 파일(.txt)</FieldLabel>
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button variant="secondary" onClick={() => file.current?.click()}>选择文件</Button>
+                  <Button variant="secondary" onClick={() => file.current?.click()}>파일 선택</Button>
                   <span className="min-w-0 text-body-2-regular break-all text-text-secondary">
-                    {fileName || '未选择文件'}
+                    {fileName || "선택한 파일 없음"}
                   </span>
                 </div>
                 {/* 原生文件选择器长相不可控，按钮归 BoardUI，输入框只留着接文件。 */}
@@ -227,10 +227,10 @@ function SourceCard({ source, toast }: { source: Source } & ScrapingProps) {
           表单里只有它一个 `type=submit`，所以挪位置不影响回车提交。 */}
       <Footer>
         {source.accepts_cookie && source.cookie_saved
-          ? <Button variant="secondary" onClick={revoke} {...busyProps(busy)}>撤销 Cookie</Button>
+          ? <Button variant="secondary" onClick={revoke} {...busyProps(busy)}>쿠키 삭제</Button>
           : null}
-        <Button variant="secondary" onClick={connect} {...busyProps(busy)}>检查连接</Button>
-        <Button type="submit" {...busyProps(busy)}>保存</Button>
+        <Button variant="secondary" onClick={connect} {...busyProps(busy)}>연결 확인</Button>
+        <Button type="submit" {...busyProps(busy)}>저장</Button>
       </Footer>
     </Section>
   );
@@ -244,7 +244,7 @@ function CoverCard({ toast }: ScrapingProps) {
     queryFn: ({ signal }) => fetchCoverJob(signal),
     start: () => apiSend<CoverJob>(SCRAPING_COVER_URL, { code }),
     onFinish: (state) => {
-      if (state.status === 'complete') toast(state.result || '封面采集完成');
+      if (state.status === 'complete') toast(state.result || "표지 수집 완료");
     },
   });
 
@@ -255,25 +255,25 @@ function CoverCard({ toast }: ScrapingProps) {
   };
 
   const problem = start.error ? errorMessage(start.error)
-    : outcome?.status === 'failed' ? (outcome.error || '采集未取得') : '';
+    : outcome?.status === 'failed' ? (outcome.error || "수집 결과 없음") : '';
   return (
-    <Section title="高清封面" onSubmit={submit}>
+    <Section title="고해상도 표지" onSubmit={submit}>
       <Stack>
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-0 flex-1">
-            <Input aria-label="馆藏番号" isRequired isDisabled={running} value={code} onChange={setCode}
-              placeholder="输入馆藏番号，如 ABW-232" />
+            <Input aria-label="컬렉션 품번" isRequired isDisabled={running} value={code} onChange={setCode}
+              placeholder="컬렉션 품번 입력(예: ABW-232)" />
           </div>
           <Button type="submit" disabled={!code.trim()} {...busyProps(running || start.isPending)}>
-            抓取封面
+            표지 수집
           </Button>
         </div>
         {/* 这一趟要挨个问几家站点、还可能走代理，没有可数的总量，也不能编一个百分比出来。
             关掉页面它照样在跑，回来能接上，所以状态得留在页面上，而不是只让按钮转一下。 */}
-        {running ? <LoadingDots label="正在抓取封面" /> : null}
+        {running ? <LoadingDots label="표지 수집 중" /> : null}
         {problem ? <Note tone="error">{problem}</Note> : null}
         {outcome?.status === 'complete'
-          ? <Note tone="success">{outcome.result || '封面采集完成'}</Note>
+          ? <Note tone="success">{outcome.result || "표지 수집 완료"}</Note>
           : null}
       </Stack>
     </Section>
@@ -291,7 +291,7 @@ function AmaneBridgeCard({ toast }: ScrapingProps) {
     jobOf: (card) => card.job,
     withJob: (card, started) => card && { ...card, job: started },
     onFinish: (state) => {
-      if (state.status === 'complete') toast(state.result || 'amane 桥已重建');
+      if (state.status === 'complete') toast(state.result || "amane 브리지가 다시 생성되었습니다");
     },
   });
   const check = useMutation({
@@ -308,35 +308,35 @@ function AmaneBridgeCard({ toast }: ScrapingProps) {
   const busy = running || rebuild.isPending || check.isPending;
   const problem = rebuild.error ? errorMessage(rebuild.error)
     : check.error ? errorMessage(check.error)
-    : outcome?.status === 'failed' ? (outcome.error || '重建未完成') : '';
+    : outcome?.status === 'failed' ? (outcome.error || "재생성 미완료") : '';
   return (
     <Section title="amane" aside={<ExternalLink href={data.repository} leadingIcon={GitHubMark}>{data.repository}</ExternalLink>}>
       <FactList>
-        <Fact term="已安装版本">{data.installed_version || '未安装'}</Fact>
-        <Fact term="上游最新版本">{check.data?.latest ?? '尚未检查'}</Fact>
-        <Fact term="运行环境">{data.installed ? '已安装' : '未安装'}</Fact>
-        <Fact term="内置站点">{data.sites.length.toLocaleString()} 个</Fact>
+        <Fact term="설치된 버전">{data.installed_version || "설치되지 않음"}</Fact>
+        <Fact term="업스트림 최신 버전">{check.data?.latest ?? "아직 확인하지 않음"}</Fact>
+        <Fact term="실행 환경">{data.installed ? "설치됨" : "설치되지 않음"}</Fact>
+        <Fact term="내장 사이트">{data.sites.length.toLocaleString()} 개</Fact>
       </FactList>
       <Stack divided>
         {data.sites.length
-          ? <Disclosure summary="查看内置站点">
+          ? <Disclosure summary="내장 사이트 보기">
               <p className="text-body-2-regular text-text-secondary">{data.sites.map((site) => site.label).join('、')}</p>
             </Disclosure>
           : null}
         <Help>
-          已安装版本：{data.installed_version || '未安装'}。amane（{data.license}）提供这些内置站点的解析能力。
-          重新安装会使用 Peach 内置的 {data.version} 版本，不随上游自动升级。
+          설치된 버전:{data.installed_version || "설치되지 않음"}。amane（{data.license}）에서 이 내장 사이트들의 정보를 분석합니다.
+          재설치 시 Peach에 포함된 {data.version} 버전을 사용하며, 업스트림 버전으로 자동 업데이트되지 않습니다.
         </Help>
-        {running ? <LoadingDots label="正在重建运行环境" /> : null}
+        {running ? <LoadingDots label="실행 환경 재생성 중" /> : null}
         {problem ? <Note tone="error">{problem}</Note> : null}
-        {outcome?.status === 'complete' ? <Note tone="success">{outcome.result || 'amane 桥已重建'}</Note> : null}
+        {outcome?.status === 'complete' ? <Note tone="success">{outcome.result || "amane 브리지가 다시 생성되었습니다"}</Note> : null}
       </Stack>
       <Footer>
         <Button variant="secondary" onClick={() => { if (!busy) check.mutate() }} {...busyProps(check.isPending)}>
-          检查上游版本
+          업스트림 버전 확인
         </Button>
         <Button onClick={() => { if (!busy) rebuild.mutate() }} {...busyProps(running || rebuild.isPending)}>
-          {data.installed ? '重新安装' : '安装'}
+          {data.installed ? "재설치" : "설치"}
         </Button>
       </Footer>
     </Section>
@@ -349,15 +349,15 @@ export function ScrapingPage({ toast }: ScrapingProps) {
   if (!data) {
     return (
       <Page>
-        <Note tone="error" title="采集来源读取失败">
-          {sources.error ? errorMessage(sources.error) : '读取采集来源失败'}
+        <Note tone="error" title="수집 출처를 불러오지 못했습니다">
+          {sources.error ? errorMessage(sources.error) : "수집 출처를 불러오지 못했습니다"}
         </Note>
       </Page>
     );
   }
   return (
     <Page>
-      <p className="text-body-2-regular text-text-secondary">高清图片可能要经代理才能下载，先检查连接。</p>
+      <p className="text-body-2-regular text-text-secondary">고해상도 이미지는 프록시가 있어야 다운로드할 수 있는 경우가 있습니다. 먼저 연결을 확인하세요.</p>
       <CoverCard toast={toast} />
       <CustomSources receipt={toast} />
       {(data.sources || []).map(

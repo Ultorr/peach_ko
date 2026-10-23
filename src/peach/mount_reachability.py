@@ -18,9 +18,9 @@ DEGRADED_INTERVAL = 60.0
 PROBE_TIMEOUT = 5.0
 MAX_PENDING = 4
 MESSAGES = {
-    "ok": "可读取", "permission_denied": "没有权限读取", "missing": "目录不存在",
-    "not_directory": "目标不是目录", "unavailable": "目录读取失败",
-    "unmapped": "未配置挂载点", "checking": "正在检测", "timeout": "探测未返回",
+    "ok": "읽기 가능", "permission_denied": "읽기 권한 없음", "missing": "폴더 없음",
+    "not_directory": "대상이 폴더가 아님", "unavailable": "폴더 읽기 실패",
+    "unmapped": "마운트 지점 미설정", "checking": "확인 중", "timeout": "확인 응답 없음",
 }
 FAILURES = frozenset({"permission_denied", "missing", "not_directory", "unavailable", "unmapped"})
 

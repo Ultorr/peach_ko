@@ -134,13 +134,13 @@ def _selected_data_root(root: Path) -> Path:
         except FileNotFoundError:
             return root
         except (OSError, UnicodeError) as exc:
-            raise SettingsFileError(f"无法读取数据目录位置：{locator}：{exc}") from exc
+            raise SettingsFileError(f"데이터 폴더 위치를 읽을 수 없습니다: {locator}: {exc}") from exc
         selected = Path(text)
         if not text or not selected.is_absolute() or selected in visited:
-            raise SettingsFileError(f"数据目录位置无效或循环：{locator}")
+            raise SettingsFileError(f"데이터 폴더 위치가 유효하지 않거나 순환 참조입니다: {locator}")
         visited.add(selected)
         root = selected
-    raise SettingsFileError("数据目录位置的跳转次数超过八次")
+    raise SettingsFileError("데이터 폴더 위치의 리디렉션 횟수가 8회를 초과합니다")
 
 
 def discover_data_root(
@@ -267,7 +267,7 @@ class PeachConfig:
 # --------------------------------------------------------------------------- 读取
 
 def _fail(path: Path, detail: str) -> SettingsFileError:
-    return SettingsFileError(f"设置文件读不出来：{path}：{detail}")
+    return SettingsFileError(f"설정 파일을 읽을 수 없습니다: {path}: {detail}")
 
 
 def _read_document(path: Path) -> dict:
@@ -278,25 +278,25 @@ def _read_document(path: Path) -> dict:
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
-        raise _fail(path, f"不是 UTF-8 编码（{exc}）") from exc
+        raise _fail(path, f"UTF-8 인코딩이 아닙니다({exc})") from exc
     try:
         return tomllib.loads(text)
     except tomllib.TOMLDecodeError as exc:
         # tomllib 的消息自带 `at line N, column M`，直接转述比自己数行可靠。
-        raise _fail(path, f"TOML 语法错误：{exc}") from exc
+        raise _fail(path, f"TOML 구문 오류: {exc}") from exc
 
 
 def _table(document: dict, key: str, path: Path) -> dict:
     value = document.get(key, {})
     if not isinstance(value, dict):
-        raise _fail(path, f"`{key}` 必须是一个表（[{key}]）")
+        raise _fail(path, f"`{key}`은(는) 테이블([{key}])이어야 합니다")
     return value
 
 
 def _string(table: dict, key: str, default: str, path: Path, prefix: str) -> str:
     value = table.get(key, default)
     if not isinstance(value, str):
-        raise _fail(path, f"`{prefix}{key}` 必须是字符串")
+        raise _fail(path, f"`{prefix}{key}`은(는) 문자열이어야 합니다")
     return value
 
 
@@ -304,14 +304,14 @@ def _integer(table: dict, key: str, default: int, path: Path, prefix: str) -> in
     value = table.get(key, default)
     # bool 是 int 的子类，端口写成 true 必须报错而不是静默变成 1。
     if isinstance(value, bool) or not isinstance(value, int):
-        raise _fail(path, f"`{prefix}{key}` 必须是整数")
+        raise _fail(path, f"`{prefix}{key}`은(는) 정수여야 합니다")
     return value
 
 
 def _boolean(table: dict, key: str, default: bool, path: Path, prefix: str) -> bool:
     value = table.get(key, default)
     if not isinstance(value, bool):
-        raise _fail(path, f"`{prefix}{key}` 必须是 true 或 false")
+        raise _fail(path, f"`{prefix}{key}`은(는) true 또는 false여야 합니다")
     return value
 
 
@@ -319,7 +319,7 @@ def _string_map(table: dict, path: Path, prefix: str) -> dict[str, str]:
     result: dict[str, str] = {}
     for key, value in table.items():
         if not isinstance(value, str):
-            raise _fail(path, f"`{prefix}{key}` 必须是字符串")
+            raise _fail(path, f"`{prefix}{key}`은(는) 문자열이어야 합니다")
         result[key] = value
     return result
 
@@ -336,11 +336,11 @@ def _root_map(table: dict, path: Path, prefix: str) -> dict[str, tuple[str, ...]
             result[key] = (value,) if value else ()
             continue
         if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-            raise _fail(path, f"`{prefix}{key}` 必须是字符串，或者字符串数组")
+            raise _fail(path, f"`{prefix}{key}`은(는) 문자열 또는 문자열 배열이어야 합니다")
         if any(not item for item in value):
-            raise _fail(path, f"`{prefix}{key}` 的数组里不能有空串")
+            raise _fail(path, f"`{prefix}{key}` 배열에는 빈 문자열이 없어야 합니다")
         if len(set(value)) != len(value):
-            raise _fail(path, f"`{prefix}{key}` 的数组里有重复的路径")
+            raise _fail(path, f"`{prefix}{key}` 배열에 중복 경로가 있습니다")
         result[key] = tuple(value)
     return result
 
@@ -353,7 +353,7 @@ def _merge(
         _table(document, "directories", path), path, "directories.")
     unknown = sorted(set(directories) - set(DIRECTORY_KEYS))
     if unknown:
-        raise _fail(path, "`directories` 里有不认识的键：" + "、".join(unknown))
+        raise _fail(path, "`directories`에 알 수 없는 키가 있습니다: " + "、".join(unknown))
 
     media = _table(document, "media", path)
     stray = sorted(set(media) - {_LOCATIONS_KEY, _MOUNTS_KEY, "libraries", "library_icons", "costs"})
@@ -361,10 +361,10 @@ def _merge(
         # 第一阶段的 `[media] R = '/Volumes/Media'`。键空间从盘符换成了 location ID，
         # 把它当未知键忽略等于「所有来源都没挂」——整台机器安静地进脱盘模式。
         raise _fail(path, (
-            "`[media]` 下不再接受盘符键：" + "、".join(stray)
-            + "。改写成 `[media.mounts] <location-id> = <本机路径>`，"
-            "ID 取 `[media.locations]` 中已配置的来源键，"
-            "路径填该来源的声明根在本机的落点，例如 "
+            "`[media]`에서는 드라이브 문자 키를 허용하지 않습니다: " + "、".join(stray)
+            + ". `[media.mounts] <location-id> = <로컬 경로>` 형식으로 변경하세요. "
+            "ID는 `[media.locations]`에 설정한 소스 키를 사용하고, "
+            "경로에는 해당 소스의 선언된 루트에 대응하는 로컬 위치를 입력하세요. 예: "
             "`local = '/mnt/media'`"
         ))
     # 文件里写了 `[media.locations]` 就以它为准：`peach init` 的问答只声明用户给过的
@@ -374,7 +374,7 @@ def _merge(
         locations = _root_map(_table(media, _LOCATIONS_KEY, path), path, "media.locations.")
         empty = sorted(key for key, roots in locations.items() if not roots)
         if empty:
-            raise _fail(path, "`[media.locations]` 里这些来源没有声明根：" + "、".join(empty))
+            raise _fail(path, "`[media.locations]`의 다음 소스에 선언된 루트가 없습니다: " + "、".join(empty))
     else:
         locations = dict(DEFAULT_LOCATION_ROOTS)
     mounts = _root_map(_table(media, _MOUNTS_KEY, path), path, "media.mounts.")
@@ -382,16 +382,16 @@ def _merge(
     if unknown_mounts:
         # 打错一个 ID 却静默忽略，同样是安静地脱盘。
         raise _fail(path, (
-            "`[media.mounts]` 里有没在 `[media.locations]` 声明过的来源："
+            "`[media.mounts]`에 `[media.locations]`에서 선언하지 않은 소스가 있습니다: "
             + "、".join(unknown_mounts)
         ))
     for key, points in mounts.items():
         # 落点按顺序对应声明根：数目不齐时无法判断哪个目录漏了，与其猜不如拒绝。
         if points and len(points) != len(locations[key]):
             raise _fail(path, (
-                f"`[media.mounts] {key}` 给了 {len(points)} 个落点，"
-                f"但 `[media.locations] {key}` 声明了 {len(locations[key])} 个根；"
-                "两边按顺序一一对应，要么数目相同，要么整项留空"
+                f"`[media.mounts] {key}`에는 {len(points)}개의 로컬 위치가 있지만, "
+                f"`[media.locations] {key}`에는 루트가 {len(locations[key])}개 선언되어 있습니다. "
+                "순서대로 일대일 대응하도록 개수를 맞추거나 해당 항목 전체를 비워 두세요"
             ))
 
     server_table = _table(document, "server", path)
@@ -441,7 +441,7 @@ def _merge(
 
     media_costs = _string_map(_table(media, "costs", path), path, "media.costs.")
     if any(cost not in {"free", "metered"} for cost in media_costs.values()):
-        raise _fail(path, "`[media.costs]` 只接受 free 或 metered")
+        raise _fail(path, "`[media.costs]`는 free 또는 metered만 허용합니다")
     config = PeachConfig(
         data_root=data_root, path=path, present=present, data_root_found=found,
         directories=directories, mounts=mounts, locations=locations,
@@ -677,7 +677,7 @@ def write(config: PeachConfig, *, force: bool = False) -> Path:
     """把设置写到 `config.path`。已存在且没给 `force` 就拒绝，不悄悄覆盖。"""
     path = config.path
     if path.exists() and not force:
-        raise SettingsFileError(f"设置文件已存在，加 --force 才覆盖：{path}")
+        raise SettingsFileError(f"설정 파일이 이미 존재합니다. 덮어쓰려면 --force를 추가하세요: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render(config), encoding="utf-8")
     return path

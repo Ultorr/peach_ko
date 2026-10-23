@@ -184,9 +184,9 @@ def _host_problem(site: EntrySite, host: str) -> str:
     if not host:
         return ""
     if len(host) > _HOST_LIMIT:
-        return f"{site.title} 的地址请控制在 {_HOST_LIMIT} 个字符以内"
+        return f"{site.title} 주소는 {_HOST_LIMIT}자 이내로 입력하세요"
     if not _HOST_SHAPE.fullmatch(host):
-        return f"{site.title} 这里只写域名本身，像 {site.host}"
+        return f"{site.title}에는 도메인만 입력하세요. 예: {site.host}"
     return ""
 
 
@@ -194,16 +194,16 @@ def save(root: Path, body: dict) -> dict:
     """写回可换的那几站的域名。任一项不合规就整批不写。"""
     rows = body.get("sites")
     if not isinstance(rows, dict):
-        raise ValueError("请提交每个站点的地址")
+        raise ValueError("각 사이트의 주소를 입력하세요")
     result = defaults()
     for site in SITES:
         if not site.mirrored:
             continue
         row = rows.get(site.key)
         if not isinstance(row, dict):
-            raise ValueError(f"缺少 {site.title} 的设置")
+            raise ValueError(f"{site.title} 설정이 없습니다")
         if not isinstance(row.get("host"), str):
-            raise ValueError(f"{site.title} 的地址必须是文字")
+            raise ValueError(f"{site.title} 주소는 문자열이어야 합니다")
         host = _tidy_host(row["host"])
         problem = _host_problem(site, host)
         if problem:

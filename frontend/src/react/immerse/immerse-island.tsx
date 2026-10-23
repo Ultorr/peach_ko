@@ -98,7 +98,7 @@ let scrubTarget: { video: HTMLVideoElement; duration: () => number } | null = nu
 let scrubbing = false;
 
 function immerseHost(): ImmerseHost {
-  if (!host) throw new Error('沉浸模式还没有接上宿主（configureImmerse）');
+  if (!host) throw new Error("몰입 모드가 아직 호스트에 연결되지 않았습니다（configureImmerse）");
   return host;
 }
 
@@ -256,7 +256,7 @@ async function show(direction = 0): Promise<void> {
   /* 当前这一条交给壳写进地址栏：竖划十条之后刷新页面，落回来的该是同一条片子，而不是重新抽一批。 */
   immerseHost().route(item.id);
   switching = true;
-  setLoading(direction ? '切换中…' : '加载中…', item);
+  setLoading(direction ? "전환 중…" : "불러오는 중…", item);
   let incoming: Slide | null = null;
   try {
     // 这一条刚被删掉（详情回 `{error}`）照样放：作者与动作键只是没有可画的。
@@ -301,7 +301,7 @@ async function step(direction: number): Promise<void> {
   if (switching || !view.open) return;
   const mine = generation;
   index += direction;
-  setLoading('切换中…', list[index] ?? null);
+  setLoading("전환 중…", list[index] ?? null);
   // 滚到尾部就续取下一批：无限流。每次都是新的随机抽样，按 id 去重接在后面。
   if (index >= list.length - 3 && !extending) {
     extending = true;
@@ -330,7 +330,7 @@ async function open(startId: number | null): Promise<void> {
   queryClient.removeQueries({ queryKey: ['immerse-list'] });
   view = { ...view, open: true, idle: true, shown: null };
   document.body.setAttribute('data-immerse-open', '');
-  setLoading('加载内容…');
+  setLoading("콘텐츠 불러오는 중…");
   try {
     let next = await fetchDraw();
     if (startId && !next.some((item) => item.id === startId)) {
@@ -344,7 +344,7 @@ async function open(startId: number | null): Promise<void> {
     list = next;
     if (!list.length) {
       close();
-      immerseHost().warn('当前筛选下没有可直接播放的内容');
+      immerseHost().warn("현재 필터에 바로 재생할 수 있는 콘텐츠가 없습니다");
       return;
     }
     index = Math.max(0, list.findIndex((item) => item.id === startId));
@@ -537,9 +537,9 @@ export async function sendFeedback(id: number, kind: string): Promise<FeedbackRe
 }
 
 const ACTIONS: { kind: FeedbackKind; glyph: string; label: string }[] = [
-  { kind: 'dislike', glyph: 'thumbs-down', label: '标为不喜欢' },
-  { kind: 'seen', glyph: 'eye', label: '标为看过' },
-  { kind: 'o', glyph: 'heart', label: '记一次高潮' },
+  { kind: 'dislike', glyph: 'thumbs-down', label: "싫어요로 표시" },
+  { kind: 'seen', glyph: 'eye', label: "본 항목으로 표시" },
+  { kind: 'o', glyph: 'heart', label: "오르가슴 1회 기록" },
 ];
 
 /** 当前出画那一条的详情：出画前已经取过（`ensureDetail`），这里只读缓存、跟着写回重画。 */
@@ -571,7 +571,7 @@ function ImmerseAction({ kind, glyph, label, id }: { kind: FeedbackKind; glyph: 
       });
       if (kind === 'dislike' && result.feedback === 'dislike') setTimeout(() => { void step(1) }, DISLIKE_ADVANCE_MS);
     },
-    onError: (error) => immerseHost().failure('更新反馈', error),
+    onError: (error) => immerseHost().failure("피드백 업데이트", error),
   });
   const busy = mutation.isPending;
   const pressed = kind !== 'o' && full ? (full.feedback === kind ? 'true' : 'false') : undefined;
@@ -583,9 +583,9 @@ function ImmerseAction({ kind, glyph, label, id }: { kind: FeedbackKind; glyph: 
         <svg viewBox="0 0 24 24"><use href={`#i-${glyph}`} /></svg>
       </button>
       <span data-immerse-label="">
-        {kind === 'dislike' ? '不喜欢' : null}
-        {kind === 'seen' ? (full?.feedback === 'seen' ? '已看' : '看过') : null}
-        {kind === 'o' ? <>高潮 <b>{full?.o_count || 0}</b></> : null}
+        {kind === 'dislike' ? "싫어요" : null}
+        {kind === 'seen' ? (full?.feedback === 'seen' ? "봄" : "시청함") : null}
+        {kind === 'o' ? <>오르가슴 <b>{full?.o_count || 0}</b></> : null}
       </span>
     </div>
   );
@@ -618,19 +618,19 @@ function Caption({ shown }: { shown: Shown | null }) {
   return (
     <div data-immerse-ui="">
       <div data-immerse-author="">
-        <button type="button" data-immerse-avatar="" aria-label="打开资料" onClick={openOwner}
+        <button type="button" data-immerse-avatar="" aria-label="정보 열기" onClick={openOwner}
           dangerouslySetInnerHTML={{ __html: avatar }} />
         <a href="#" onClick={openOwner}>{owner?.who ?? ''}</a>
         <span>{shown && item ? `· ${fmtDur(item.duration)} · ${item.ctx_orient || ''} · ${shown.index + 1}/${shown.length}` : ''}</span>
       </div>
-      <button type="button" data-immerse-title="" onClick={openTitle}>{item ? helpers.displayName(item).trim() || '未命名视频' : ''}</button>
+      <button type="button" data-immerse-title="" onClick={openTitle}>{item ? helpers.displayName(item).trim() || "이름 없는 영상" : ''}</button>
     </div>
   );
 }
 
 /* ── 外框 ── */
 
-const SPINNER = { __html: spinnerHtml('媒体加载中') };
+const SPINNER = { __html: spinnerHtml("미디어 불러오는 중") };
 
 function ImmerseView({ view: at }: { view: View }) {
   const frame = useRef<HTMLDivElement>(null);
@@ -670,7 +670,7 @@ function ImmerseView({ view: at }: { view: View }) {
         <span data-immerse-spinner="" dangerouslySetInnerHTML={SPINNER} />
         <span>{at.loading ?? ''}</span>
       </div>
-      <button type="button" data-immerse-close="" title="关闭" aria-label="关闭" onClick={close}>
+      <button type="button" data-immerse-close="" title="닫기" aria-label="닫기" onClick={close}>
         <svg viewBox="0 0 24 24"><use href="#i-x" /></svg>
       </button>
       <div ref={bar} data-immerse-bar="" onPointerDown={scrubStart} onPointerMove={scrubMove}

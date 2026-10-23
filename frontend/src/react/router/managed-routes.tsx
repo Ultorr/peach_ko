@@ -387,7 +387,7 @@ function routeOf(path: RoutedPath): ManagedRoute<object> {
 
 /** 首屏取数（`openManagedRoute` 经 `connectManagedRoutes` 调它）。 */
 export function prefetchManagedRoute(path: string, open: object, signal: AbortSignal): Promise<void> {
-  if (!isRoutedPath(path)) return Promise.reject(new Error(`路由树里没有这一页：${path}`));
+  if (!isRoutedPath(path)) return Promise.reject(new Error(`라우팅 트리에 이 페이지가 없습니다:${path}`));
   return routeOf(path).prefetch(open, signal);
 }
 

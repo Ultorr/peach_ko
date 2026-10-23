@@ -44,7 +44,7 @@ export function JunkCount({ route, page, failed, onNavigate }: {
     onNavigate(link.getAttribute('href') || junkPath());
   };
   /* 读不到就不再转圈：失败的原因写在网格那一格里，这里只说「没有数」。 */
-  const figure = page ? `${Number(page.total || 0).toLocaleString()} 个` : failed ? '—' : '';
+  const figure = page ? `${Number(page.total || 0).toLocaleString()} 개` : failed ? '—' : '';
   return (
     <div data-junk-count="">
       <div data-junk-summary="" aria-live="polite">
@@ -52,7 +52,7 @@ export function JunkCount({ route, page, failed, onNavigate }: {
       </div>
       <div data-junk-filters-frame="" data-filter-glass="" data-glass-pane="">
         <span ref={pane} data-view-glide="" aria-hidden="true" />
-        <nav ref={nav} data-junk-filters="" aria-label="垃圾文件分类" onClick={click} onPointerLeave={glide.leave}>
+        <nav ref={nav} data-junk-filters="" aria-label="불필요한 파일 분류" onClick={click} onPointerLeave={glide.leave}>
           {JUNK_KIND_OPTIONS.map(([key, label, glyph]) => (
             <a key={key || 'all'} href={junkPath(key, view)} data-junk-kind-link={key}
               aria-current={key === kind ? 'page' : undefined} onPointerEnter={glide.hover}>

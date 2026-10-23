@@ -28,7 +28,7 @@ export function searchCoverImage(card){
   const kind=card?javImageKind({...card,is_jav:!!card.code},preferencesState.appSettings.javImage):'';
   return kind==='cover'?coverImage(card,'big')
     :kind?`<img class="poster still" src="/poster?id=${card.id}&c=4" width="640" height="360" alt="" loading="lazy" data-drop="self">`
-    :'<span class="nopic">无预览</span>';
+    :"<span class=\"nopic\">미리보기 없음</span>";
 }
 
 export function finishSearchMorph(){

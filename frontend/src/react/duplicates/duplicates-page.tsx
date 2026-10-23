@@ -48,9 +48,9 @@ const refresh = () => {
 interface Disposal { groups: readonly DuplicateGroup[]; keep: KeepRule; key: string }
 
 function evidenceFlag(group: DuplicateGroup) {
-  if (group.identical) return <span className={`${FLAG} text-(--keep)`}>sha1 一致</span>;
+  if (group.identical) return <span className={`${FLAG} text-(--keep)`}>sha1 일치</span>;
   return <span className={`${FLAG} text-text-secondary`}>
-    {group.evidence === 'same_code_short_copy' ? '同番号短版本' : '时长推断'}
+    {group.evidence === 'same_code_short_copy' ? "동일 품번의 짧은 버전" : "영상 길이로 추정"}
   </span>;
 }
 
@@ -61,7 +61,7 @@ function FileRow({ file, prefix, openItem }: { file: DuplicateFile; prefix: stri
   return (
     <div className="duplicate-row items-center gap-3 border-t border-separator-border px-5 py-4 max-compact:p-4">
       {/* 封面格居中用 `inline-grid`：`grid` 与旧样式表同名，不生成这个工具类。 */}
-      <button type="button" onClick={open} aria-label={`预览 ${file.name}`}
+      <button type="button" onClick={open} aria-label={`미리 보기 ${file.name}`}
         className="relative row-span-2 inline-grid aspect-16/10 w-full cursor-pointer place-items-center overflow-hidden rounded-2lg bg-background-tertiary-default text-text-secondary">
         <PLAY aria-hidden className="size-6" />
         <img src={`/thumb?id=${file.id}&c=4`} alt="" loading="lazy"
@@ -75,8 +75,8 @@ function FileRow({ file, prefix, openItem }: { file: DuplicateFile; prefix: stri
         </button>
         {file.is_largest || file.is_longest
           ? <span className="flex flex-none gap-1">
-              {file.is_largest ? <i className={`${MARK} not-italic bg-background-primary-hover text-text-secondary`}>最大</i> : null}
-              {file.is_longest ? <i className={`${MARK} not-italic bg-(--keep)/22 text-(--keep)`}>最长</i> : null}
+              {file.is_largest ? <i className={`${MARK} not-italic bg-background-primary-hover text-text-secondary`}>가장 큼</i> : null}
+              {file.is_longest ? <i className={`${MARK} not-italic bg-(--keep)/22 text-(--keep)`}>가장 김</i> : null}
             </span>
           : null}
       </span>
@@ -102,12 +102,12 @@ export function DuplicatesPage({ openItem, toast, failure }: DuplicatesProps) {
     mutationFn: (ids: readonly number[]) => batchOperate(ids, 'dispose'),
     onSuccess: (_result, ids) => {
       refresh();
-      toast(`已把 ${ids.length} 项移入回收站`, {
+      toast(`총 ${ids.length} 개 항목을 휴지통으로 이동했습니다`, {
         undo: async () => {
           try {
             await batchOperate(ids, 'restore');
           } catch (cause) {
-            failure('撤销移入回收站', cause);
+            failure("휴지통 이동 취소", cause);
           } finally {
             refresh();
           }
@@ -121,7 +121,7 @@ export function DuplicatesPage({ openItem, toast, failure }: DuplicatesProps) {
   if (!data) {
     return (
       <div className="mx-auto w-full max-w-board">
-        <Note tone="error" title="重复文件读取失败">{duplicates.error ? errorMessage(duplicates.error) : '未取得重复文件列表，请刷新页面重试。'}</Note>
+        <Note tone="error" title="중복 파일을 읽지 못했습니다">{duplicates.error ? errorMessage(duplicates.error) : "중복 파일 목록을 가져오지 못했습니다. 페이지를 새로 고침해 다시 시도하세요."}</Note>
       </div>
     );
   }
@@ -133,10 +133,10 @@ export function DuplicatesPage({ openItem, toast, failure }: DuplicatesProps) {
     const ids = duplicateVictims(chosen, keep);
     if (!ids.length) return;
     void confirmModal({
-      title: '移入回收站',
-      body: `将把 ${ids.length} 个重复文件的馆藏记录移入回收站，每组保留${KEEP_LABELS[keep] ?? KEEP_LABELS.largest}。`
-        + `文件共 ${fmtSize(victimBytes(chosen, ids))}，记录可从回收站还原。`,
-      confirmLabel: '移入回收站',
+      title: "휴지통으로 이동",
+      body: `총 ${ids.length} 개 중복 파일의 컬렉션 기록을 휴지통으로 이동합니다. 그룹마다 유지할 파일:${KEEP_LABELS[keep] ?? KEEP_LABELS.largest}。`
+        + `전체 파일 크기 ${fmtSize(victimBytes(chosen, ids))}, 기록은 휴지통에서 복원할 수 있습니다.`,
+      confirmLabel: "휴지통으로 이동",
       onConfirm: () => { setPending(key); return dispose.mutateAsync(ids) },
     });
   };
@@ -144,26 +144,26 @@ export function DuplicatesPage({ openItem, toast, failure }: DuplicatesProps) {
 
   return (
     <div className="mx-auto w-full max-w-board pb-10.5">
-      <CollectionSummary label="重复内容" figure={`${Number(data.total || 0).toLocaleString()} 组`}
-        detail={`${Number(data.files || 0).toLocaleString()} 个文件 · 可回收 ${fmtSize(data.reclaimable)}`} />
+      <CollectionSummary label="중복 콘텐츠" figure={`${Number(data.total || 0).toLocaleString()} 그룹`}
+        detail={`${Number(data.files || 0).toLocaleString()} 개 파일 · 확보 가능 공간 ${fmtSize(data.reclaimable)}`} />
       {groups.length
-        ? <FilterGlass title="批量保留">
+        ? <FilterGlass title="일괄 유지">
             <GlassPill busy={pending === 'all:largest'} onPress={() => run({ groups, keep: 'largest', key: 'all:largest' })}>
-              全部保留最大
+              모든 그룹에서 가장 큰 파일 유지
             </GlassPill>
             <GlassPill busy={pending === 'all:longest'} onPress={() => run({ groups, keep: 'longest', key: 'all:longest' })}>
-              全部保留最长
+              모든 그룹에서 가장 긴 파일 유지
             </GlassPill>
             {bulkCloudPreferences(groups, configured).map((location) => (
               <GlassPill key={location} busy={pending === `all:${location}`}
                 onPress={() => run({ groups, keep: location, key: `all:${location}` })}>
-                <SourceLabel source={location} label={`全部优先 ${LOC[location] || location}`} />
+                <SourceLabel source={location} label={`모든 그룹의 우선순위: ${LOC[location] || location}`} />
               </GlassPill>
             ))}
           </FilterGlass>
         : null}
       {dispose.isError
-        ? <div className="mb-5"><Note tone="error" title="移入回收站失败">{errorMessage(dispose.error)}</Note></div>
+        ? <div className="mb-5"><Note tone="error" title="휴지통으로 이동하지 못했습니다">{errorMessage(dispose.error)}</Note></div>
         : null}
       {groups.length
         ? groups.map((group, index) => {
@@ -175,37 +175,37 @@ export function DuplicatesPage({ openItem, toast, failure }: DuplicatesProps) {
                 <div className="flex flex-wrap items-center gap-3 bg-background-tertiary-default p-5 max-compact:p-4 dark:bg-background-secondary-default">
                   <b className="text-title-2-medium text-text-primary">{group.code}</b>
                   <span className="font-mono text-caption-1-regular leading-5 text-text-primary">
-                    {`${Number(group.count || 0).toLocaleString()} 个 · 可回收 ${fmtSize(group.reclaimable)}`}
+                    {`${Number(group.count || 0).toLocaleString()} 개 · 확보 가능 공간 ${fmtSize(group.reclaimable)}`}
                   </span>
                   {evidenceFlag(group)}
                   {group.cross_drive
-                    ? <span className={`${FLAG} text-text-secondary`}>{`跨盘 ${group.drives.join(' ')}`}</span>
+                    ? <span className={`${FLAG} text-text-secondary`}>{`여러 드라이브에 있음 ${group.drives.join(' ')}`}</span>
                     : null}
                   <span className="ml-auto flex flex-wrap gap-2 max-compact:ml-0 max-compact:w-full">
                     <Button variant="secondary" size="small" {...busy(key('largest'))}
-                      onClick={() => run({ groups: one, keep: 'largest', key: key('largest') })}>留最大</Button>
+                      onClick={() => run({ groups: one, keep: 'largest', key: key('largest') })}>가장 큰 파일 유지</Button>
                     <Button variant="secondary" size="small" {...busy(key('longest'))}
-                      onClick={() => run({ groups: one, keep: 'longest', key: key('longest') })}>留最长</Button>
+                      onClick={() => run({ groups: one, keep: 'longest', key: key('longest') })}>가장 긴 영상 유지</Button>
                     {mixedCloudPreferences(group.files, configured).map((location) => (
                       <Button key={location} variant="secondary" size="small" {...busy(key(location))}
                         onClick={() => run({ groups: one, keep: location, key: key(location) })}>
-                        <SourceLabel source={location} label={`留 ${LOC[location] || location}`} />
+                        <SourceLabel source={location} label={`유지: ${LOC[location] || location}`} />
                       </Button>
                     ))}
                     <Button variant="danger" size="small" {...busy(key('all'))}
-                      onClick={() => run({ groups: one, keep: 'all', key: key('all') })}>整组回收</Button>
+                      onClick={() => run({ groups: one, keep: 'all', key: key('all') })}>그룹 전체 휴지통으로</Button>
                   </span>
                 </div>
                 <div>{group.files.map((file) => <FileRow key={file.id} file={file} prefix={prefix} openItem={openItem} />)}</div>
               </section>
             );
           })
-        : <EmptyState icon={STACK} title="没有找到重复文件">
-            所有来源之间没有检测到内容相同的文件。扫描新来源后，这里会自动更新。
+        : <EmptyState icon={STACK} title="중복 파일을 찾지 못했습니다">
+            모든 소스에서 내용이 동일한 파일이 발견되지 않았습니다. 새 소스를 스캔하면 자동으로 갱신됩니다.
           </EmptyState>}
       {groups.length > 0 && data.total > groups.length
         ? <p className="text-center text-caption-1-regular text-text-secondary">
-            {`显示可回收最多的前 ${groups.length.toLocaleString()} 组，共 ${Number(data.total).toLocaleString()} 组；处理掉这些后，其余的会补上来。`}
+            {`확보 가능한 공간이 큰 순서로 상위 ${groups.length.toLocaleString()} 그룹 표시, 전체 ${Number(data.total).toLocaleString()} 그룹. 표시된 그룹을 처리하면 나머지 그룹이 표시됩니다.`}
           </p>
         : null}
     </div>

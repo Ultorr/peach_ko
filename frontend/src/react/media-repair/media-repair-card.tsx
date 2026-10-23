@@ -47,11 +47,11 @@ export function MediaRepairCard() {
   const start = () => {
     if (!selected) return;
     void confirmModal({
-      title: `修复媒体库「${selected.name}」`,
-      body: '缺时间戳表的片子另存一份修好的头，原文件不动；缺索引的片子重建后替换原文件，'
-        + '坏原件改名成同目录的隐藏文件（.文件名.peach-original）留着。'
-        + (selected.metered ? '这个库在计费来源上，每修一部都要把片子完整拉一遍。' : ''),
-      confirmLabel: '修复媒体库',
+      title: `미디어 라이브러리 복구 「${selected.name}」`,
+      body: "타임스탬프 테이블이 없는 영상은 복구한 헤더를 별도로 저장하고 원본은 유지합니다. 인덱스가 없는 영상은 재구성한 파일로 원본을 교체하며, "
+        + "손상된 원본은 같은 폴더의 숨김 파일(.파일명.peach-original)로 이름을 바꾸어 보관합니다."
+        + (selected.metered ? " 이 라이브러리는 종량제 소스에 있으므로 영상 하나를 복구할 때마다 전체 파일을 한 번 다운로드합니다." : ''),
+      confirmLabel: "미디어 라이브러리 복구",
       onConfirm: async () => replace(await apiSend<MediaRepairState>(MEDIA_REPAIR_URL,
         { library: selected.id, restart: true })),
     });
@@ -61,12 +61,12 @@ export function MediaRepairCard() {
 
   const line = statusLine(state);
   const complete = state.status === 'complete';
-  const problem = action.error || state.error || (repair.error ? '读不到媒体修复的状态' : '');
+  const problem = action.error || state.error || (repair.error ? "미디어 복구 상태를 불러올 수 없습니다" : '');
   return (
     <div className="flex flex-col gap-4">
-      <Fieldset layout="split" label="媒体修复" footer={
+      <Fieldset layout="split" label="미디어 복구" footer={
         <>
-          <Select aria-label="媒体库" className="w-48" selectedKey={selected?.id ?? null}
+          <Select aria-label="미디어 라이브러리" className="w-48" selectedKey={selected?.id ?? null}
             isDisabled={running || !libraries.length}
             onSelectionChange={(key) => { if (key !== null) setChosen(String(key)); }}>
             {libraries.map((row) => (
@@ -76,25 +76,25 @@ export function MediaRepairCard() {
             ))}
           </Select>
           {running
-            ? <Button onClick={stop} {...busyProps(action.busy === 'stop')}>停止</Button>
-            : <Button onClick={start} disabled={!selected}>开始修复</Button>}
+            ? <Button onClick={stop} {...busyProps(action.busy === 'stop')}>중지</Button>
+            : <Button onClick={start} disabled={!selected}>복구 시작</Button>}
         </>
       }>
         <div className="flex flex-col gap-2">
-          <FieldsetTitle>媒体修复</FieldsetTitle>
+          <FieldsetTitle>미디어 복구</FieldsetTitle>
           <p className="text-body-2-regular text-text-secondary">{REPAIR_CARD_TEXT}</p>
           {running && state.total
-            ? <Progress label="修复进度" value={state.checked} max={state.total} />
+            ? <Progress label="복구 진행 상황" value={state.checked} max={state.total} />
             : null}
           {line ? <p role="status" className="text-caption-1-regular text-text-secondary">{line}</p> : null}
         </div>
       </Fieldset>
       <div aria-live="polite" className="flex flex-col gap-4 empty:hidden">
         {complete && !state.repaired && !state.failed
-          ? <Note tone="info" title="没有要修的">这个库里的片子都能直接播。</Note>
+          ? <Note tone="info" title="복구할 항목이 없습니다">이 라이브러리의 모든 영상을 바로 재생할 수 있습니다.</Note>
           : null}
         {complete && state.missing_tool
-          ? <Note tone="warning" title="缺少 untrunc">{missingToolText(state)}</Note>
+          ? <Note tone="warning" title="untrunc 없음">{missingToolText(state)}</Note>
           : null}
         {problem ? <Note tone="error">{problem}</Note> : null}
       </div>

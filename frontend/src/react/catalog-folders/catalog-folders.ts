@@ -17,7 +17,7 @@ export interface FolderPage {
 }
 export interface FolderScope { loc?: string; library?: string }
 export const PURPOSES: Record<FolderPurpose, string> = {
-  category: '个人分类', creator: '创作者／账号', performer: '人物', seller: '卖家', studio: '厂牌',
+  category: "개인 분류", creator: "크리에이터/계정", performer: "인물", seller: "판매자", studio: "스튜디오",
 };
 export function folderQuery(scope: FolderScope, folder = '', search = '') {
   const query = new URLSearchParams({ ...scope, folder, ...(search ? { q: search } : {}) });

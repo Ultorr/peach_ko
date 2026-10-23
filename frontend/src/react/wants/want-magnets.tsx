@@ -93,36 +93,36 @@ export function WantMagnets({ want, readOnly, downloads, provider, toast, onSour
         magnet: candidate.uri, provider: configured.key, target: configured.target,
         code: want.code, title: want.title, origin: queryUrl ? `work:${want.code}` : `wishlist:${want.id}`,
       }, 'POST', signal);
-      if (!result.ok) throw new Error(result.task.failure_detail || result.task.failure_label || '添加下载失败');
+      if (!result.ok) throw new Error(result.task.failure_detail || result.task.failure_label || "다운로드 추가 실패");
       return result;
     }, (result) => {
       setSubmitted((current) => [...current, candidate.id]);
-      toast(result.outcome === 'submitted' ? `已添加下载：${candidate.name}` : `已关联现有下载：${candidate.name}`);
+      toast(result.outcome === 'submitted' ? `다운로드에 추가했습니다:${candidate.name}` : `기존 다운로드에 연결했습니다:${candidate.name}`);
       void client.invalidateQueries({ queryKey: DOWNLOADS_KEY });
     });
   };
   const copy = (candidate: MagnetCandidate) => {
     void action.run(`copy:${candidate.id}`, () => navigator.clipboard.writeText(candidate.uri),
-      () => toast('已复制链接'));
+      () => toast("링크를 복사했습니다"));
   };
   const waiting = query.isFetching || query.data?.state === 'busy';
   const failure = query.error ? errorMessage(query.error) : query.data?.error;
   return (
     <div ref={root} data-want-magnets="" className="flex min-w-0 flex-col gap-3 border-t border-separator-border pt-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h4 className="text-body-medium text-text-primary">资源链接{query.data?.items.length ? ` · ${query.data.items.length}` : ''}</h4>
+        <h4 className="text-body-medium text-text-primary">리소스 링크{query.data?.items.length ? ` · ${query.data.items.length}` : ''}</h4>
         <Button variant="secondary" size="small" leadingIcon={RiRefreshLine} {...busyProps(waiting)} onClick={() => {
           if (!waiting) { refresh.current = true; void query.refetch() }
-        }}>重新查询</Button>
+        }}>다시 조회</Button>
       </div>
-      {waiting ? <LoadingDots label="正在查找资源链接…" /> : null}
-      {failure ? <Note tone="error" title="资源链接未取得">{failure}</Note> : null}
+      {waiting ? <LoadingDots label="리소스 링크를 찾는 중…" /> : null}
+      {failure ? <Note tone="error" title="리소스 링크를 가져오지 못했습니다">{failure}</Note> : null}
       {query.data?.warnings?.map((warning) => <Note key={warning} tone="neutral">{resourceNotice(warning)}</Note>)}
       {query.data?.warnings?.length && query.data.source_url ? <ButtonLink variant="secondary" size="small" className="self-start"
-        trailingIcon={RiExternalLinkLine} href={query.data.source_url} target="_blank" rel="noopener noreferrer">查看来源页</ButtonLink> : null}
+        trailingIcon={RiExternalLinkLine} href={query.data.source_url} target="_blank" rel="noopener noreferrer">소스 페이지 보기</ButtonLink> : null}
       {query.data?.state === 'ready' && !query.data.items.length && !query.data.warnings?.length
-        ? <Note tone="neutral">暂未找到资源链接。</Note> : null}
-      {action.error ? <Note tone="error" title="操作未完成">{action.error}</Note> : null}
+        ? <Note tone="neutral">리소스 링크를 아직 찾지 못했습니다.</Note> : null}
+      {action.error ? <Note tone="error" title="작업 미완료">{action.error}</Note> : null}
       {query.data?.items.length ? (() => {
         const rows = query.data.items.map((candidate) => {
           const added = submitted.includes(candidate.id) || downloads?.tasks.some((task) => candidate.protocol === 'magnet' &&
@@ -131,33 +131,33 @@ export function WantMagnets({ want, readOnly, downloads, provider, toast, onSour
             <div data-resource-main="" className="flex min-w-0 flex-col gap-1">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <Chip variant="caption" color={candidate.protocol === 'magnet' ? 'blue' : candidate.protocol === 'ed2k' ? 'purple' : 'neutral'}>
-                  {candidate.protocol === 'magnet' ? '磁链' : candidate.protocol === 'ed2k' ? 'ED2K' : '网页链接'}
+                  {candidate.protocol === 'magnet' ? "마그넷 링크" : candidate.protocol === 'ed2k' ? 'ED2K' : "웹 링크"}
                 </Chip>
                 <p data-resource-title="" title={candidate.name} className="min-w-0 flex-1 text-body-2-medium text-text-primary">{candidate.name}</p>
               </div>
               <div data-resource-facts="" className="flex flex-wrap gap-x-2 gap-y-1 text-caption-1-regular text-text-secondary">
                 <ResourceFact icon={RiLink}>{candidate.source}</ResourceFact>
-                <ResourceFact icon={RiHardDrive2Line} title={`来源大小：${candidate.size}`}>{resourceSize(candidate.size)}</ResourceFact>
-                {candidate.files ? <ResourceFact icon={RiFileList2Line}>{candidate.files.replaceAll('個', '个')}</ResourceFact> : null}
-                <ResourceFact icon={RiCalendarLine} title={candidate.source === 'JavDB 评论' ? '评论日期' : '收录日期'}>{candidate.date ? candidate.date.slice(0, 10) : '日期未知'}</ResourceFact>
+                <ResourceFact icon={RiHardDrive2Line} title={`소스에 표시된 크기:${candidate.size}`}>{resourceSize(candidate.size)}</ResourceFact>
+                {candidate.files ? <ResourceFact icon={RiFileList2Line}>{candidate.files.replaceAll('個', "개")}</ResourceFact> : null}
+                <ResourceFact icon={RiCalendarLine} title={candidate.source === 'JavDB 评论' ? "댓글 날짜" : "등록 날짜"}>{candidate.date ? candidate.date.slice(0, 10) : "날짜 알 수 없음"}</ResourceFact>
                 {candidate.attributes.filter(value => value !== '高清').map((value) => <ResourceFact key={value} icon={RiPriceTag3Line}>{value}</ResourceFact>)}
               </div>
             </div>
             <div data-resource-actions="" className="flex flex-wrap gap-2">
               {candidate.protocol === 'magnet' ?
-              <Button variant="primary" size="small" leadingIcon={configured ? PROVIDER_ICONS[configured.key] : RiCloudLine} title={configured ? `下载到 ${configured.label}` : undefined} disabled={readOnly || !downloads?.available || !configured || added}
+              <Button variant="primary" size="small" leadingIcon={configured ? PROVIDER_ICONS[configured.key] : RiCloudLine} title={configured ? `다운로드 위치: ${configured.label}` : undefined} disabled={readOnly || !downloads?.available || !configured || added}
                 {...busyProps(action.busy === candidate.id)} onClick={() => add(candidate)}>
-                {added ? '已添加' : '添加下载'}
+                {added ? "추가됨" : "다운로드 추가"}
               </Button> : null}
               <Button variant={candidate.protocol === 'magnet' ? 'secondary' : 'primary'} size="small" leadingIcon={RiFileCopyLine} {...busyProps(action.busy === `copy:${candidate.id}`)}
-                onClick={() => copy(candidate)}>复制链接</Button>
-              <ButtonLink data-button-link="" variant="secondary" size="small" trailingIcon={RiExternalLinkLine} href={candidate.source_url} target="_blank" rel="noopener noreferrer">链接来源</ButtonLink>
+                onClick={() => copy(candidate)}>링크 복사</Button>
+              <ButtonLink data-button-link="" variant="secondary" size="small" trailingIcon={RiExternalLinkLine} href={candidate.source_url} target="_blank" rel="noopener noreferrer">링크 출처</ButtonLink>
             </div>
           </li>;
         });
         return <>
           <ul className="flex min-w-0 flex-col gap-4">{rows.slice(0, 3)}</ul>
-          {rows.length > 3 ? <Disclosure summary={`更多资源（${rows.length - 3} 条）`}>
+          {rows.length > 3 ? <Disclosure summary={`리소스 더 보기（${rows.length - 3} 개）`}>
             <ul className="flex min-w-0 flex-col gap-4">{rows.slice(3)}</ul>
           </Disclosure> : null}
         </>;

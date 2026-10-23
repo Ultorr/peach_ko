@@ -42,22 +42,22 @@ function Pagination(
 ) {
   if (pages <= 1) return null;
   return (
-    <nav aria-label="复核分页" className="flex w-full flex-wrap items-center justify-between gap-2">
+    <nav aria-label="검토 페이지 탐색" className="flex w-full flex-wrap items-center justify-between gap-2">
       <Button variant="secondary" size="small" disabled={page <= 1}
-        onClick={() => onPage(page - 1)}>上一页</Button>
+        onClick={() => onPage(page - 1)}>이전 페이지</Button>
       <ul className="flex flex-wrap items-center gap-1">
         {paginationRange(page, pages).map((item, at) => (
           <li key={item === DOTS ? `dots-${at}` : item}>
             {item === DOTS
               ? <span aria-hidden className="px-1 text-body-2-regular text-text-tertiary">{DOTS}</span>
               : <Button variant={item === page ? 'secondary' : 'ghost'} size="small"
-                  aria-label={`第 ${item} 页`} aria-current={item === page ? 'page' : undefined}
+                  aria-label={`제 ${item} 페이지`} aria-current={item === page ? 'page' : undefined}
                   onClick={() => onPage(Number(item))}>{item}</Button>}
           </li>
         ))}
       </ul>
       <Button variant="secondary" size="small" disabled={page >= pages}
-        onClick={() => onPage(page + 1)}>下一页</Button>
+        onClick={() => onPage(page + 1)}>다음 페이지</Button>
     </nav>
   );
 }
@@ -144,7 +144,7 @@ export function ReviewPage(props: ReviewProps) {
     mutationFn: ({ row, status }: { row: ReviewRow; status: DecisionStatus }) =>
       submitDecision(decisionPayload(category, currentReviewRow(category, row), status, choiceOf(row))),
     onSuccess: (result, { row, status }) => {
-      if (!result.ok) { fail(row.item_key, result.error || '服务端拒绝了这次判定'); return }
+      if (!result.ok) { fail(row.item_key, result.error || "서버가 이번 판정을 거부했습니다"); return }
       // 判过的直接移出本批并同步计数，下一条立刻顶上来；留在队列里就像没生效。
       dropReviewRows(category, [row.item_key]);
       forget([row.item_key]);
@@ -162,10 +162,10 @@ export function ReviewPage(props: ReviewProps) {
       const failures: [string, string][] = [];
       for (const [at, row] of rows.entries()) {
         if (!alive.current) break;
-        setFeedback(`正在处理 ${at} / ${rows.length}`);
+        setFeedback(`처리 중 ${at} / ${rows.length}`);
         try {
           const result = await submitDecision(decisionPayload(category, currentReviewRow(category, row), status, choiceOf(row)));
-          if (!result.ok) throw new Error(result.error || '服务端未采用该项');
+          if (!result.ok) throw new Error(result.error || "서버가 이 항목을 채택하지 않았습니다");
           done.push(row.item_key);
         } catch (cause) {
           failures.push([row.item_key, errorMessage(cause)]);
@@ -178,8 +178,8 @@ export function ReviewPage(props: ReviewProps) {
       forget(done);
       failures.forEach(([key, message]) => fail(key, message));
       setFeedback('');
-      toast(`已${status === 'approved' ? '通过' : '拒绝'} ${done.length} 项`
-        + (failures.length ? `，${failures.length} 项未完成` : ''));
+      toast(`완료：${status === 'approved' ? "승인" : "거부"} ${done.length} 개`
+        + (failures.length ? `，${failures.length} 개 항목 미완료` : ''));
     },
     onError: (cause) => { setFeedback(errorMessage(cause)) },
   });
@@ -188,7 +188,7 @@ export function ReviewPage(props: ReviewProps) {
     if (bulk.isPending || !selectedRows.length) return;
     if (status === 'approved' && metadata
       && selectedRows.some((row) => !choiceOf(row).candidateKey)) {
-      setFeedback('先为所选的多来源候选选择来源。');
+      setFeedback("먼저 선택한 다중 출처 후보의 출처를 선택하세요.");
       return;
     }
     setFeedback('');
@@ -205,7 +205,7 @@ export function ReviewPage(props: ReviewProps) {
       }
       return next;
     });
-    setFeedback(`已选择 ${source}，点击通过所选采用。`);
+    setFeedback(`선택한 출처: ${source}. 「선택 항목 승인」을 눌러 적용하세요.`);
   };
 
   const reveal = async (id: number) => {
@@ -228,11 +228,11 @@ export function ReviewPage(props: ReviewProps) {
     <Page>
       <div className="flex flex-col gap-5 pb-10">
       {locked ? (
-        <Note tone="warning" title="本机只能浏览"
+        <Note tone="warning" title="이 기기에서는 조회만 가능합니다"
           extra={writerUrl
             ? <p className="text-body-2-regular">
                 <a href={writerUrl} className="text-text-primary underline underline-offset-2">
-                  前往写入端复核
+                  쓰기 서버로 이동하여 검토
                 </a>
               </p>
             : undefined}>
@@ -247,7 +247,7 @@ export function ReviewPage(props: ReviewProps) {
         if (isReviewCategory(next)) goCategory(next);
       }} className="flex flex-col gap-5 review-split:flex-row review-split:items-start review-split:gap-6">
         <div data-section-nav className="w-full min-w-0 review-split:sticky review-split:top-topbar review-split:w-review-tabs review-split:shrink-0">
-          <h2 id="reviewcategories">复核分类</h2>
+          <h2 id="reviewcategories">검토 분류</h2>
           <TabList ref={categoryScroll} aria-labelledby="reviewcategories" data-section-items
             className="flex review-split:flex-col review-split:items-stretch">
             {REVIEW_CATEGORIES.map((key) => {
@@ -295,7 +295,7 @@ export function ReviewPage(props: ReviewProps) {
                       for (const key of keys) { if (all) next.delete(key); else next.add(key) }
                       setSelected(next);
                     }}>
-                      {group.rows.every((row) => selected.has(row.item_key)) ? '清空本组' : '全选本组'}
+                      {group.rows.every((row) => selected.has(row.item_key)) ? "이 그룹 선택 해제" : "이 그룹 전체 선택"}
                     </Button>
                   )}
                 </div>
@@ -327,14 +327,14 @@ export function ReviewPage(props: ReviewProps) {
             </section>
           )) : review.isError && !review.data ? (
             /* 读不到队列和队列是空的不是一回事：说清楚是读取失败，给一颗重试键。 */
-            <Note tone="error" title="复核队列读取失败" action={
-              <Button variant="secondary" size="small" disabled={review.isFetching} onClick={() => void review.refetch()}>重试</Button>
+            <Note tone="error" title="검토 대기열을 불러오지 못했습니다" action={
+              <Button variant="secondary" size="small" disabled={review.isFetching} onClick={() => void review.refetch()}>다시 시도</Button>
             }>
               {errorMessage(review.error)}
             </Note>
           ) : (
-            <EmptyState icon={RiCheckboxCircleLine} title="此分类没有待复核项目">
-              可切换分类查看其他候选。
+            <EmptyState icon={RiCheckboxCircleLine} title="이 분류에 검토할 항목이 없습니다">
+              분류를 바꾸어 다른 후보를 확인할 수 있습니다.
             </EmptyState>
           )}
 

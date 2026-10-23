@@ -53,7 +53,7 @@ export function ExpandableRanking(
       </ol>
       {expandable ? (
         <button type="button" data-ranking-toggle aria-controls={listId} aria-expanded={expanded}
-          aria-label={expanded ? '收起排名' : '展开更多排名'}
+          aria-label={expanded ? "순위 접기" : "순위 더 보기"}
           onClick={() => { setAnimating(true); setExpanded((current) => !current) }}>
           <RiArrowDownSLine aria-hidden />
         </button>

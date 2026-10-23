@@ -25,7 +25,7 @@ function FolderOpenIcon({ className }: { className?: string }) {
 }
 
 /** 请求没发出去（断网、页面换了口令）时的说法。服务端答得上来的原因由它自己写成中文。 */
-const UNREACHED = '打开文件管理器失败，请重试';
+const UNREACHED = "파일 탐색기를 열지 못했습니다. 다시 시도하세요.";
 
 export function PathLine(
   { path, prefix, className, onRevealed }:
@@ -50,7 +50,7 @@ export function PathLine(
     setProblem('');
     try {
       await apiSend('/api/reveal', { path });
-      onRevealed?.('已在资源管理器中显示');
+      onRevealed?.("파일 탐색기에 표시했습니다");
     } catch (error) {
       if (alive.current) setProblem(error instanceof ApiError ? error.message : UNREACHED);
     } finally {
@@ -64,7 +64,7 @@ export function PathLine(
         <p className={cx('min-w-0 break-all', className)}>
           {prefix}{path}
         </p>
-        <IconButton icon={FolderOpenIcon} size="small" className="shrink-0" aria-label="在资源管理器中显示"
+        <IconButton icon={FolderOpenIcon} size="small" className="shrink-0" aria-label="파일 탐색기에 표시"
           onClick={() => void reveal()} {...busyProps(busy)} />
       </div>
       {problem ? <p className="text-caption-1-regular text-text-error-primary">{problem}</p> : null}

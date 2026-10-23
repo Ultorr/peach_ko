@@ -53,7 +53,7 @@ const chip = (key: string, label: string, colors: readonly string[]): GlowChip =
    什么也不会变，读起来却像还有一档没试过。 */
 export function glowChips(glow: HomeGlow): GlowChip[] {
   const chips = HOME_GLOW_PRESETS.map(([key, label, palette]) => chip(key, label, HOME_GLOW_SPOTS.map((spot) => palette[spot].color)));
-  if (glow.preset === 'custom') chips.push(chip('custom', '自定义', HOME_GLOW_SPOTS.map((spot) => glow[spot].color)));
+  if (glow.preset === 'custom') chips.push(chip('custom', "사용자 지정", HOME_GLOW_SPOTS.map((spot) => glow[spot].color)));
   return chips;
 }
 

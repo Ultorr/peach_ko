@@ -34,7 +34,7 @@ function menuElement(): HTMLElement {
     menu.setAttribute('data-player-context-menu', '');
     menu.id = 'playerMenu';
     menu.setAttribute('role', 'menu');
-    menu.setAttribute('aria-label', '播放器菜单');
+    menu.setAttribute('aria-label', "플레이어 메뉴");
     menu.hidden = true;
     document.body.append(menu);
   }
@@ -84,21 +84,21 @@ function playerMenuItems(player: VjsPlayer): MenuItem[] {
   };
   const copy = (withTime: boolean, receipt: string) => {
     void copyTextToClipboard(url(withTime)).then((ok) =>
-      playerHost().toast(ok ? receipt : '复制失败，请手动复制地址栏', { timeout: 4000, warn: !ok }));
+      playerHost().toast(ok ? receipt : "복사에 실패했습니다. 주소 표시줄에서 직접 복사하세요", { timeout: 4000, warn: !ok }));
   };
   const items: MenuItem[] = [
-    { icon: 'repeat', label: '循环播放', checked: !!player.loop(), run: () => player.loop(!player.loop()) },
-    mini ? { icon: 'maximize-2', label: '展开', run: () => hooks?.expand() }
-      : { icon: 'picture-in-picture-2', label: '迷你播放器', run: () => hooks?.toMiniplayer() },
+    { icon: 'repeat', label: "반복 재생", checked: !!player.loop(), run: () => player.loop(!player.loop()) },
+    mini ? { icon: 'maximize-2', label: "펼치기", run: () => hooks?.expand() }
+      : { icon: 'picture-in-picture-2', label: "미니 플레이어", run: () => hooks?.toMiniplayer() },
   ];
   if (document.pictureInPictureEnabled) {
-    items.push({ icon: 'player-pip', fill: true, label: '画中画',
+    items.push({ icon: 'player-pip', fill: true, label: "화면 속 화면",
       run: () => player.el().querySelector<HTMLElement>('.vjs-picture-in-picture-control')?.click() });
   }
-  items.push({ icon: 'link', label: '复制视频网址', run: () => copy(false, '已复制视频网址') });
-  items.push({ icon: 'link', label: '复制当前时间的视频网址', run: () => copy(true, '已复制当前时间的视频网址') });
+  items.push({ icon: 'link', label: "동영상 URL 복사", run: () => copy(false, "동영상 URL을 복사했습니다") });
+  items.push({ icon: 'link', label: "현재 시간의 동영상 URL 복사", run: () => copy(true, "현재 시간의 동영상 URL을 복사했습니다") });
   const stats = document.getElementById('playerStatsBtn');
-  if (!mini && stats && !stats.hidden) items.push({ icon: 'chart', label: '播放统计', run: () => stats.click() });
+  if (!mini && stats && !stats.hidden) items.push({ icon: 'chart', label: "재생 통계", run: () => stats.click() });
   return items;
 }
 

@@ -11,7 +11,7 @@ export function mountPreviewPlayer(video: HTMLVideoElement, source: PlayerSource
   void ensureVideojs().then(factory => {
     if (released) return;
     player = factory(video, {
-      controls: true, preload: 'metadata', autoplay: false, language: 'zh-CN', responsive: true,
+      controls: true, preload: 'metadata', autoplay: false, language: 'ko', responsive: true,
       userActions: { hotkeys: true },
       controlBar: {
         pictureInPictureToggle: true, currentTimeDisplay: false, timeDivider: false,

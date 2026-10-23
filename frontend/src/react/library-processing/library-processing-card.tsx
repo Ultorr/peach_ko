@@ -24,7 +24,7 @@ import { Disclosure } from '../settings/section';
 import { queryClient } from '../query';
 import {
   DISCONNECTED_TEXT, issueDetails, LIBRARY_PROCESSING_KEY, LIBRARY_PROCESSING_URL,
-  notesLine, processingActive, remainingTime, type LibraryProcessingCommand, type LibraryProcessingData,
+  notesLine, processingActive, processingError, remainingTime, type LibraryProcessingCommand, type LibraryProcessingData,
 } from './library-processing';
 import { useLibraryProcessingJob } from './use-library-processing';
 import { ProcessingActions } from './processing-actions';
@@ -33,7 +33,7 @@ import { ProcessingProgress } from './processing-line';
 
 /* 中文正文写成常量：JSX 里换行的文字会在接缝处多出一个空格，中文句子里看得见。
    卡片正文与首屏骨架共用 `SCAN_CARD_TEXT`（`management.ts`）。 */
-const STALLED_TEXT = '这一项耗时较长，暂时没有新进展。任务结束后可以重试未完成的部分。';
+const STALLED_TEXT = "이 항목은 처리에 시간이 오래 걸리고 있으며 새로운 진행 상황이 없습니다. 작업이 끝나면 완료하지 못한 부분을 다시 시도할 수 있습니다.";
 /* 补齐女优资料是落库之后的一步，一趟里常常什么都不用补，那时这句话不出现：
    四个读数全是 0 还写一句「别名 0 个」，读的人分不清是没得补还是这一步没跑。 */
 const profileText = (state: LibraryProcessingData) => {
@@ -42,17 +42,17 @@ const profileText = (state: LibraryProcessingData) => {
   const conflicts = state.performer_profile_conflicts || 0;
   const failed = state.performer_profile_failed || 0;
   if (!aliases && !avatars && !conflicts && !failed) return '';
-  const parts = [`补齐女优资料：别名 ${aliases} 个，头像 ${avatars} 张`];
-  if (conflicts) parts.push(`${conflicts} 个同名冲突交回人工`);
-  if (failed) parts.push(`${failed} 张头像未取得`);
+  const parts = [`배우 정보 보완: 별칭 ${aliases} 개, 프로필 사진 ${avatars} 장`];
+  if (conflicts) parts.push(`${conflicts} 개 동명이인 충돌을 수동 확인으로 전환`);
+  if (failed) parts.push(`${failed} 장의 프로필 사진을 가져오지 못함`);
   return `${parts.join('，')}。`;
 };
 
 const receiptText = (state: LibraryProcessingData) =>
-  state.requested_stage === 'previews' ? `已生成 ${state.previews || 0} 部视频预览。`
-  : `已扫描 ${state.scanned || 0} 个文件，识别 ${state.identified || 0} 个番号，`
-  + `整理 ${state.candidates || 0} 组资料候选，自动落库 ${state.auto_applied || 0} 条。`
-  + (state.previews ? `已生成 ${state.previews} 部视频预览。` : '')
+  state.requested_stage === 'previews' ? `동영상 미리보기 ${state.previews || 0} 개 생성.`
+  : `스캔 완료 ${state.scanned || 0} 개 파일, 식별 ${state.identified || 0} 개 품번,`
+  + `정리 ${state.candidates || 0} 개 정보 후보 그룹, 자동으로 라이브러리에 추가 ${state.auto_applied || 0} 건.`
+  + (state.previews ? `동영상 미리보기 ${state.previews} 개 생성.` : '')
   + profileText(state);
 
 /** 卡片外面那一块：这一趟怎么了。逐条明细要展开才读，完整清单在状态给出的日志文件里。 */
@@ -72,12 +72,12 @@ function Outcome(
     /* 空着时整块收起：`aria-live` 的容器留着一条空轨道，卡片底下就凭空多出一个间距。 */
     <div aria-live="polite" className="flex flex-col gap-4 empty:hidden">
       {state.status === 'running' && state.stalled
-        ? <Note tone="warning" title="处理较慢">{STALLED_TEXT}</Note>
+        ? <Note tone="warning" title="처리 지연">{STALLED_TEXT}</Note>
         : null}
       {problem || state.status === 'failed'
         ? <Note tone="error" className="gap-0 p-3"
             action={retryable
-              ? <Button variant="primary" size="small" onClick={onRetry}>重试未完成项</Button>
+              ? <Button variant="primary" size="small" onClick={onRetry}>미완료 항목 다시 시도</Button>
               : null}
             extra={details
               /* 三层东西叠在同一块红底上：一句结论、一份清单、一条日志地址。各自之间
@@ -106,25 +106,25 @@ function Outcome(
                     {details.log
                       /* 日志地址使用次级文字色，分隔线沿用错误提示的红色。 */
                       ? <div className="mt-3 border-t border-border-error-default/20 pt-3 text-text-secondary">
-                          <PathLine path={details.log} prefix="完整记录：" className="text-caption-1-regular"
+                          <PathLine path={details.log} prefix="전체 기록:" className="text-caption-1-regular"
                             onRevealed={toast} />
                         </div>
                       : null}
                   </Disclosure>
                 </div>
               : null}>
-            {problem || state.error || '处理未完成，请重试'}
+            {problem || processingError(state.error || "처리가 완료되지 않았습니다. 다시 시도하세요")}
           </Note>
         : null}
       {settled?.status === 'complete'
-        ? <Note tone="success" title="处理完成">{receiptText(settled)}</Note>
+        ? <Note tone="success" title="처리 완료">{receiptText(settled)}</Note>
         : null}
       {!processingActive(state) && notes
         ? <Note tone="neutral"
             extra={state.issues_log
               /* 中性提示的分隔线跟随次级文字色。 */
               ? <div className="mt-1.5 border-t border-current/20 pt-1.5 text-text-secondary">
-                  <PathLine path={state.issues_log} prefix="完整记录：" className="text-caption-1-regular"
+                  <PathLine path={state.issues_log} prefix="전체 기록:" className="text-caption-1-regular"
                     onRevealed={toast} />
                 </div>
               : null}>
@@ -169,11 +169,11 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Fieldset layout="stack" label="扫描与采集" footer={
+      <Fieldset layout="stack" label="스캔 및 수집" footer={
         <>
-          <LinkButton href="/sources" size="small" trailingIcon={RiArrowRightLine}>来源和凭证</LinkButton>
+          <LinkButton href="/sources" size="small" trailingIcon={RiArrowRightLine}>소스 및 인증 정보</LinkButton>
           {state.candidates
-            ? <LinkButton href="/review" size="small" trailingIcon={RiArrowRightLine}>复核资料</LinkButton>
+            ? <LinkButton href="/review" size="small" trailingIcon={RiArrowRightLine}>정보 재검토</LinkButton>
             : null}
           {/* 两个入口并存，各自答的不是一个问题：这里是「重新跑一整批」，下面那条错误提示里
               的「重试未完成项」只补上一趟没做完的那些。采集里网络超时几乎每趟都留下几项可
@@ -182,10 +182,10 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
         </>
       }>
         <div className="flex flex-col gap-2">
-          <FieldsetTitle>扫描与采集</FieldsetTitle>
+          <FieldsetTitle>스캔 및 수집</FieldsetTitle>
           <p className="text-body-2-regular text-text-secondary">{SCAN_CARD_TEXT}</p>
           {state.status === 'paused' && !state.total
-            ? <p className="text-caption-1-regular text-text-secondary">已暂停</p>
+            ? <p className="text-caption-1-regular text-text-secondary">일시 중지됨</p>
             : processingActive(state)
             ? <ProcessingProgress state={state} />
             : null}

@@ -55,18 +55,18 @@ const count = (value: number) => Number(value).toLocaleString();
 export function statusLine(state: MediaRepairState): string {
   if (state.status === 'running') {
     // 服务端偶尔报出超过总数的已查数，按总数封顶。
-    const where = state.total ? `${count(Math.min(state.checked || 0, state.total))} / ${count(state.total)}` : '准备中';
+    const where = state.total ? `${count(Math.min(state.checked || 0, state.total))} / ${count(state.total)}` : "준비 중";
     return state.stage === '修复' && state.message
-      ? `修复 ${where} · ${state.message}`
-      : `${state.stage || '扫描'} ${where}`;
+      ? `복구 ${where} · ${state.message}`
+      : `${state.stage || "스캔"} ${where}`;
   }
   if (state.status === 'complete' && (state.repaired || state.failed)) {
     return state.failed
-      ? `修好 ${count(state.repaired)} 部，${count(state.failed)} 部修不了`
-      : `修好 ${count(state.repaired)} 部`;
+      ? `복구 완료 ${count(state.repaired)} 개,${count(state.failed)} 개 복구 불가`
+      : `복구 완료 ${count(state.repaired)} 개`;
   }
   return '';
 }
 
 export const missingToolText = (state: MediaRepairState) =>
-  `${count(state.missing_tool)} 部缺索引的片子要装上 untrunc 才修得了，下载入口在配置页的「运行信息」里。`;
+  `${count(state.missing_tool)} 개의 인덱스가 없는 영상을 복구하려면 untrunc를 설치해야 합니다. 설정 페이지의 「실행 정보」에서 다운로드할 수 있습니다.`;

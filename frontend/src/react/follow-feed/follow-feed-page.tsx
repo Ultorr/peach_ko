@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 关注页 `/follow`：页头、创作者与题材两排、两排的筛选玻璃、交集条、卡片列表与底栏（ADR-0031 第 10g 步）。
  *
  * 数据形状、取数键与这一页的判定在 `./follow-feed.ts`，卡片在 `./follow-card.tsx`。换筛选或排序时
@@ -48,7 +49,7 @@ const HISTORY = spriteGlyph('history');
 
 /** 照片墙那一排的图片布局两档，同壳里 `PHOTO_LAYOUTS`。 */
 export const FOLLOW_PHOTO_LAYOUTS: readonly SegmentOption[] = [
-  ['fixed', '固定比例', 'layout-grid'], ['masonry', '瀑布流', 'columns-2'],
+  ['fixed', "고정 비율", 'layout-grid'], ['masonry', "폭포형", 'columns-2'],
 ];
 
 /** 这一页从数据里推出来的那几样：两排的取样、筛选条的选项、可见的组。只随数据、视图与种子变。 */
@@ -160,16 +161,16 @@ export function FollowFeedPage(props: FollowFeedProps) {
     <>
       {/* 进度那一格归 `followJobProgress`：它自己往里插面板、自己开合，React 只给一个空节点。 */}
       <div key={job.generation} ref={job.host} data-follow-progress="" />
-      {!job.busy && job.report ? <Note tone="neutral" title="检查结果">{job.report}</Note> : null}
+      {!job.busy && job.report ? <Note tone="neutral" title="확인 결과">{job.report}</Note> : null}
       <div data-follow-feed="" data-select-mode={props.selectMode ? '' : undefined}>
         <Head onManage={actions.openManage}>
           {facets.sources.length ? (
-            <Button variant="primary" data-follow-recheck="" aria-label="检查每个来源的更新"
+            <Button variant="primary" data-follow-recheck="" aria-label="각 출처의 업데이트 확인"
               aria-busy={job.busy || undefined}
               onClick={() => void job.start(false)}>
               {job.starting === 'check'
-                ? <span className="contents" dangerouslySetInnerHTML={{ __html: spinnerHtml('检查中') }} />
-                : '检查更新'}
+                ? <span className="contents" dangerouslySetInnerHTML={{ __html: spinnerHtml("확인 중") }} />
+                : "업데이트 확인"}
             </Button>
           ) : null}
         </Head>
@@ -190,7 +191,7 @@ export function FollowFeedPage(props: FollowFeedProps) {
                 {data.groups.length < FOLLOW_AUTO_LOAD_LIMIT ? (
                   <LoadMore key={result.data?.pages.length} entity enabled={() => !job.busyRef.current}
                     load={async () => { await result.fetchNextPage({ throwOnError: true }) }}>
-                    <CHEVRON_DOWN className="size-3.5" />加载更多
+                    <CHEVRON_DOWN className="size-3.5" />더 불러오기
                   </LoadMore>
                 ) : (
                   <ManualMore busy={result.isFetchingNextPage}
@@ -205,8 +206,8 @@ export function FollowFeedPage(props: FollowFeedProps) {
                   aria-busy={job.busy || undefined}
                   onClick={() => void job.start(true)}>
                   {job.olderBusy
-                    ? <><span className="contents" dangerouslySetInnerHTML={{ __html: spinnerHtml('抓取中') }} /><span>抓取中…</span></>
-                    : '抓更早的一页'}
+                    ? <><span className="contents" dangerouslySetInnerHTML={{ __html: spinnerHtml("가져오는 중") }} /><span>가져오는 중…</span></>
+                    : "이전 페이지 가져오기"}
                 </Button>
                 <span data-follow-backfill="">{backfillState(facets.sources)}</span>
               </span>
@@ -222,10 +223,10 @@ export function FollowFeedPage(props: FollowFeedProps) {
 function Head({ onManage, children }: { onManage(): void; children?: ReactNode }) {
   return (
     <div data-follow-head="">
-      <h2 data-follow-title="">关注</h2>
+      <h2 data-follow-title="">팔로우</h2>
       <span data-follow-head-actions="">
         <Button variant="secondary" leadingIcon={SETTINGS} data-follow-manage="" onClick={onManage}>
-          管理关注
+          팔로우 관리
         </Button>
         {children}
       </span>
@@ -239,7 +240,7 @@ function ManualMore({ busy, error, load }: { busy: boolean; error: string; load(
   return (
     <>
       <button type="button" data-entity-more="" aria-busy={busy || undefined} aria-disabled={busy || undefined} onClick={load}>
-        <CHEVRON_DOWN className="size-3.5" />加载更多
+        <CHEVRON_DOWN className="size-3.5" />더 불러오기
       </button>
       {error ? <RetryNote message={error} onRetry={load} /> : null}
     </>
@@ -332,7 +333,7 @@ function Authors({ facets, pressed, context, props, onPick }: {
   if (!facets.authorOrder.length) return null;
   return (
     <div data-follow-authors-bar="">
-      <div ref={row} data-follow-authors="" aria-label="创作者">
+      <div ref={row} data-follow-authors="" aria-label="크리에이터">
         {facets.authorOrder.map((key) => {
           const list = facets.authorSources.get(key) || [];
           const entity = followAuthorEntity(list);
@@ -342,7 +343,7 @@ function Authors({ facets, pressed, context, props, onPick }: {
           </>;
           return entity ? (
             <FollowAuthorLink key={key} name={entity} actions={props.actions} data-follow-author={key}
-              aria-label={`查看 ${nameOf(key)} 的作者页`}>{content}</FollowAuthorLink>
+              aria-label={`보기: ${nameOf(key)} 작성자 페이지`}>{content}</FollowAuthorLink>
           ) : (
             <button key={key} type="button" data-follow-author={key} aria-pressed={pressed === key} onClick={() => onPick(key)}>
               {content}
@@ -363,7 +364,7 @@ function Works({ rows, pressed, props, onPick }: {
   useEffect(() => { props.helpers.wireDrag(row.current) }, [props.helpers]);
   if (!rows.length) return null;
   return (
-    <div ref={row} data-follow-works="" aria-label="按题材筛选">
+    <div ref={row} data-follow-works="" aria-label="주제별 필터">
       {rows.map((work) => (
         <button key={work[0]} type="button" data-follow-work={work[0]} aria-pressed={pressed === work[0]}
           onClick={() => onPick(work[0])}>
@@ -404,7 +405,7 @@ function Glass({ facets, view, total, busy, props, route }: {
   const extras = providers.length + facets.tagRows.length > 0;
   const images = view.media === 'images';
   return (
-    <FilterGlassRows label="筛选与排序" topLabel={showMedia ? '媒体与关注筛选' : '关注筛选'}
+    <FilterGlassRows label="필터 및 정렬" topLabel={showMedia ? "미디어 및 팔로우 필터" : "팔로우 필터"}
       attrs={{ 'data-filter-frame': '', 'data-follow-filter-glass': '' }}
       topClassName="gap-1.5 overflow-visible" busy={busy}
       panes={<>
@@ -414,9 +415,9 @@ function Glass({ facets, view, total, busy, props, route }: {
       top={<>
         {showMedia ? (
           <>
-            <div ref={mediaRow} role="group" aria-label="媒体类型" data-entity-media="" onPointerLeave={mediaGlide.leave}>
-              {([['videos', '视频', facets.mediaCounts.videos, 'play', 'video'],
-                ['images', '图片', facets.mediaCounts.images, 'pics', 'image']] as const).map(([value, text, count, symbol, kind]) => {
+            <div ref={mediaRow} role="group" aria-label="미디어 유형" data-entity-media="" onPointerLeave={mediaGlide.leave}>
+              {([['videos', "동영상", facets.mediaCounts.videos, 'play', 'video'],
+                ['images', "이미지", facets.mediaCounts.images, 'pics', 'image']] as const).map(([value, text, count, symbol, kind]) => {
                 const title = `${text} ${Math.max(0, count || 0).toLocaleString()}`;
                 return (
                   <button key={value} type="button" data-media-view={value} data-media-icon={kind}
@@ -430,7 +431,7 @@ function Glass({ facets, view, total, busy, props, route }: {
           </>
         ) : null}
         <div ref={scroll} data-entity-scroll="">
-          <div ref={stateRow} role="group" aria-label="状态" data-entity-states="" onPointerLeave={stateGlide.leave}>
+          <div ref={stateRow} role="group" aria-label="상태" data-entity-states="" onPointerLeave={stateGlide.leave}>
             {FOLLOW_FILTERS.map(([key, label]) => (
               <button key={key} type="button" data-entity-state={key} data-follow-filter={key} data-entity-press=""
                 aria-pressed={view.status === key} onPointerEnter={stateGlide.hover}
@@ -443,7 +444,7 @@ function Glass({ facets, view, total, busy, props, route }: {
           <div ref={tagRow} data-entity-tags="">
             {providers.map(([key, label]) => (
               <button key={key} type="button" data-follow-provider={key} data-entity-press=""
-                aria-pressed={facets.provider === key} title={label} aria-label={`来源：${label}`}
+                aria-pressed={facets.provider === key} title={label} aria-label={`소스:${label}`}
                 onClick={() => route({ provider: facets.provider === key ? '' : key })}
                 dangerouslySetInnerHTML={{ __html: sourceMark(key, label) }} />
             ))}
@@ -461,17 +462,17 @@ function Glass({ facets, view, total, busy, props, route }: {
       </>}
       bottom={<>
         <h3 data-entity-readout="" data-follow-readout="">
-          {`${total.toLocaleString()} 项更新 · 显示 ${facets.visible.length.toLocaleString()}`}
+          {`${total.toLocaleString()} 개 업데이트 · 표시 ${facets.visible.length.toLocaleString()}`}
         </h3>
         <LibraryShortcuts currentHref={() => location.pathname + location.search} kind="creator" />
         <span data-entity-sorts="">
           <Shuffle onPress={actions.shuffle} />
           {images ? (
             <>
-              <Segments label="图片布局" value={props.photoLayout} options={FOLLOW_PHOTO_LAYOUTS}
+              <Segments label="이미지 레이아웃" value={props.photoLayout} options={FOLLOW_PHOTO_LAYOUTS}
                 onChange={(value) => actions.setPhotoLayout(value === 'fixed' ? 'fixed' : 'masonry')} />
-              <button type="button" data-follow-images-only="" aria-pressed={props.imagesOnly} title="仅显示图片"
-                aria-label="仅显示图片" onClick={() => actions.setImagesOnly(!props.imagesOnly)}>
+              <button type="button" data-follow-images-only="" aria-pressed={props.imagesOnly} title="이미지만 표시"
+                aria-label="이미지만 표시" onClick={() => actions.setImagesOnly(!props.imagesOnly)}>
                 {props.imagesOnly ? <span data-view-glide="" aria-hidden="true" /> : null}
                 <span className="contents" dangerouslySetInnerHTML={{ __html: icon('captions-off') }} />
               </button>
@@ -508,16 +509,16 @@ function Combo({ conditions, onDrop, onClear }: {
       {conditions.length ? (
         <>
           {conditions.map((row) => {
-            const text = `${row.kind === '标签' ? '' : `${row.kind} `}${row.label}`;
+            const text = `${row.kind === '标签' ? '' : `${koreanLabel(row.kind)} `}${row.label}`;
             return (
               <span key={`${row.kind}:${row.key}`} data-combo-chip="">
                 {text}
-                <button type="button" aria-label={`撤掉 ${text}`} data-follow-drop={row.key} data-follow-drop-kind={row.kind}
+                <button type="button" aria-label={`제거: ${text}`} data-follow-drop={row.key} data-follow-drop-kind={row.kind}
                   onClick={() => onDrop(row)}>✕</button>
               </span>
             );
           })}
-          <button type="button" data-combo-clear="" onClick={onClear}>全部清除</button>
+          <button type="button" data-combo-clear="" onClick={onClear}>모두 지우기</button>
         </>
       ) : null}
     </div>
@@ -530,7 +531,7 @@ function BrokenNote({ count, onManage }: { count: number; onManage(): void }) {
     <div data-follow-broken="" onClick={(event) => {
       if ((event.target as HTMLElement).closest('[data-follow-manage]')) onManage();
     }} dangerouslySetInnerHTML={{
-      __html: `<div class="geist-note geist-note-error fwarn" role="alert">${icon('alert')}<span>${count} 个来源上次检查失败，去<button type="button" class="flink" data-follow-manage>管理关注</button>看原因。</span></div>`,
+      __html: `<div class="geist-note geist-note-error fwarn" role="alert">${icon('alert')}<span>${count} 개 출처의 마지막 확인에 실패했습니다. <button type="button" class="flink" data-follow-manage>팔로우 관리</button>에서 원인을 확인하세요.</span></div>`,
     }} />
   );
 }
@@ -595,13 +596,13 @@ function cardId(group: FollowGroup, view: FollowView): number {
  *  一个来源都没有。没设筛选时不叫人去改筛选。 */
 function Empty({ data, filtered }: { data: FollowPage; filtered: boolean }) {
   const html = (data.groups || []).length
-    ? emptyStateHtml('search-x', '当前筛选下没有更新', '切换媒体类型、创作者、来源、时长或标签后再试。')
+    ? emptyStateHtml('search-x', "현재 필터에 맞는 업데이트 없음", "미디어 유형, 크리에이터, 출처, 재생 시간 또는 태그를 변경한 후 다시 시도하세요.")
     : (data.sources || []).length
       ? filtered
-        ? emptyStateHtml('rss', '没有符合条件的更新', '切换状态或来源筛选后再试。')
-        : emptyStateHtml('rss', '还没有更新', '点「检查更新」去各个来源取一遍；来源有新内容时会集中显示在这里。')
-      : emptyStateHtml('rss', '还没有关注任何来源', '添加创作者或订阅来源后，更新会集中显示在这里。',
-        { actions: '<a class="geist-button primary" href="/subscriptions?tab=add">添加关注</a>' });
+        ? emptyStateHtml('rss', "조건에 맞는 업데이트가 없습니다", "상태 또는 출처 필터를 변경한 후 다시 시도하세요.")
+        : emptyStateHtml('rss', "아직 업데이트가 없습니다", "「업데이트 확인」을 눌러 각 출처를 확인하세요. 새 콘텐츠가 있으면 여기에 모아 표시합니다.")
+      : emptyStateHtml('rss', "아직 팔로우 중인 출처가 없습니다", "크리에이터나 구독 출처를 추가하면 업데이트가 여기에 모아 표시됩니다.",
+        { actions: "<a class=\"geist-button primary\" href=\"/subscriptions?tab=add\">팔로우 추가</a>" });
   return <div data-follow-empty="" className="contents" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
@@ -610,7 +611,7 @@ function Empty({ data, filtered }: { data: FollowPage; filtered: boolean }) {
  * 而新状态不在这一档时整组移出；再在后台重读一遍，拿服务端的口径校正。回执带一颗撤销键，保存
  * 进账本的不给撤销——那是另一件事。只读端写入必然 409，那是正常状态，照实写在卡上。资料页的在线
  * 视图用的是同一个钩子，`view` 是它那一份只按创作者筛的视图。 */
-const STATUS_RECEIPTS: Record<string, string> = { new: '已恢复未看', seen: '已标记已看', ignored: '已忽略' };
+const STATUS_RECEIPTS: Record<string, string> = { new: "안 본 항목으로 변경했습니다", seen: "본 항목으로 표시했습니다", ignored: "무시됨" };
 
 export function useFollowWrite(props: Pick<FollowFeedProps, 'view' | 'revision' | 'actions'>) {
   const { view, revision, actions } = props;
@@ -640,7 +641,7 @@ export function useFollowWrite(props: Pick<FollowFeedProps, 'view' | 'revision' 
     onSuccess: (_result, { id, to, was }) => {
       apply(id, to);
       refresh();
-      actions.toast(STATUS_RECEIPTS[to] || '已更新关注状态', {
+      actions.toast(STATUS_RECEIPTS[to] || "팔로우 상태를 업데이트했습니다", {
         undo: was !== 'saved' ? async () => {
           await apiSend(FOLLOW_STATUS_URL, { item: id, to: was });
           apply(id, was);
@@ -650,7 +651,7 @@ export function useFollowWrite(props: Pick<FollowFeedProps, 'view' | 'revision' 
     },
     onError: (error, { id }) => {
       mark(id, requestErrorMessage(error), setFailures);
-      actions.failure('更新关注状态', error);
+      actions.failure("팔로우 상태 업데이트", error);
     },
     onSettled: (_result, _error, { id }) => mark(id, '', setBusy),
   });
@@ -659,11 +660,11 @@ export function useFollowWrite(props: Pick<FollowFeedProps, 'view' | 'revision' 
     onSuccess: (_result, id) => {
       apply(id, 'saved');
       refresh();
-      actions.toast('已保存到账本');
+      actions.toast("원장에 저장했습니다");
     },
     onError: (error, id) => {
       mark(id, requestErrorMessage(error), setFailures);
-      actions.failure('保存到账本', error);
+      actions.failure("원장에 저장", error);
     },
     onSettled: (_result, _error, id) => mark(id, '', setBusy),
   });

@@ -34,7 +34,7 @@ export const islandGlyph = (name: string, cls: string): string =>
 
 /** 收藏入口在页面等待阶段保留图标与尺寸，交互由已就绪的页面接管。 */
 export function islandShortcutsEntry(): string {
-  return `<span data-shortcuts-entry class="inline-flex flex-none"><button type="button" data-shortcuts-trigger data-filter-action data-skeleton-action disabled tabindex="-1" aria-label="我的收藏" title="我的收藏" class="inline-grid size-7.5 flex-none place-items-center rounded-(--control-radius) border border-(--border-10) bg-(--surface) text-(--muted)">${islandGlyph('star', 'size-4')}</button></span>`;
+  return `<span data-shortcuts-entry class="inline-flex flex-none"><button type="button" data-shortcuts-trigger data-filter-action data-skeleton-action disabled tabindex="-1" aria-label="내 즐겨찾기" title="내 즐겨찾기" class="inline-grid size-7.5 flex-none place-items-center rounded-(--control-radius) border border-(--border-10) bg-(--surface) text-(--muted)">${islandGlyph('star', 'size-4')}</button></span>`;
 }
 
 /** 与 Board Input 的中号外框、前缀和正文使用相同几何。 */

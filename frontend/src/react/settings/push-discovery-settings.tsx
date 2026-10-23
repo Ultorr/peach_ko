@@ -61,42 +61,42 @@ export function PushDiscoveryForm({ initial, receipt }: {
       enabled: state.enabled, watch_local: state.watch_local, cloud: state.cloud, prefixes: rows,
     };
     void action.run('save', (signal) => apiSend<PushDiscoveryState>(SAVE_URL, body, 'POST', signal),
-      (next) => settle(next, '已保存配置'), (cause) => setFailure(errorMessage(cause)));
+      (next) => settle(next, "설정이 저장되었습니다"), (cause) => setFailure(errorMessage(cause)));
   };
 
   const rotate = () => {
     void action.run('secret', (signal) => apiSend<PushDiscoveryState>(SECRET_URL, {}, 'POST', signal),
-      (next) => settle(next, '已更换共享密钥'), (cause) => setFailure(errorMessage(cause)));
+      (next) => settle(next, "공유 키를 변경했습니다"), (cause) => setFailure(errorMessage(cause)));
   };
 
-  const ingested = `已入库 ${live.queue.ingested} 个文件`
-    + (live.queue.pending ? `，队列里还有 ${live.queue.pending} 条` : '');
+  const ingested = `등록 완료: ${live.queue.ingested} 개 파일`
+    + (live.queue.pending ? `, 대기 중: ${live.queue.pending} 개` : '');
   const watching = live.local_running
-    ? `正在监视 ${live.local_roots.join('、')}` : live.local_message || '没有运行';
+    ? `모니터링 중: ${live.local_roots.join('、')}` : live.local_message || "실행 중이 아님";
 
   return (
-    <Section title="推送发现" onSubmit={submit}>
+    <Section title="푸시 알림으로 파일 감지" onSubmit={submit}>
       <Rows>
-        <SettingsRow label="新文件落地就入库" description={live.enabled ? ingested : undefined}>
-          <Switch aria-label="新文件落地就入库" isSelected={state.enabled} isDisabled={!state.available}
+        <SettingsRow label="새 파일이 생기면 즉시 등록" description={live.enabled ? ingested : undefined}>
+          <Switch aria-label="새 파일이 생기면 즉시 등록" isSelected={state.enabled} isDisabled={!state.available}
             onChange={(enabled) => setState({ ...state, enabled })} />
         </SettingsRow>
-        <SettingsRow label="监视本机文件夹" description={live.enabled && live.watch_local ? watching : undefined}>
-          <Switch aria-label="监视本机文件夹" isSelected={state.watch_local}
+        <SettingsRow label="이 기기의 폴더 모니터링" description={live.enabled && live.watch_local ? watching : undefined}>
+          <Switch aria-label="이 기기의 폴더 모니터링" isSelected={state.watch_local}
             isDisabled={!state.available || !state.enabled}
             onChange={(watchLocal) => setState({ ...state, watch_local: watchLocal })} />
         </SettingsRow>
-        <SettingsRow label="接收 CloudDrive2 通知">
-          <Switch aria-label="接收 CloudDrive2 通知" isSelected={state.cloud}
+        <SettingsRow label="CloudDrive2 알림 받기">
+          <Switch aria-label="CloudDrive2 알림 받기" isSelected={state.cloud}
             isDisabled={!state.available || !state.enabled}
             onChange={(cloud) => setState({ ...state, cloud })} />
         </SettingsRow>
         {live.enabled && live.cloud ? (
-          <SettingsRow label="Webhook 配置" description={live.config_toml
-            ? '贴进 CloudDrive2「设置 → Webhooks」，需要会员；更换密钥后要重贴。'
+          <SettingsRow label="Webhook 설정" description={live.config_toml
+            ? "CloudDrive2의 ‘설정 → Webhooks’에 붙여 넣으세요. 유료 멤버십이 필요하며 키를 변경하면 다시 붙여 넣어야 합니다."
             : live.origin
-              ? '还没有共享密钥，保存配置后生成。'
-              : '要先有 CloudDrive2 能访问的 HTTPS 地址才能生成。'}>
+              ? "공유 키가 아직 없습니다. 설정을 저장하면 생성됩니다."
+              : "먼저 CloudDrive2에서 접근할 수 있는 HTTPS 주소가 있어야 생성할 수 있습니다."}>
           </SettingsRow>
         ) : null}
       </Rows>
@@ -105,11 +105,11 @@ export function PushDiscoveryForm({ initial, receipt }: {
           <div className="flex flex-col gap-3">
             {/* 收起来是因为抄它的人不用读它：三十行里只有地址和密钥两处跟这台机器有关，
                 两处都已经填好了。展开是留给要核对推到哪儿的那一次。 */}
-            <Disclosure summary="查看配置">
-              <CodeBlock code={live.config_toml} language="toml" label="CloudDrive2 配置" bounded={false} copyLabel="复制配置"
-                onCopy={() => receipt('已复制 CloudDrive2 配置')} />
-              <Help>Windows 桌面版粘贴后显示「无效」时，把这段存成 .toml 文件，放进
-                %LOCALAPPDATA%\CloudDrive.WinUI\webhooks\ 目录。</Help>
+            <Disclosure summary="설정 보기">
+              <CodeBlock code={live.config_toml} language="toml" label="CloudDrive2 설정" bounded={false} copyLabel="설정 복사"
+                onCopy={() => receipt("CloudDrive2 설정을 복사했습니다")} />
+              <Help>Windows 데스크톱 버전에서 붙여 넣은 후 ‘유효하지 않음’이 표시되면 이 내용을 .toml 파일로 저장하여
+                %LOCALAPPDATA%\CloudDrive.WinUI\webhooks\ 폴더에 넣으세요.</Help>
             </Disclosure>
           </div>
         </Stack>
@@ -117,18 +117,18 @@ export function PushDiscoveryForm({ initial, receipt }: {
       {state.enabled && state.cloud ? (
         <Stack divided>
           <div className="flex flex-col gap-3">
-            <FieldLabel>云端路径前缀</FieldLabel>
-            <div role="group" aria-label="云端路径前缀" className="flex flex-col gap-3">
+            <FieldLabel>클라우드 경로 접두사</FieldLabel>
+            <div role="group" aria-label="클라우드 경로 접두사" className="flex flex-col gap-3">
               {rows.map((row, index) => (
                 <div key={index} className="flex items-start gap-2">
-                  <Input className="min-w-0 flex-1" aria-label={`云端路径前缀 ${index + 1}`}
+                  <Input className="min-w-0 flex-1" aria-label={`클라우드 경로 접두사 ${index + 1}`}
                     placeholder="/115" autoComplete="off" maxLength={200} value={row.prefix}
                     onChange={(prefix) => edit(index, { prefix })} />
-                  <Select aria-label={`前缀 ${index + 1} 对应的媒体根`} selectedKey={row.root}
+                  <Select aria-label={`접두사 ${index + 1} 에 해당하는 미디어 루트`} selectedKey={row.root}
                     onSelectionChange={(key) => { if (key !== null) edit(index, { root: String(key) }); }}>
                     {roots.map((root) => <SelectItem key={root} id={root}>{root}</SelectItem>)}
                   </Select>
-                  <Button variant="danger" iconOnly leadingIcon={RiDeleteBinLine} aria-label="移除这一条"
+                  <Button variant="danger" iconOnly leadingIcon={RiDeleteBinLine} aria-label="이 항목 제거"
                     onClick={() => setRows((list) => list.filter((_row, i) => i !== index))} />
                 </div>
               ))}
@@ -136,7 +136,7 @@ export function PushDiscoveryForm({ initial, receipt }: {
             <div>
               <Button variant="secondary" size="small"
                 onClick={() => setRows((list) => [...list, { prefix: '', root: roots[0] ?? '' }])}>
-                添加前缀
+                접두사 추가
               </Button>
             </div>
           </div>
@@ -149,10 +149,10 @@ export function PushDiscoveryForm({ initial, receipt }: {
       <Footer>
         {live.enabled && live.cloud && live.config_toml ? (
           <Button variant="secondary" onClick={rotate} disabled={!state.available}
-            {...busyProps(action.busy === 'secret')}>更换密钥</Button>
+            {...busyProps(action.busy === 'secret')}>키 변경</Button>
         ) : null}
         <Button type="submit" disabled={!state.available} {...busyProps(action.busy === 'save')}>
-          保存配置
+          설정 저장
         </Button>
       </Footer>
     </Section>

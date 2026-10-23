@@ -68,21 +68,21 @@ const CARD = `${cardClass()} flex flex-col gap-4`;
 const TILE = 'rounded-xl bg-background-primary-default p-3';
 
 /* 中文正文写成常量：JSX 里换行的文字会在接缝处多出一个空格，中文句子里看得见。 */
-const REFRESH_TITLE = '读取运行 Peach 的这台电脑上的浏览历史与书签';
-const NO_SOURCE_HINT = '导入或读取浏览记录后，这里会列出已采集设备。';
-const NO_LEAD_HINT = '馆藏里暂时没有对得上浏览信号的标签。';
-const NO_CATEGORY_HINT = '采集浏览记录后，这里会显示聚合后的口味证据。';
-const GAP_HINT = '这些词在浏览记录中出现，但 Peach 观看记录还没有对应证据';
-const NO_BROWSER_TAG_HINT = '采集浏览记录后，这里会列出浏览过的标签。';
-const NO_BROWSER_CREATOR_HINT = '采集浏览记录后，这里会列出浏览过的创作者。';
-const NO_DOMAIN_HINT = '采集浏览记录后，这里会列出常访问的网站。';
-const NO_PEACH_TAG_HINT = '在 Peach 里播放或评价作品后，这里会列出对应的标签。';
-const NO_PEACH_CREATOR_HINT = '在 Peach 里播放或评价作品后，这里会列出对应的创作者。';
-const NO_PEACH_PERFORMER_HINT = '在 Peach 里播放或评价作品后，这里会列出对应的女优。';
-const GUIDE_LOCAL = '在运行 Peach 的电脑上使用浏览器：点上面的「读取浏览器记录」。';
-const GUIDE_REMOTE = '记录在其他设备上：导出文件后，选择「导入历史文件」或「导入书签文件」。书签支持浏览器导出的 HTML 文件和 Chromium Bookmarks JSON 文件。';
-const GUIDE_REFRESH = '需要刷新时再次读取或导入；数据源可在页面底部移除。';
-const REMOVE_BODY = '删除这个来源的已导入记录，原始文件保留。若浏览器仍启用，下次读取会再次导入。';
+const REFRESH_TITLE = "Peach가 실행 중인 이 컴퓨터의 방문 기록과 북마크 읽기";
+const NO_SOURCE_HINT = "방문 기록을 가져오거나 읽으면 수집된 기기가 여기에 표시됩니다.";
+const NO_LEAD_HINT = "컬렉션에 방문 활동과 일치하는 태그가 아직 없습니다.";
+const NO_CATEGORY_HINT = "방문 기록을 수집하면 종합한 취향 분석 근거가 여기에 표시됩니다.";
+const GAP_HINT = "방문 기록에 등장한 단어지만 Peach 시청 기록에는 아직 해당 근거가 없습니다";
+const NO_BROWSER_TAG_HINT = "방문 기록을 수집하면 방문한 태그가 여기에 표시됩니다.";
+const NO_BROWSER_CREATOR_HINT = "방문 기록을 수집하면 방문한 크리에이터가 여기에 표시됩니다.";
+const NO_DOMAIN_HINT = "방문 기록을 수집하면 자주 방문하는 웹사이트가 여기에 표시됩니다.";
+const NO_PEACH_TAG_HINT = "Peach에서 항목을 재생하거나 평가하면 해당 태그가 여기에 표시됩니다.";
+const NO_PEACH_CREATOR_HINT = "Peach에서 항목을 재생하거나 평가하면 해당 크리에이터가 여기에 표시됩니다.";
+const NO_PEACH_PERFORMER_HINT = "Peach에서 항목을 재생하거나 평가하면 해당 배우가 여기에 표시됩니다.";
+const GUIDE_LOCAL = "Peach가 실행 중인 컴퓨터의 브라우저를 사용하는 경우: 위의 ‘브라우저 기록 읽기’를 누르세요.";
+const GUIDE_REMOTE = "다른 기기에 기록이 있는 경우: 파일을 내보낸 후 ‘방문 기록 파일 가져오기’ 또는 ‘북마크 파일 가져오기’를 선택하세요. 북마크는 브라우저에서 내보낸 HTML 파일과 Chromium Bookmarks JSON 파일을 지원합니다.";
+const GUIDE_REFRESH = "업데이트가 필요하면 다시 읽거나 가져오세요. 데이터 소스는 페이지 하단에서 제거할 수 있습니다.";
+const REMOVE_BODY = "이 소스에서 가져온 기록을 삭제합니다. 원본 파일은 유지됩니다. 브라우저가 계속 활성화되어 있으면 다음에 읽을 때 다시 가져옵니다.";
 
 /** 跳过指南是这台浏览器的持久偏好，和分析结果无关，所以不进 Query。 */
 export const TASTE_GUIDE_KEY = 'peach-taste-guide-dismissed';
@@ -136,7 +136,7 @@ interface RankListProps {
 /** 一榜名次。点得动的那些是按钮，其余是行——馆藏里没有对应条目时点进去只会是一张空页。 */
 function RankList({ rows, kind, visual, empty, onSignal }: RankListProps) {
   if (!rows.length) {
-    return <EmptyState shell="plain" icon={RiSearchLine} title="暂无足够证据">{empty}</EmptyState>;
+    return <EmptyState shell="plain" icon={RiSearchLine} title="분석 근거가 아직 부족합니다">{empty}</EmptyState>;
   }
   const shares = rankShares(rows);
   return (
@@ -232,9 +232,9 @@ function AnalysisCard({ data, onSignal, navigate }:
       { key: `route:${item.route}`, title: item.title, detail: item.detail, act: () => navigate(item.route) })),
   ];
   return (
-    <section className={CARD} aria-label="口味总结">
+    <section className={CARD} aria-label="취향 요약">
       <header className="flex flex-col gap-2">
-        <h3 className="text-title-2-medium text-text-primary">口味总结</h3>
+        <h3 className="text-title-2-medium text-text-primary">취향 요약</h3>
         {/* 结论句是这张卡的主角：旧 `.tasteleads .tastelede p` 是 20/30 的主文字色，比正文
             大一档、限宽 64ch。「有多少把握」是它的注脚，旧版就是一句灰字配一枚 8px 圆点。 */}
         <p className="max-w-prose text-title-2-regular wrap-anywhere text-text-primary">{analysis.headline}</p>
@@ -242,7 +242,7 @@ function AnalysisCard({ data, onSignal, navigate }:
           <i aria-hidden className={`size-2 shrink-0 rounded-full ${confidence.level === 'high'
             ? 'bg-status-lime-text'
             : confidence.level === 'medium' ? 'bg-status-yellow-text' : 'bg-text-tertiary'}`} />
-          <span className="min-w-0 wrap-anywhere">{confidence.label || '仍在学习'}</span>
+          <span className="min-w-0 wrap-anywhere">{confidence.label || "학습 중"}</span>
         </p>
       </header>
       {analysis.points?.length ? (
@@ -268,7 +268,7 @@ function AnalysisCard({ data, onSignal, navigate }:
             </button>
           ))}
         </div>
-      ) : <EmptyState shell="plain" icon={RiSearchLine} title="还没有可探索的入口">{NO_LEAD_HINT}</EmptyState>}
+      ) : <EmptyState shell="plain" icon={RiSearchLine} title="탐색할 항목이 아직 없습니다">{NO_LEAD_HINT}</EmptyState>}
     </section>
   );
 }
@@ -285,24 +285,24 @@ function HistoryGuide({ onboarding, done }: { onboarding: boolean; done: boolean
   };
   return (
     <div className={cardClass({ padding: 'none', className: 'p-4' })}>
-      <Disclosure summary="浏览器历史记录导入指南" defaultOpen={onboarding}>
+      <Disclosure summary="브라우저 방문 기록 가져오기 안내" defaultOpen={onboarding}>
         <p className="text-body-2-regular text-text-secondary">{GUIDE_LOCAL}</p>
         <p className="text-body-2-regular text-text-secondary">{GUIDE_REMOTE}</p>
         <ul className="flex list-disc flex-col gap-1 pl-5 text-body-2-regular text-text-secondary">
           <li>
-            Chrome：在 <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer"
+            Chrome: <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer"
               className="text-text-primary underline-offset-4 hover:underline">Google Takeout</a>
-            {' '}选择 Chrome 历史记录，下载 ZIP 后直接导入。
+            {' '}사이트에서 Chrome 방문 기록을 선택하고 ZIP 파일을 다운로드한 후 바로 가져오세요.
           </li>
           <li>
-            其他浏览器：用 <a href="https://github.com/purarue/browserexport" target="_blank" rel="noopener noreferrer"
+            기타 브라우저: <a href="https://github.com/purarue/browserexport" target="_blank" rel="noopener noreferrer"
               className="text-text-primary underline-offset-4 hover:underline">browserexport</a>
-            {' '}导出历史记录，再导入导出文件。
+            {' '}도구로 방문 기록을 내보낸 후 해당 파일을 가져오세요.
           </li>
         </ul>
         <p className="text-body-2-regular text-text-secondary">{GUIDE_REFRESH}</p>
         <span className="self-start">
-          <Button variant="secondary" size="small" onClick={skip}>跳过</Button>
+          <Button variant="secondary" size="small" onClick={skip}>건너뛰기</Button>
         </span>
       </Disclosure>
     </div>
@@ -323,23 +323,23 @@ function HistoryActions(
     <>
       <span data-button-group data-split-button data-variant="primary">
         <Button leadingIcon={RiCompassLine} title={REFRESH_TITLE} onClick={onRefresh} {...busyProps(busy)}>
-          读取浏览器记录
+          브라우저 기록 읽기
         </Button>
         <Button ref={trigger} iconOnly leadingIcon={RiArrowDownSLine}
-          aria-label="更多取得浏览记录的方式" aria-haspopup="dialog" aria-expanded={open}
+          aria-label="방문 기록을 가져오는 다른 방법" aria-haspopup="dialog" aria-expanded={open}
           {...busyProps(busy)} onClick={() => { if (!busy) setOpen(true) }} />
       </span>
       <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen}
         placement="bottom end" offset={4} className={MENU_POPOVER_SURFACE}>
-        <Dialog aria-label="更多取得浏览记录的方式" className="flex w-52 flex-col gap-1 outline-none">
+        <Dialog aria-label="방문 기록을 가져오는 다른 방법" className="flex w-52 flex-col gap-1 outline-none">
           <button type="button" className={MENU_ROW} onClick={() => pick(onRefresh)}>
-            <RiCompassLine aria-hidden className="size-4 shrink-0" />读取浏览器记录
+            <RiCompassLine aria-hidden className="size-4 shrink-0" />브라우저 기록 읽기
           </button>
           <button type="button" className={MENU_ROW} onClick={() => pick(onImport)}>
-            <RiUploadLine aria-hidden className="size-4 shrink-0" />导入历史文件
+            <RiUploadLine aria-hidden className="size-4 shrink-0" />방문 기록 파일 가져오기
           </button>
           <button type="button" className={MENU_ROW} onClick={() => pick(onImportBookmarks)}>
-            <RiBookmarkLine aria-hidden className="size-4 shrink-0" />导入书签文件
+            <RiBookmarkLine aria-hidden className="size-4 shrink-0" />북마크 파일 가져오기
           </button>
         </Dialog>
       </Popover>
@@ -357,7 +357,7 @@ function SourceList(
     onSuccess: (result) => {
       // 服务端连这一范围的新 dashboard 一起回，换进缓存即可，不为一次移除把整页重取一遍。
       queryClient.setQueryData(tasteKey(range), result.dashboard);
-      toast('已移除口味数据源');
+      toast("취향 데이터 소스를 제거했습니다");
     },
   });
   return (
@@ -376,22 +376,22 @@ function SourceList(
               <span className="flex min-w-0 grow flex-col gap-0.5">
                 <b className="min-w-0 text-body-2-medium break-words text-text-primary">{source.profile}</b>
                 <small className="min-w-0 text-caption-1-regular break-words text-text-secondary">
-                  {`导入文件 · ${source.host} · ${Number(source.visits || source.bookmarks || 0).toLocaleString()} ${source.bookmarks ? '枚书签' : '条历史'}`}
+                  {`가져온 파일 · ${source.host} · ${Number(source.visits || source.bookmarks || 0).toLocaleString()} ${source.bookmarks ? "개 북마크" : "건의 방문 기록"}`}
                 </small>
               </span>
-              <Button variant="secondary" size="small" aria-label={`移除 ${source.profile}`} className="shrink-0"
+              <Button variant="secondary" size="small" aria-label={`제거: ${source.profile}`} className="shrink-0"
                 iconOnly leadingIcon={RiDeleteBinLine} {...busyProps(remove.isPending)}
                 onClick={() => {
                   if (remove.isPending) return;
                   void confirmModal({
-                    title: '移除口味数据源', body: REMOVE_BODY, confirmLabel: '移除口味数据源',
+                    title: "취향 데이터 소스 제거", body: REMOVE_BODY, confirmLabel: "취향 데이터 소스 제거",
                     onConfirm: () => remove.mutateAsync(source.source_key),
                   });
                 }} />
             </div>
           ))}
         </>
-      ) : !browsers.length ? <EmptyState shell="plain" icon={RiDatabase2Line} title="还没有数据源">{NO_SOURCE_HINT}</EmptyState> : null}
+      ) : !browsers.length ? <EmptyState shell="plain" icon={RiDatabase2Line} title="데이터 소스가 아직 없습니다">{NO_SOURCE_HINT}</EmptyState> : null}
     </BrowserSources>
   );
 }
@@ -419,7 +419,7 @@ export function TastePage(props: TasteProps) {
     onFinish: (state) => {
       if (state.status === 'failed') return;
       void queryClient.invalidateQueries({ queryKey: ['taste'] });
-      toast(state.warnings?.length ? '部分浏览记录未取得' : '已更新口味分析');
+      toast(state.warnings?.length ? "일부 방문 기록을 가져오지 못했습니다" : "취향 분석을 업데이트했습니다");
     },
   });
   const load = useMutation({
@@ -431,7 +431,7 @@ export function TastePage(props: TasteProps) {
          回来的那一份又把刚换进去的这一份盖掉。 */
       queryClient.setQueryData(tasteKey('all'), result.dashboard);
       setRange('all');
-      toast('已导入口味数据');
+      toast("취향 데이터를 가져왔습니다");
     },
   });
 
@@ -452,8 +452,8 @@ export function TastePage(props: TasteProps) {
   if (!data) {
     return (
       <Page>
-        <Note tone="error" title="口味分析读取失败">
-          {taste.error ? errorMessage(taste.error) : '读取口味分析失败'}
+        <Note tone="error" title="취향 분석을 읽지 못했습니다">
+          {taste.error ? errorMessage(taste.error) : "취향 분석 읽기 실패"}
         </Note>
       </Page>
     );
@@ -469,7 +469,7 @@ export function TastePage(props: TasteProps) {
   const identified = coverage.identified || 0;
   const problem = refresh.error ? errorMessage(refresh.error)
     : load.error ? errorMessage(load.error)
-    : outcome?.status === 'failed' ? (outcome.error || '读取未取得')
+    : outcome?.status === 'failed' ? (outcome.error || "데이터를 읽지 못했습니다")
     : '';
 
   return (
@@ -478,12 +478,12 @@ export function TastePage(props: TasteProps) {
         className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* 旧 `.insightswitch`：证据来源是两个互斥视图，形态是分段控件不是两枚裸按钮。 */}
-          <TabList aria-label="口味证据来源" className={SEGMENTED_TRACK}>
-            <Tab id="browser" className={SEGMENT}>浏览器记录</Tab>
-            <Tab id="peach" className={SEGMENT}>Peach 内部</Tab>
+          <TabList aria-label="취향 분석 근거 출처" className={SEGMENTED_TRACK}>
+            <Tab id="browser" className={SEGMENT}>브라우저 기록</Tab>
+            <Tab id="peach" className={SEGMENT}>Peach 내부</Tab>
           </TabList>
           <div className="flex flex-wrap items-center gap-2">
-            <Select aria-label="分析范围" selectedKey={range}
+            <Select aria-label="분석 범위" selectedKey={range}
               onSelectionChange={(key) => { if (key !== null) setRange(String(key)) }}>
               {TASTE_WINDOWS.map(([key, name]) => <SelectItem key={key} id={key}>{name}</SelectItem>)}
             </Select>
@@ -501,82 +501,82 @@ export function TastePage(props: TasteProps) {
           done={!!(summary.history_sources || data.updated_at)} />
         {/* 这一趟在后台跑，关掉页面还在继续，所以状态留在页面上而不是只让按钮转一下。 */}
         <div aria-live="polite" className="flex flex-col gap-3 empty:hidden">
-          {running ? <TaskProgress label={job?.message || '正在读取浏览记录并更新口味分析'}
+          {running ? <TaskProgress label={job?.message || "방문 기록을 읽고 취향 분석을 업데이트하는 중"}
             value={job?.checked} total={job?.total} /> : null}
-          {load.isPending ? <TaskProgress label="正在导入口味数据" /> : null}
+          {load.isPending ? <TaskProgress label="취향 데이터를 가져오는 중" /> : null}
           {problem ? <Note tone="error">{problem}</Note> : null}
           {outcome?.warnings?.length ? <Note tone="warning">{outcome.warnings.join('；')}</Note> : null}
         </div>
         <TabPanel id="browser" className="flex flex-col gap-5">
           <div className={STAT_STRIP}>
-            <SummaryCard accent={0} icon={RiHistoryLine} term="浏览记录"
+            <SummaryCard accent={0} icon={RiHistoryLine} term="탐색 기록"
               figure={Number(summary.history_visits || 0).toLocaleString()}
               detail={historySpan(summary)} detailTitle={`${tasteDate(summary.range_start)}—${tasteDate(summary.range_end)}`} />
-            <SummaryCard accent={1} icon={RiPriceTag3Line} term="口味维度"
-              figure={categories.length.toLocaleString()} detail={categories[0]?.name || '尚无主维度'} />
-            <SummaryCard accent={2} icon={RiSearchLine} term="浏览候选" figure={gaps.length.toLocaleString()} />
-            <SummaryCard accent={3} icon={RiBookmarkLine} term="浏览器书签"
+            <SummaryCard accent={1} icon={RiPriceTag3Line} term="취향 항목"
+              figure={categories.length.toLocaleString()} detail={categories[0]?.name || "주요 취향 범주 없음"} />
+            <SummaryCard accent={2} icon={RiSearchLine} term="탐색 후보" figure={gaps.length.toLocaleString()} />
+            <SummaryCard accent={3} icon={RiBookmarkLine} term="브라우저 북마크"
               figure={Number(summary.bookmarks || 0).toLocaleString()}
-              detail={`${Number(storage.exports || 0).toLocaleString()} 份私有导出 · ${fmtSize(storage.bytes || 0)}`} />
+              detail={`${Number(storage.exports || 0).toLocaleString()} 개 비공개 내보내기 파일 · ${fmtSize(storage.bytes || 0)}`} />
           </div>
           {/* 维度不足三个画不成雷达：左栏只留标题与更新时间，排行条占满整张卡。 */}
-          <section className={radar ? `${CARD} md:flex-row md:gap-6` : CARD} aria-label="浏览器画像">
+          <section className={radar ? `${CARD} md:flex-row md:gap-6` : CARD} aria-label="브라우저 기반 취향 프로필">
             <div className={radar
               ? 'flex shrink-0 flex-col gap-2 pb-5 md:w-80 md:pr-6 md:pb-0'
               : 'flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1'}>
-              <span className="text-caption-1-regular text-text-secondary">浏览器画像</span>
-              {radar ? <TasteRadar rows={categories} label="主要口味维度" /> : null}
+              <span className="text-caption-1-regular text-text-secondary">브라우저 기반 취향 프로필</span>
+              {radar ? <TasteRadar rows={categories} label="주요 취향 범주" /> : null}
               <small className="text-caption-1-regular text-text-secondary">
-                {data.updated_at ? `更新于 ${tasteDate(data.updated_at)}` : '尚未采集浏览记录'}
+                {data.updated_at ? `업데이트: ${tasteDate(data.updated_at)}` : "아직 방문 기록을 수집하지 않았습니다"}
               </small>
             </div>
             {/* 右栏跟着雷达那一栏等高（行内默认拉伸），排行条在纵向 flex 里撑满这一栏。 */}
             <div className="flex min-w-0 grow flex-col">
               {categories.length
-                ? <RankedBars rows={categories} label="口味维度排名" />
-                : <EmptyState shell="plain" icon={RiSearchLine} title="暂无口味维度">{NO_CATEGORY_HINT}</EmptyState>}
+                ? <RankedBars rows={categories} label="취향 범주 순위" />
+                : <EmptyState shell="plain" icon={RiSearchLine} title="취향 범주가 아직 없습니다">{NO_CATEGORY_HINT}</EmptyState>}
             </div>
           </section>
-          <ActivityHeat activity={data.activity} title="浏览活跃时间" dailyTitle="每日活跃"
-            words={{ unit: '口味网站访问', series: '访问', cellUnit: '次访问' }} tone={4}
-            empty="还没有可用于分析的口味网站访问记录。" />
+          <ActivityHeat activity={data.activity} title="탐색 활동 시간" dailyTitle="일일 활동"
+            words={{ unit: "취향 관련 웹사이트 방문", series: "방문", cellUnit: "회 방문" }} tone={4}
+            empty="분석할 수 있는 취향 관련 웹사이트 방문 기록이 아직 없습니다." />
           <CreatorSankey flows={data.creator_flows} />
-          <DimensionPanels label="浏览器口味维度" onSignal={onSignal}
+          <DimensionPanels label="브라우저 기반 취향 범주" onSignal={onSignal}
             panels={[
-              { id: 'tags', name: '标签', props: { rows: rank.browser_tags || [], kind: 'tag', visual: 'none', empty: NO_BROWSER_TAG_HINT } },
-              { id: 'creators', name: '创作者', props: { rows: rank.browser_creators || [], kind: 'creator', visual: 'creator', empty: NO_BROWSER_CREATOR_HINT } },
-              { id: 'performers', name: '女优', props: { rows: rank.browser_performers || [], kind: 'performer', visual: 'entity', empty: '还没有与已建档女优关联的浏览记录。' } },
-              { id: 'domains', name: '常访问网站', props: { rows: rank.domains || [], kind: '', visual: 'domain', empty: NO_DOMAIN_HINT } },
-              { id: 'gaps', name: '浏览候选', props: { rows: gaps, kind: '', visual: 'none', empty: GAP_HINT } },
+              { id: 'tags', name: "태그", props: { rows: rank.browser_tags || [], kind: 'tag', visual: 'none', empty: NO_BROWSER_TAG_HINT } },
+              { id: 'creators', name: "크리에이터", props: { rows: rank.browser_creators || [], kind: 'creator', visual: 'creator', empty: NO_BROWSER_CREATOR_HINT } },
+              { id: 'performers', name: "배우", props: { rows: rank.browser_performers || [], kind: 'performer', visual: 'entity', empty: "등록된 배우와 관련된 방문 기록이 아직 없습니다." } },
+              { id: 'domains', name: "자주 방문하는 사이트", props: { rows: rank.domains || [], kind: '', visual: 'domain', empty: NO_DOMAIN_HINT } },
+              { id: 'gaps', name: "탐색 후보", props: { rows: gaps, kind: '', visual: 'none', empty: GAP_HINT } },
             ]} />
         </TabPanel>
         <TabPanel id="peach" className="flex flex-col gap-5">
           <div className={STAT_STRIP}>
-            <SummaryCard accent={0} icon={RiEyeLine} term="Peach 看过"
+            <SummaryCard accent={0} icon={RiEyeLine} term="Peach에서 시청함"
               figure={Number(summary.peach_items || 0).toLocaleString()}
               detail={tasteHours(summary.peach_seconds || 0)} />
-            <SummaryCard accent={1} icon={RiThumbUpLine} term="喜欢" figure={Number(summary.liked || 0).toLocaleString()} />
-            <SummaryCard accent={2} icon={RiThumbDownLine} term="不合口味" figure={Number(summary.disliked || 0).toLocaleString()} />
-            <SummaryCard accent={3} icon={RiPriceTag3Line} term="有标签" figure={tagged.toLocaleString()} />
+            <SummaryCard accent={1} icon={RiThumbUpLine} term="좋아요" figure={Number(summary.liked || 0).toLocaleString()} />
+            <SummaryCard accent={2} icon={RiThumbDownLine} term="취향에 맞지 않음" figure={Number(summary.disliked || 0).toLocaleString()} />
+            <SummaryCard accent={3} icon={RiPriceTag3Line} term="태그 있음" figure={tagged.toLocaleString()} />
           </div>
-          <section className={`${CARD} md:flex-row md:gap-6`} aria-label="Peach 观看">
+          <section className={`${CARD} md:flex-row md:gap-6`} aria-label="Peach 시청">
             <div className="flex shrink-0 flex-col gap-0.5 pb-5 md:w-72 md:pr-6 md:pb-0">
-              <span className="text-caption-1-regular text-text-secondary">Peach 观看</span>
+              <span className="text-caption-1-regular text-text-secondary">Peach 시청</span>
               <b className="text-display-4-medium tabular-nums text-text-primary">
                 {Number(summary.peach_items || 0).toLocaleString()}
               </b>
-              <span className="text-body-2-regular text-text-secondary">个作品有内部行为证据</span>
+              <span className="text-body-2-regular text-text-secondary">개 항목에 앱 내 활동 기록 있음</span>
             </div>
             <div className="flex min-w-0 grow flex-col">
-              <CoverageMetric term="有标签" value={tagged} rest={coverage.untagged || 0} />
-              <CoverageMetric term="有身份" value={identified} rest={coverage.unidentified || 0} />
+              <CoverageMetric term="태그 있음" value={tagged} rest={coverage.untagged || 0} />
+              <CoverageMetric term="식별 정보 있음" value={identified} rest={coverage.unidentified || 0} />
             </div>
           </section>
-          <DimensionPanels label="Peach 口味维度" onSignal={onSignal}
+          <DimensionPanels label="Peach 취향 범주" onSignal={onSignal}
             panels={[
-              { id: 'tags', name: '标签', props: { rows: rank.peach_tags || [], kind: 'tag', visual: 'none', empty: NO_PEACH_TAG_HINT } },
-              { id: 'creators', name: '创作者', props: { rows: rank.peach_creators || [], kind: 'creator', visual: 'creator', empty: NO_PEACH_CREATOR_HINT } },
-              { id: 'performers', name: '女优', props: { rows: rank.peach_performers || [], kind: 'performer', visual: 'entity', empty: NO_PEACH_PERFORMER_HINT } },
+              { id: 'tags', name: "태그", props: { rows: rank.peach_tags || [], kind: 'tag', visual: 'none', empty: NO_PEACH_TAG_HINT } },
+              { id: 'creators', name: "크리에이터", props: { rows: rank.peach_creators || [], kind: 'creator', visual: 'creator', empty: NO_PEACH_CREATOR_HINT } },
+              { id: 'performers', name: "배우", props: { rows: rank.peach_performers || [], kind: 'performer', visual: 'entity', empty: NO_PEACH_PERFORMER_HINT } },
             ]} />
         </TabPanel>
       </Tabs>
@@ -595,7 +595,7 @@ function CoverageMetric({ term, value, rest }: { term: string; value: number; re
         <span>{term}</span>
         <b className="tabular-nums">
           {value.toLocaleString()}
-          <span className="ml-1.5 text-caption-1-regular text-text-secondary">{`${rest.toLocaleString()} 项待补`}</span>
+          <span className="ml-1.5 text-caption-1-regular text-text-secondary">{`${rest.toLocaleString()} 개 항목 보완 필요`}</span>
         </b>
       </p>
       <Progress label={`${term}：${value.toLocaleString()} / ${total.toLocaleString()}`}

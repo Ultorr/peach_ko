@@ -9,7 +9,7 @@ import { appSettingsStore } from './settings';
 
 /** `[值, 显示名, 字形]`：设置面板那一组三档。显示器那枚字形说的是「跟着这台显示器」。 */
 export const THEME_OPTIONS: readonly (readonly [value: string, label: string, icon: string])[] = [
-  ['system', '跟随系统', 'monitor'], ['light', '浅色', 'sun'], ['dark', '深色', 'moon'],
+  ['system', "시스템 설정", 'monitor'], ['light', "밝게", 'sun'], ['dark', "어둡게", 'moon'],
 ];
 
 let systemDark: MediaQueryList | null = null;

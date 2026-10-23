@@ -221,3 +221,7 @@
 .peach-react :is([class~="overflow-x-auto"], [data-horizontal-scroll])::-webkit-scrollbar {
   display: none;
 }
+html:lang(ko) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}

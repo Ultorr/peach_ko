@@ -17,10 +17,10 @@ import {
 } from '../settings-panel/settings-data';
 import { ErrorText, Help, Rows, Section, Stack } from './section';
 
-const THUMBNAIL_OPTIONS = [['off', '关闭'], ['precise', '每 10 秒一张'], ['coarse', '每 30 秒一张']] as const;
+const THUMBNAIL_OPTIONS = [['off', "꺼짐"], ['precise', "10초마다 1장"], ['coarse', "30초마다 1장"]] as const;
 
 export function VideoThumbnailRow({ epoch = 0 }: { epoch?: number }) {
-  return <Section title="时间轴缩略图"><VideoThumbnailControls epoch={epoch} /></Section>;
+  return <Section title="타임라인 썸네일"><VideoThumbnailControls epoch={epoch} /></Section>;
 }
 
 export function VideoThumbnailControls({ epoch = 0, disabled = false }: { epoch?: number; disabled?: boolean }) {
@@ -33,9 +33,9 @@ export function VideoThumbnailControls({ epoch = 0, disabled = false }: { epoch?
   return (
     <>
       <Rows>
-        <SettingsRow label="时间轴预览" description="按所选间隔抽帧，仅处理本机磁盘上的视频。">
+        <SettingsRow label="타임라인 미리보기" description="선택한 간격으로 프레임을 추출합니다. 이 기기의 디스크에 있는 동영상만 처리합니다.">
           <div id="videoThumbnailSetting">
-            <Select aria-label="缩略图采集间隔" selectedKey={data?.mode || 'off'}
+            <Select aria-label="썸네일 추출 간격" selectedKey={data?.mode || 'off'}
               isDisabled={disabled || !data || status.isFetching || save.isPending}
               onSelectionChange={(key) => { if (key !== null) save.mutate(String(key)) }}>
               {THUMBNAIL_OPTIONS.map(([key, label]) => <SelectItem key={key} id={key}>{label}</SelectItem>)}
@@ -44,7 +44,7 @@ export function VideoThumbnailControls({ epoch = 0, disabled = false }: { epoch?
         </SettingsRow>
       </Rows>
       {save.isPending || data?.status === 'running'
-        ? <Stack divided><Help role="status">{save.isPending ? '正在保存…' : '正在采集，进度在活动页查看。'}</Help></Stack>
+        ? <Stack divided><Help role="status">{save.isPending ? "저장 중…" : "수집 중입니다. 활동 페이지에서 진행 상황을 확인하세요."}</Help></Stack>
         : null}
       {error ? <Stack divided><ErrorText>{errorMessage(error)}</ErrorText></Stack> : null}
     </>
@@ -59,27 +59,27 @@ export function FollowPreferenceRows({ receipt }: { receipt(message: string): vo
   const initialDays = settings.data?.followInitialDays ?? store.value.followInitialDays;
   const error = initial.error || settings.error;
   return (
-    <Section title="关注采集">
+    <Section title="팔로우 소스 수집">
       <Rows>
         <FollowScheduleRow />
-        <SettingsRow label="首次采集范围">
+        <SettingsRow label="최초 수집 범위">
           <div id="followInitialDaysSetting">
-            <Select aria-label="首次采集范围" selectedKey={String(initialDays)}
+            <Select aria-label="최초 수집 범위" selectedKey={String(initialDays)}
               isDisabled={settings.isFetching || initial.isPending}
               onSelectionChange={(key) => {
                 if (key === null) return;
                 initial.mutate({ followInitialDays: Number(key) }, { onSuccess: (saved) => {
                   if (typeof saved.followInitialDays === 'number') store.value.followInitialDays = saved.followInitialDays;
                   store.save();
-                  receipt('已保存首次采集范围');
+                  receipt("최초 수집 범위를 저장했습니다");
                 } });
               }}>
               {FOLLOW_INITIAL_RANGE_OPTIONS.map(([key, label]) => <SelectItem key={key} id={key}>{label}</SelectItem>)}
             </Select>
           </div>
         </SettingsRow>
-        <SettingsRow label="头像刷新">每 3 个月</SettingsRow>
-        <SettingsRow label="favicon 刷新">每年</SettingsRow>
+        <SettingsRow label="프로필 사진 새로 고침">3개월마다</SettingsRow>
+        <SettingsRow label="파비콘 새로 고침">매년</SettingsRow>
       </Rows>
       {error ? <Stack divided><ErrorText>{errorMessage(error)}</ErrorText></Stack> : null}
     </Section>
@@ -112,26 +112,26 @@ function FollowScheduleRow() {
   const error = save.error || status.error;
   return (
     <>
-      <SettingsRow label="自动检查更新">
+      <SettingsRow label="업데이트 자동 확인">
         <div id="followScheduleSetting" className="flex min-w-0 flex-wrap items-center justify-end gap-2">
-          <Switch aria-label="自动检查更新" isSelected={data?.enabled === true} isDisabled={blocked}
+          <Switch aria-label="업데이트 자동 확인" isSelected={data?.enabled === true} isDisabled={blocked}
             onChange={(on) => {
               localStorage.setItem('peach.number.followScheduleSetting', String(remembered.current));
               save.mutate(on ? remembered.current : 0);
             }} />
           {data?.enabled ? <div className="flex items-center gap-2">
             <Input type="number" inputMode="numeric" name="follow-interval" autoComplete="off"
-              aria-label="自动检查间隔" size="small" className="w-24"
+              aria-label="자동 확인 간격" size="small" className="w-24"
               value={draft} onChange={(value) => { setDraft(value); setInvalid(false) }} onBlur={commit}
               onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); commit() } }}
               isDisabled={blocked} isInvalid={invalid} />
-            <span className="text-body-2-regular text-text-secondary">分钟</span>
+            <span className="text-body-2-regular text-text-secondary">분</span>
           </div> : null}
         </div>
       </SettingsRow>
-      {invalid ? <Stack><ErrorText>请输入 15–10080 的整数（分钟）。</ErrorText></Stack> : null}
+      {invalid ? <Stack><ErrorText>15~10080 사이의 정수(분)를 입력하세요.</ErrorText></Stack> : null}
       {save.isPending || data?.running
-        ? <Stack><Help role="status">{save.isPending ? '正在保存…' : '正在检查来源更新…'}</Help></Stack> : null}
+        ? <Stack><Help role="status">{save.isPending ? "저장 중…" : "소스 업데이트 확인 중…"}</Help></Stack> : null}
       {error ? <Stack><ErrorText>{errorMessage(error)}</ErrorText></Stack> : null}
     </>
   );

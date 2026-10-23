@@ -154,7 +154,7 @@ export function CropFrame({ src, aspect, box, size, onBox, onSize, label }: Crop
         </>
       )}
       {failed
-        ? <p className="p-4 text-body-2-regular text-text-secondary">这张图读不出来，换一张再框。</p>
+        ? <p className="p-4 text-body-2-regular text-text-secondary">이 이미지를 읽을 수 없습니다. 다른 이미지를 선택해 영역을 지정하세요.</p>
         : null}
     </div>
   );

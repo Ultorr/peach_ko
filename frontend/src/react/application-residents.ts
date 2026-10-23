@@ -34,7 +34,7 @@ async function openApplicationResident(name: string, container: HTMLElement,
     container, resident: true, isCurrent: () => !!publish && epoch === residentEpoch,
     place: () => place(container),
   });
-  if (!opened || epoch !== residentEpoch || !publish) throw new DOMException('应用已卸载', 'AbortError');
+  if (!opened || epoch !== residentEpoch || !publish) throw new DOMException("앱이 해제되었습니다", 'AbortError');
 }
 
 export function disposeApplicationResidents(): void {

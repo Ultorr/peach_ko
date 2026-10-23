@@ -20,7 +20,7 @@ function paintSizeGlyph(button: HTMLElement, size: string): void {
   const [big, small] = PHOTO_SIZES;
   if (!button.querySelector('[data-icon-swap]')) button.innerHTML = iconSwapHtml(big[2], small[2], size === small[0] ? 'b' : 'a');
   else setIconSwap(button, size === small[0] ? 'b' : 'a');
-  button.setAttribute('aria-label', size === 'big' ? '切换为小图' : '切换为大图');
+  button.setAttribute('aria-label', size === 'big' ? "작은 이미지로 전환" : "큰 이미지로 전환");
 }
 
 const densityButton = (): HTMLElement | null => document.querySelector<HTMLElement>('#density');
@@ -31,7 +31,7 @@ export function applyDensity(density: Density = currentDensity()): void {
   const button = densityButton();
   if (!button) return;
   button.setAttribute('aria-pressed', String(density === 'dense'));
-  button.title = '当前：' + (density === 'big' ? '大图' : '密集');
+  button.title = "현재: " + (density === 'big' ? "큰 이미지" : "촘촘하게");
   paintSizeGlyph(button, density === 'big' ? 'big' : 'small');
 }
 
@@ -47,6 +47,6 @@ export function paintPhotoSizeButton(size: string): void {
   const button = densityButton();
   if (!button) return;
   button.setAttribute('aria-pressed', String(size === 'small'));
-  button.title = '当前：' + (size === 'big' ? '大图' : '小图');
+  button.title = "현재: " + (size === 'big' ? "큰 이미지" : "작은 이미지");
   paintSizeGlyph(button, size);
 }

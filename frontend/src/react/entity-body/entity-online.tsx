@@ -84,7 +84,7 @@ function Cards({ view, media, data, visible, context, photoSize, photoLayout, im
 
 function Empty({ searched }: { searched: boolean }) {
   const html = searched
-    ? emptyStateHtml('search-x', '当前筛选下没有更新', '切换媒体类型、状态、来源或标签后再试。')
-    : emptyStateHtml('rss', '还没有抓到更新', '关注页检查更新之后，这位创作者的新内容会出现在这里。');
+    ? emptyStateHtml('search-x', "현재 필터에 맞는 업데이트 없음", "미디어 유형, 상태, 소스 또는 태그를 변경해 다시 시도하세요.")
+    : emptyStateHtml('rss', "아직 가져온 업데이트 없음", "팔로우 페이지에서 업데이트를 확인하면 이 크리에이터의 새 콘텐츠가 여기에 표시됩니다.");
   return <div data-follow-empty="" className="contents" dangerouslySetInnerHTML={{ __html: html }} />;
 }

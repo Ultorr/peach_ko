@@ -3,8 +3,8 @@
 
 /** 工具栏那个下拉里的排序维度。前四个按创作者比，后三个按单条来源比。 */
 export const SORT_OPTIONS = [
-  ['checked', '检查时间'], ['added', '添加时间'], ['name', '创作者名称'], ['sources', '来源数量'],
-  ['source', '来源名称'], ['provider', '站点'], ['status', '状态'],
+  ['checked', "확인 시간"], ['added', "추가 시간"], ['name', "크리에이터 이름"], ['sources', "소스 수"],
+  ['source', "소스 이름"], ['provider', "사이트"], ['status', "상태"],
 ] as const;
 export type SortKey = (typeof SORT_OPTIONS)[number][0];
 export const DEFAULT_SORT: SortKey = 'checked';

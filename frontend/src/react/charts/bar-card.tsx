@@ -24,8 +24,8 @@ export function shortCount(value: number): string {
     const figure = value / unit;
     return `${figure.toLocaleString(undefined, { maximumFractionDigits: Math.abs(figure) < 100 ? 1 : 0 })}${name}`;
   };
-  if (abs >= 1e8) return scaled(1e8, '亿');
-  if (abs >= 1e5) return scaled(1e4, '万');
+  if (abs >= 1e8) return scaled(1e8, "억");
+  if (abs >= 1e5) return scaled(1e4, "만");
   return value.toLocaleString();
 }
 

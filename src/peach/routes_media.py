@@ -193,10 +193,10 @@ def external_playback(request: Request, id: int, args: dict[str, str] = Depends(
     raw = supplied or str(request.base_url)
     parsed = urlsplit(raw)
     if any(ord(char) <= 32 or ord(char) == 127 for char in raw) or parsed.username or parsed.password:
-        raise HTTPException(400, '播放地址无效')
+        raise HTTPException(400, '재생 주소가 유효하지 않습니다')
     key = _origin_key(raw) if supplied else (_tunnel_origin(request) or _named_origin(request) or _origin_key(raw))
     if key is None:
-        raise HTTPException(400, '播放地址无效')
+        raise HTTPException(400, '재생 주소가 유효하지 않습니다')
     scheme, host, port = key
     host = f'[{host}]' if ':' in host else host
     origin = f'{scheme}://{host}' + (f':{port}' if port is not None else '')
@@ -213,7 +213,7 @@ def _external_asset(request: Request, asset_id: int, ticket: str, origin: str):
     from fastapi import HTTPException
     state = request.app.state
     if not origin or not valid(state.external_playback_key, asset_id, ticket, origin=origin):
-        raise HTTPException(401, "播放链接已失效，请在作品详情重新打开")
+        raise HTTPException(401, "재생 링크가 만료되었습니다. 항목 상세에서 다시 여세요")
     asset = state.media_engine.asset(asset_id)
     return state.media_engine.filesystem.file_for(asset, thumbnail=False)
 
@@ -245,7 +245,7 @@ def stream(request: Request, id: int, session: str = "", args: dict[str, str] = 
     if strm.is_pointer(path):
         return strm_stream.proxy(request, id, path, session)
     if path.suffix.lower() in strm.DISC_SUFFIXES:
-        return JSONResponse({'error': 'ISO 原盘请使用作品详情中的外部播放器打开'}, status_code=415)
+        return JSONResponse({'error': 'ISO 디스크 이미지는 항목 상세의 외부 플레이어로 여세요'}, status_code=415)
     header = _repaired_header(state, id, path)
     if header is not None:
         return SplicedMp4Response(
@@ -295,7 +295,7 @@ def stream_plan(request: Request, id: int, session: str = "", mode: str = "", ar
                 'mime_type': mime, 'duration': asset.duration,
                 'src': f'/stream?id={id}&session={quote(session, safe="")}', 'reason': 'strm-pointer'}
     if source_path.suffix.lower() in strm.DISC_SUFFIXES:
-        return JSONResponse({'error': 'ISO 原盘请使用作品详情中的外部播放器打开'}, status_code=415)
+        return JSONResponse({'error': 'ISO 디스크 이미지는 항목 상세의 외부 플레이어로 여세요'}, status_code=415)
     conversion = _needs_conversion(state, id, source_path, session)
     resolved = (_hls_plan(state, id, session, conversion)
                 if conversion or plan.protocol == "hls" else None)
@@ -444,26 +444,26 @@ def _subtitle_bytes(state, asset, row) -> tuple[bytes | None, str]:
     """字幕文件的内容，以及取不到时的原因。原因直接进列表给人看。"""
     path = _subtitle_path(state, asset, row)
     if path is None:
-        return None, "不在正片所在目录"
+        return None, "본편과 같은 폴더에 있지 않습니다"
     try:
         if path.stat().st_size > SUBTITLE_BYTE_LIMIT:
-            return None, "文件过大"
+            return None, "파일이 너무 큽니다"
         return path.read_bytes(), ""
     except OSError:
-        return None, "文件未找到"
+        return None, "파일을 찾을 수 없습니다"
 
 
 def _subtitle_note(state, asset, row) -> str:
     """这一条为什么不能播；能播返回空串。"""
     if not subtitles.is_playable_format(row["format"]):
-        return "图形字幕，播放器里不显示"
+        return "이미지 자막은 플레이어에 표시되지 않습니다"
     data, note = _subtitle_bytes(state, asset, row)
     if data is None:
         return note
     try:
         subtitles.decode(data)
     except subtitles.SubtitleUndecodable:
-        return "编码未识别"
+        return "인코딩을 인식할 수 없습니다"
     return ""
 
 
@@ -638,10 +638,10 @@ async def cover_crop(request: Request, args: dict[str, str] = Depends(require_au
     code = str(payload.get("code") or "")
     path = state.cover_path(code)
     if path is None:
-        return JSONResponse({"error": "这个番号没有封面"}, status_code=404)
+        return JSONResponse({"error": "이 품번에는 표지가 없습니다"}, status_code=404)
     size = images.measure_image_size(path.read_bytes())
     if size is None:
-        return JSONResponse({"error": "这张封面读不出来"}, status_code=422)
+        return JSONResponse({"error": "이 표지를 읽을 수 없습니다"}, status_code=422)
     if payload.get("box") is None:
         # 恢复默认是当场按折痕判据重算一遍，不是删掉 sidecar：删掉之后没有人会
         # 再来算，页面拿到的是「这张图不该裁」，正封从此再也回不来。
@@ -662,7 +662,7 @@ async def cover_crop(request: Request, args: dict[str, str] = Depends(require_au
     else:
         record = jav_poster_crop.manual_record(size[0], size[1], payload.get("box"))
     if record is None:
-        return JSONResponse({"error": "框选的区域不成立"}, status_code=400)
+        return JSONResponse({"error": "선택한 영역이 유효하지 않습니다"}, status_code=400)
     jav_poster_crop.write_sidecar(path, record)
     state.cache_bust()
     return JSONResponse({"ok": True, "code": code,
@@ -1017,11 +1017,11 @@ def follow_image(request: Request, id: int, media: int | None = None,
         else:
             rows = web_follow._raw_media_items(item)
             if media < 0 or media >= len(rows):
-                raise ValueError("媒体序号不存在")
+                raise ValueError("미디어 번호가 존재하지 않습니다")
             url = rows[media].get("thumb_url") or rows[media].get("url")
         from .http import public_https_url
         if not public_https_url(url or ""):
-            raise ValueError("图片来源不可用")
+            raise ValueError("이미지 소스를 사용할 수 없습니다")
         key = f"image:{url}"
         hit = cache.response(key, request)
         if hit is not None:
@@ -1066,7 +1066,7 @@ def jav_preview(request: Request, code: str, ref: str, args: dict[str, str] = De
                     for chunk in response.iter_bytes():
                         size += len(chunk)
                         if size > 1024 * 1024:
-                            raise ValueError("预览清单过大")
+                            raise ValueError("미리보기 목록이 너무 큽니다")
                         chunks.append(chunk)
                     return b"".join(chunks)
                 finally:
@@ -1080,7 +1080,7 @@ def jav_preview(request: Request, code: str, ref: str, args: dict[str, str] = De
                 kind = response.headers.get('content-type', '').split(';')[0].lower()
                 if kind not in {'video/mp4', 'application/octet-stream', 'binary/octet-stream'}:
                     response.close()
-                    raise FollowProxyError('视频预览响应未取得')
+                    raise FollowProxyError('동영상 미리보기 응답을 받지 못했습니다')
                 response.headers['content-type'] = 'video/mp4'
             return response
         return cache.stream(f"preview:{code}:{ref}", request, media)
@@ -1319,10 +1319,10 @@ def _picker_online(request: Request, connection, entity_id: int):
             deadline = time.monotonic() + avatar_picker.FETCH_TIMEOUT
             for chunk in upstream.iter_bytes():
                 if time.monotonic() > deadline:
-                    raise avatar_picker.PickerError("这张图未取得：请求超时")
+                    raise avatar_picker.PickerError("이미지를 가져오지 못했습니다: 요청 시간 초과")
                 length += len(chunk)
                 if length > avatar_picker.MAX_IMAGE_BYTES:
-                    raise avatar_picker.PickerError("图太大了")
+                    raise avatar_picker.PickerError("이미지가 너무 큽니다")
                 chunks.append(chunk)
             return b"".join(chunks)
         finally:
@@ -1334,7 +1334,7 @@ def _picker_online(request: Request, connection, entity_id: int):
         if url.startswith("/follow-stream"):
             return media(item, None)
         if not avatar_picker.allowed_source(url):
-            raise avatar_picker.PickerError("封面地址不可用")
+            raise avatar_picker.PickerError("표지 주소를 사용할 수 없습니다")
         return avatar_picker.fetch_image(state.http_transport, url)
 
     def avatar(params):
@@ -1352,7 +1352,7 @@ def _picker_online(request: Request, connection, entity_id: int):
                 project=_picker_online_projection,
                 image=remembered(image), avatar=remembered(avatar), media=remembered(media))
         except (OSError, httpx.HTTPError, FollowMediaUnavailable, FollowProxyError, FollowCoverUnavailable) as error:
-            raise avatar_picker.PickerError("在线图片未取得") from error
+            raise avatar_picker.PickerError("온라인 이미지를 가져오지 못했습니다") from error
         cache.store(f"peach:online/{entity_id}/{ref}", body, avatar_picker.accept_image(body))
         return body, origin
     return resolve
@@ -1396,7 +1396,7 @@ def avatar_choice(request: Request, kind: str = "performer", id: int = 0,
             return JSONResponse({"error": str(error)}, status_code=404)
     inspected = avatar_provider.inspect_avatar(body)
     if inspected is None:
-        return JSONResponse({"error": "这不是一张能识别的图片"}, status_code=415)
+        return JSONResponse({"error": "인식할 수 없는 이미지입니다"}, status_code=415)
     _remember_library(providers_root, body, origin, inspected)
     result = Response(b"" if request.method == "HEAD" else body,
                       media_type=inspected.mime_type)
@@ -1469,7 +1469,7 @@ async def avatar_frame(request: Request, args: dict[str, str] = Depends(require_
         elif url:
             if not avatar_picker.allowed_source(url):
                 return JSONResponse(
-                    {"error": "只接受指向公网的 https 地址"}, status_code=400)
+                    {"error": "공개 인터넷의 https 주소만 허용됩니다"}, status_code=400)
             choice = await asyncio.to_thread(
                 avatar_picker.typed_address, url, providers_root,
                 partial(avatar_picker.fetch_image, transport), probe)
@@ -1478,7 +1478,7 @@ async def avatar_frame(request: Request, args: dict[str, str] = Depends(require_
                 avatar_picker.framed, "", body, probe,
                 source="upload", label=str(payload.get("name") or ""))
         else:
-            return JSONResponse({"error": "没有可用的图片"}, status_code=400)
+            return JSONResponse({"error": "사용 가능한 이미지가 없습니다"}, status_code=400)
     except avatar_picker.PickerError as error:
         return JSONResponse({"error": str(error)}, status_code=400)
     return JSONResponse(choice.as_dict())
@@ -1503,7 +1503,7 @@ async def avatar_pick(request: Request, args: dict[str, str] = Depends(require_a
     payload, body = await _picker_request(request)
     entity_id = _picker_entity(state, payload)
     if entity_id <= 0:
-        return JSONResponse({"error": "缺少实体 id"}, status_code=400)
+        return JSONResponse({"error": "엔터티 id가 없습니다"}, status_code=400)
     kind = _picker_kind(str(payload.get("kind") or "performer"))
     ref = str(payload.get("ref") or "")
     version = payload.get("version")
@@ -1521,7 +1521,7 @@ async def avatar_pick(request: Request, args: dict[str, str] = Depends(require_a
             origin = {"source": "avatar picker", "provider": "upload",
                       "external_id": str(payload.get("name") or "")}
         else:
-            return JSONResponse({"error": "没有可用的图片"}, status_code=400)
+            return JSONResponse({"error": "사용 가능한 이미지가 없습니다"}, status_code=400)
         if box not in (None, ""):
             body, cropped = avatar_picker.crop(body, box)
             origin = {**origin, **cropped}
@@ -1558,16 +1558,16 @@ def _official_cover(contract, key: str) -> bytes:
             metadata_root=contract.follow_sources_root / "metadata" / "javinizer-go",
             deadline=time.monotonic() + CODE_COVER_SECONDS)
     except NotFound as error:
-        raise avatar_picker.PickerError("官方渠道没有这个番号的封面") from error
+        raise avatar_picker.PickerError("공식 채널에 이 품번의 표지가 없습니다") from error
     except Unavailable as error:
-        raise avatar_picker.PickerError(f"取不到这个番号的封面：{error}") from error
+        raise avatar_picker.PickerError(f"이 품번의 표지를 가져올 수 없습니다: {error}") from error
     except DeadlineExceeded as error:
         raise avatar_picker.PickerError(
-            f"{CODE_COVER_SECONDS} 秒内没取到这个番号的封面，稍后再试") from error
+            f"{CODE_COVER_SECONDS}초 이내에 이 품번의 표지를 가져오지 못했습니다. 잠시 후 다시 시도하세요") from error
     except SourcePaused as error:
         raise avatar_picker.PickerError(str(error)) from error
     except httpx.TransportError as error:
-        raise avatar_picker.PickerError("来源连接失败，请检查来源连接设置") from error
+        raise avatar_picker.PickerError("소스 연결에 실패했습니다. 소스 연결 설정을 확인하세요") from error
     finally:
         transport.close()
     return data
@@ -1589,7 +1589,7 @@ async def avatar_code_cover(request: Request, args: dict[str, str] = Depends(req
     try:
         code = validate_provider_code(str(payload.get("code") or ""))
     except ValueError:
-        return JSONResponse({"error": "认不出这个番号"}, status_code=400)
+        return JSONResponse({"error": "이 품번을 인식할 수 없습니다"}, status_code=400)
     try:
         choice = await asyncio.to_thread(
             avatar_picker.code_cover, code, state.cover_root, providers_root,

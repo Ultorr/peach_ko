@@ -30,7 +30,7 @@ export function followCheckToast(report){
   const failed=rows.filter(r=>!r.ok).length;
   receiptsState.toast({text:checkReceipt(report)},
     {warn:!!failed,timeout:failed?8000:6000,sound:failed?'warning':'success',
-     action:{label:'查看',run:()=>enterFollow(true)}});
+     action:{label:"보기",run:()=>enterFollow(true)}});
 }
 
 export function followViewPath(){return pathForFollow(followView())}
@@ -126,7 +126,7 @@ followState.followFeedActions = {
   checkReport:report=>followCheckToast(report),
 };
 followState.followFeedShell = {
-  skeleton:()=>followState.followSkeletonHtml('正在读取关注内容'),
+  skeleton:()=>followState.followSkeletonHtml("팔로우 항목을 불러오는 중"),
   /* 关注详情底下没画着列表（深链进来，或后退前进落到压在列表上的详情、中间去过别的页）：让出 `#stats`，
      不画列表，等关掉详情再按地址打开。关注详情已经开着（组内换条）就不动。 */
   ground:()=>{

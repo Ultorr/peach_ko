@@ -31,23 +31,23 @@ function OrphanActions({ item, toast }: { item: OrphanRecord; toast(message: str
   const [target, setTarget] = useState<number | null>(item.candidates[0]?.id ?? null);
   const attach = useMutation({
     mutationFn: () => attachOrphan(item.id, Number(target)),
-    onSuccess: (data) => { toast(`记录已接到新文件，批次 ${data.batch}`); void refresh(); },
+    onSuccess: (data) => { toast(`기록을 새 파일에 연결했습니다. 작업 묶음 ${data.batch}`); void refresh(); },
     onError: (error) => toast(errorMessage(error)),
   });
   const purge = useMutation({
     mutationFn: () => purgeOrphan(item.id),
     onSuccess: (data) => {
       toast(data.blocked.length
-        ? `${item.name} 的文件又回到盘上，没有删除；下一次扫描会把它接回在库`
-        : `已彻底删除 ${item.name}`);
+        ? `${item.name} 파일이 디스크에 다시 존재해 삭제하지 않았습니다. 다음 스캔 시 라이브러리에 다시 연결합니다`
+        : `영구 삭제됨 ${item.name}`);
       void refresh();
     },
   });
   const remove = () => {
     void confirmModal({
-      title: '彻底删除',
-      body: `将删除「${item.name}」这一条和它带的记录（${recordsText(item.records)}）。此操作不可撤销。`,
-      confirmLabel: '彻底删除',
+      title: "영구 삭제",
+      body: `삭제 대상:「${item.name}」 항목과 연결된 기록(${recordsText(item.records)}). 이 작업은 되돌릴 수 없습니다.`,
+      confirmLabel: "영구 삭제",
       danger: true,
       onConfirm: () => purge.mutateAsync(),
     });
@@ -56,7 +56,7 @@ function OrphanActions({ item, toast }: { item: OrphanRecord; toast(message: str
   return (
     <span className="flex min-w-48 flex-wrap items-center gap-2">
         {item.candidates.length
-          ? <Select aria-label={`把 ${item.name} 的记录接到哪个文件`} className="w-52" selectedKey={target}
+          ? <Select aria-label={`항목 ${item.name} 기록을 연결할 파일 선택`} className="w-52" selectedKey={target}
               onSelectionChange={(key) => { if (key !== null) setTarget(Number(key)) }}>
               {item.candidates.map((candidate) => (
                 <SelectItem key={candidate.id} id={candidate.id} textValue={candidateText(candidate)}>
@@ -64,12 +64,12 @@ function OrphanActions({ item, toast }: { item: OrphanRecord; toast(message: str
                 </SelectItem>
               ))}
             </Select>
-          : <span className="text-text-secondary">没有番号或文件名对得上的文件</span>}
+          : <span className="text-text-secondary">품번이나 파일 이름이 일치하는 파일이 없습니다</span>}
         {item.candidates.length
           ? <Button size="small" disabled={target === null} {...busyProps(busy)}
-              onClick={() => attach.mutate()}>接到这个文件</Button>
+              onClick={() => attach.mutate()}>이 파일에 연결</Button>
           : null}
-        <Button variant="danger" size="small" {...busyProps(busy)} onClick={remove}>彻底删除</Button>
+        <Button variant="danger" size="small" {...busyProps(busy)} onClick={remove}>영구 삭제</Button>
     </span>
   );
 }
@@ -104,22 +104,22 @@ export function OrphanRecordsCard({ toast }: { toast(message: string): void }) {
   const purge = useMutation({
     mutationFn: (ids: number[]) => purgeOrphan(ids),
     onSuccess: (data) => {
-      toast(`已彻底删除 ${data.purged} 条记录${data.blocked.length ? `，${data.blocked.length} 条文件已恢复，未删除` : ''}`);
+      toast(`영구 삭제됨 ${data.purged} 개 기록${data.blocked.length ? `，${data.blocked.length} 개 파일이 복원되어 삭제하지 않았습니다` : ''}`);
       setSelected([]); void refresh();
     },
   });
   const removeSelected = (chosen: OrphanRecord[]) => void confirmModal({
-    title: '彻底删除所选记录',
-    body: `将删除以下 ${chosen.length} 条作品和它们带的全部记录。此操作不可撤销。`,
+    title: "선택한 기록 영구 삭제",
+    body: `아래 ${chosen.length} 개 항목과 연결된 모든 기록을 삭제합니다. 이 작업은 되돌릴 수 없습니다.`,
     items: chosen.map((item) => item.name),
-    confirmLabel: '彻底删除所选记录', danger: true,
+    confirmLabel: "선택한 기록 영구 삭제", danger: true,
     onConfirm: () => purge.mutateAsync(chosen.map((item) => item.id)),
   });
   const columns: DataColumn<OrphanRecord>[] = [
-    { id: 'item', label: '作品', value: (item) => item.name, render: (item) => <OrphanIdentity item={item} /> },
-    { id: 'records', label: '带的记录', value: (item) => recordsText(item.records),
-      render: (item) => <span className="block min-w-28">{recordsText(item.records) || '无个人记录'}</span> },
-    { id: 'target', label: '接到与操作', value: (item) => item.candidates.length,
+    { id: 'item', label: "항목", value: (item) => item.name, render: (item) => <OrphanIdentity item={item} /> },
+    { id: 'records', label: "연결된 기록", value: (item) => recordsText(item.records),
+      render: (item) => <span className="block min-w-28">{recordsText(item.records) || "개인 기록 없음"}</span> },
+    { id: 'target', label: "연결 및 작업", value: (item) => item.candidates.length,
       render: (item) => <OrphanActions item={item} toast={toast} /> },
   ];
   if (!query.isError && !items.length) return null;
@@ -127,17 +127,17 @@ export function OrphanRecordsCard({ toast }: { toast(message: string): void }) {
     <section id="orphan-records" aria-labelledby="orphan-records-title" className="flex scroll-mt-20 flex-col gap-4">
         {query.isError
           ? <Fieldset layout="stack" labelledBy="orphan-records-title">
-              <FieldsetTitle id="orphan-records-title">孤儿记录</FieldsetTitle>
-              <Note tone="error" title="孤儿记录读取失败">{errorMessage(query.error)}</Note>
+              <FieldsetTitle id="orphan-records-title">연결되지 않은 기록</FieldsetTitle>
+              <Note tone="error" title="연결되지 않은 기록을 읽지 못했습니다">{errorMessage(query.error)}</Note>
             </Fieldset>
-          : <DataTable label="文件已消失的作品" items={items} columns={columns}
-              title="孤儿记录" titleId="orphan-records-title" unit="条作品"
-              description="这些作品的文件已不在盘上，喜欢、稍后看、播放列表与观看历史都还留着。接到新文件后记录跟过去，旧的这一条删掉。"
+          : <DataTable label="파일이 사라진 항목" items={items} columns={columns}
+              title="연결되지 않은 기록" titleId="orphan-records-title" unit="개 항목"
+              description="이 항목들의 파일은 디스크에 없지만 좋아요, 나중에 보기, 재생목록, 시청 기록은 남아 있습니다. 새 파일에 연결하면 기록을 옮기고 기존 항목은 삭제합니다."
               rowId={(item) => String(item.id)} rowLabel={(item) => item.name}
               selected={selected} onSelected={setSelected}
               actions={(chosen) => <Button variant="danger" size="small" disabled={!chosen.length}
                 {...busyProps(purge.isPending)} onClick={() => removeSelected(chosen)}>
-                {`彻底删除所选（${chosen.length}）`}
+                {`선택한 기록 영구 삭제(${chosen.length}）`}
               </Button>} />}
     </section>
   );

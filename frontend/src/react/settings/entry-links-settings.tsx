@@ -35,16 +35,16 @@ export function EntryLinksForm({ initial, receipt }: {
       apiSend<EntryLinksState>('/api/configuration/entry-links', body, 'POST', signal),
       (next) => {
         setSites(next.sites);
-        receipt('已保存配置');
+        receipt("설정이 저장되었습니다");
       });
   };
 
   return (
-    <Section title="作品资料站点" onSubmit={submit}>
+    <Section title="항목 정보 사이트" onSubmit={submit}>
       <Stack>
         <Help>{ENTRY_LINKS_HELP}</Help>
         {sites.map((site) => (
-          <Input key={site.key} id={`entry-link-${site.key}`} label={<SiteLabel site={site.key} label={`${site.label} 地址`} />}
+          <Input key={site.key} id={`entry-link-${site.key}`} label={<SiteLabel site={site.key} label={`${site.label} 주소`} />}
             autoComplete="off" maxLength={100} value={site.host}
             placeholder={site.default_host}
             onChange={(host) => change(site.key, host)}
@@ -53,7 +53,7 @@ export function EntryLinksForm({ initial, receipt }: {
         {action.error ? <ErrorText>{action.error}</ErrorText> : null}
       </Stack>
       <Footer>
-        <Button type="submit" {...busyProps(action.busy === 'save')}>保存配置</Button>
+        <Button type="submit" {...busyProps(action.busy === 'save')}>설정 저장</Button>
       </Footer>
     </Section>
   );

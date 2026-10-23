@@ -30,7 +30,7 @@ export function PasswordPair({
         isDisabled={disabled} isRequired={!disabled} validationBehavior="aria"
         isInvalid={!disabled && Boolean(passwordError)}
         hint={disabled ? passwordHint : passwordError || passwordHint} />
-      <Input id="access-confirm" type="password" label="确认访问密码" autoComplete="new-password" maxLength={256}
+      <Input id="access-confirm" type="password" label="접근 비밀번호 확인" autoComplete="new-password" maxLength={256}
         value={confirmation} onChange={onConfirmation} isDisabled={disabled} isRequired={!disabled} validationBehavior="aria"
         isInvalid={!disabled && (Boolean(confirmationError) || confirmationInvalid)}
         hint={disabled ? undefined : confirmationError} />

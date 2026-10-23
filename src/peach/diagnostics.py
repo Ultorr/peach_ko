@@ -46,26 +46,26 @@ def configuration(config, configured, *, validate=True):
         if validate:
             settings_file.load_config(environ=dict(os.environ, PEACH_DATA_ROOT=str(config.data_root)))
         elif settings_file.error():
-            raise settings_file.SettingsFileError("配置文件无法读取")
+            raise settings_file.SettingsFileError("설정 파일을 읽을 수 없습니다")
     except settings_file.SettingsFileError:
-        return item("配置", "failed", "配置文件无法读取", action="在本机修复配置文件")
+        return item("설정", "failed", "설정 파일을 읽을 수 없습니다", action="이 컴퓨터에서 설정 파일을 수정하세요")
     if not configured:
-        return item("配置", "failed", "尚未完成首次配置", action="完成首次配置", target="/settings/library")
-    return item("配置", "ok", "配置可读取")
+        return item("설정", "failed", "초기 설정이 아직 완료되지 않았습니다", action="초기 설정을 완료하세요", target="/settings/library")
+    return item("설정", "ok", "설정 파일을 읽을 수 있습니다")
 
 
 def database_checks(settings):
     state = inspect_database(settings.db_path)
-    reasons = {"missing": "账本不存在", "empty": "账本尚未初始化", "unavailable": "账本无法读取"}
+    reasons = {"missing": "기록 데이터베이스가 없습니다", "empty": "기록 데이터베이스가 아직 초기화되지 않았습니다", "unavailable": "기록 데이터베이스를 읽을 수 없습니다"}
     readable = state["database"] == "available" and state["readable"]
-    database = item("数据库", "ok" if readable else "failed",
-                    "账本可读取" if readable else reasons.get(state["database"], "账本结构无法读取"),
-                    action="" if readable else "检查本机账本与备份", details={"state": state["database"]})
-    schema_reasons = {"current": "迁移校验通过", "pending": "存在待执行迁移", "empty": "账本尚未初始化",
-                      "mismatch": "迁移记录与当前程序不一致", "unavailable": "迁移校验未取得"}
+    database = item("데이터베이스", "ok" if readable else "failed",
+                    "기록 데이터베이스를 읽을 수 있습니다" if readable else reasons.get(state["database"], "기록 데이터베이스 구조를 읽을 수 없습니다"),
+                    action="" if readable else "로컬 기록 데이터베이스와 백업을 확인하세요", details={"state": state["database"]})
+    schema_reasons = {"current": "마이그레이션 검증 통과", "pending": "적용 대기 중인 마이그레이션이 있습니다", "empty": "기록 데이터베이스가 아직 초기화되지 않았습니다",
+                      "mismatch": "마이그레이션 기록이 현재 프로그램과 일치하지 않습니다", "unavailable": "마이그레이션 검증 결과를 확인하지 못했습니다"}
     current = state["schema"] == "current"
-    schema = item("数据库迁移", "ok" if current else "failed", schema_reasons[state["schema"]],
-                  action="" if current else "在本机核对数据库迁移与备份",
+    schema = item("데이터베이스 마이그레이션", "ok" if current else "failed", schema_reasons[state["schema"]],
+                  action="" if current else "이 컴퓨터에서 데이터베이스 마이그레이션과 백업을 확인하세요",
                   details={key: state[key] for key in ("schema", "version", "pending", "mismatched", "unknown_versions")})
     return database, schema
 
@@ -83,12 +83,12 @@ def tools(settings, *, inspect=True):
     missing = [name for name, value in found.items() if not value["available"]]
     unavailable = [name for name in ('ffmpeg', 'ffprobe') if found[name]['available'] and not found[name].get('usable', True)]
     incomplete = found['ffmpeg'].get('usable') and not found['ffmpeg'].get('av1_software')
-    problems = (["未找到：" + "、".join(missing)] if missing else [])
-    problems += (["无法执行：" + "、".join(unavailable)] if unavailable else [])
-    problems += ['FFmpeg 缺少 AV1 软件解码器'] if incomplete else []
+    problems = (["찾을 수 없음: " + "、".join(missing)] if missing else [])
+    problems += (["실행할 수 없음: " + "、".join(unavailable)] if unavailable else [])
+    problems += ['FFmpeg에 AV1 소프트웨어 디코더가 없습니다'] if incomplete else []
     return item("FFmpeg／OpenSSL", 'warning' if problems else 'ok',
-                '；'.join(problems) or ('媒体工具可执行，AV1 软件解码器可用' if inspect else '工具路径已找到'),
-                action='更新媒体工具' if problems else '', target='/settings/maintenance' if problems else None, details=found)
+                '；'.join(problems) or ('미디어 도구를 실행할 수 있으며 AV1 소프트웨어 디코더를 사용할 수 있습니다' if inspect else '도구 경로를 찾았습니다'),
+                action='미디어 도구 업데이트' if problems else '', target='/settings/maintenance' if problems else None, details=found)
 
 
 def security(settings):
@@ -100,21 +100,21 @@ def security(settings):
     protected = policy["mode"] == "password" or (policy["mode"] == "legacy" and bool(settings.token))
     exposed = not loopback or settings.tunnel_enabled
     if policy["mode"] == "locked":
-        return item("访问安全", "failed", "访问密码配置无法读取", action="在本机检查访问密码配置")
+        return item("접속 보안", "failed", "접속 비밀번호 설정을 읽을 수 없습니다", action="이 컴퓨터에서 접속 비밀번호 설정을 확인하세요")
     if exposed and not protected:
-        return item("访问安全", "warning", "局域网或公网入口未开启访问密码",
-                    action="在配置中开启访问密码", target="/settings/network", details={"exposed": True, "protected": False})
-    return item("访问安全", "ok", "已开启访问密码" if protected else "仅监听本机",
+        return item("접속 보안", "warning", "로컬 네트워크 또는 공개 인터넷 접속에 비밀번호가 설정되지 않았습니다",
+                    action="설정에서 접속 비밀번호를 활성화하세요", target="/settings/network", details={"exposed": True, "protected": False})
+    return item("접속 보안", "ok", "접속 비밀번호가 활성화되어 있습니다" if protected else "이 컴퓨터에서만 접속을 허용합니다",
                 details={"exposed": exposed, "protected": protected})
 
 
 def media_mounts(snapshot):
     if not snapshot["sources"]:
-        return item("媒体挂载", "disabled", "没有已配置的本地来源")
+        return item("미디어 마운트", "disabled", "설정된 로컬 소스가 없습니다")
     states = {"ok": "ok", "degraded": "warning", "checking": "unknown"}
-    reason = "来源可读取" if snapshot["state"] == "ok" else "；".join(snapshot["warnings"]) or "挂载检测尚未完成"
-    return item("媒体挂载", states[snapshot["state"]], reason,
-                action="检查媒体目录与挂载状态" if snapshot["state"] != "ok" else "", target="/settings/library",
+    reason = "소스를 읽을 수 있습니다" if snapshot["state"] == "ok" else "；".join(snapshot["warnings"]) or "마운트 확인이 아직 완료되지 않았습니다"
+    return item("미디어 마운트", states[snapshot["state"]], reason,
+                action="미디어 폴더와 마운트 상태를 확인하세요" if snapshot["state"] != "ok" else "", target="/settings/library",
                 details=snapshot)
 
 
@@ -133,10 +133,10 @@ def writable_root(root):
             probe.write(b"peach")
             probe.flush()
     except PermissionError:
-        return item("数据目录", "failed", "没有权限写入数据目录", action="调整数据目录的写入权限")
+        return item("데이터 폴더", "failed", "데이터 폴더에 쓰기 권한이 없습니다", action="데이터 폴더의 쓰기 권한을 수정하세요")
     except OSError:
-        return item("数据目录", "failed", "数据目录无法写入", action="检查数据目录与可用空间")
-    return item("数据目录", "ok", "临时写入与清理通过")
+        return item("데이터 폴더", "failed", "데이터 폴더에 쓸 수 없습니다", action="데이터 폴더와 여유 공간을 확인하세요")
+    return item("데이터 폴더", "ok", "임시 파일 쓰기 및 정리 검사 통과")
 
 
 def port_status(host, port):
@@ -144,7 +144,7 @@ def port_status(host, port):
     try:
         address = ipaddress.ip_address(host)
     except ValueError:
-        return item("服务端口", "unknown", "监听地址不是 IP，端口状态未取得", details={"port": port})
+        return item("서비스 포트", "unknown", "수신 주소가 IP가 아니므로 포트 상태를 확인하지 못했습니다", details={"port": port})
     family = socket.AF_INET6 if address.version == 6 else socket.AF_INET
     try:
         with socket.socket(family, socket.SOCK_STREAM) as probe:
@@ -152,9 +152,9 @@ def port_status(host, port):
     except OSError as error:
         import errno
         if error.errno == errno.EADDRINUSE or getattr(error, "winerror", None) == 10048:
-            return item("服务端口", "ok", "端口正在使用", details={"port": port, "state": "in_use"})
-        return item("服务端口", "unknown", "端口状态未取得", details={"port": port})
-    return item("服务端口", "ok", "端口当前可用", details={"port": port, "state": "available"})
+            return item("서비스 포트", "ok", "포트가 사용 중입니다", details={"port": port, "state": "in_use"})
+        return item("서비스 포트", "unknown", "포트 상태를 확인하지 못했습니다", details={"port": port})
+    return item("서비스 포트", "ok", "현재 포트를 사용할 수 있습니다", details={"port": port, "state": "available"})
 
 
 def recent_failure(path):
@@ -164,13 +164,13 @@ def recent_failure(path):
             row = connection.execute("SELECT id,finished_at FROM task_run WHERE status='failed' "
                                      "ORDER BY finished_at DESC,id DESC LIMIT 1").fetchone()
     except (sqlite3.Error, OSError):
-        return item("后台任务", "unknown", "任务失败记录未取得")
+        return item("백그라운드 작업", "unknown", "작업 실패 기록을 확인하지 못했습니다")
     if row is None:
-        return item("后台任务", "ok", "没有已记录的任务失败")
+        return item("백그라운드 작업", "ok", "기록된 작업 실패가 없습니다")
     # 不公开任务 error、参数或结果原文，它们可能包含凭据和媒体路径。
     moment = str(row[1] or "")
     safe_time = moment if len(moment) <= 32 and all(c in "0123456789-:+.TZ " for c in moment) else None
-    return item("后台任务", "warning", "存在已记录的任务失败", action="在活动页查看失败任务",
+    return item("백그라운드 작업", "warning", "기록된 작업 실패가 있습니다", action="활동 페이지에서 실패한 작업을 확인하세요",
                 target="/tasks", details={"id": row[0], "finished_at": safe_time})
 
 
@@ -194,7 +194,7 @@ def report(settings, snapshot, *, config=None):
     checks = component_checks(settings, snapshot, config=config)
     checks.update(data_root=writable_root(config.data_root), port=port_status(settings.host, settings.port),
                   tasks=recent_failure(settings.db_path),
-                  version=item("版本", "ok", f"Peach {__version__} · Python {platform.python_version()}",
+                  version=item("버전", "ok", f"Peach {__version__} · Python {platform.python_version()}",
                                details={"peach": __version__, "python": platform.python_version()}))
     statuses = {check["status"] for check in checks.values()}
     state = "failed" if "failed" in statuses else "warning" if statuses & {"warning", "unknown"} else "ok"

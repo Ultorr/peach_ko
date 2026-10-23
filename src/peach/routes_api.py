@@ -119,18 +119,18 @@ def reveal(request: Request, body: dict[str, Any] = Body(default_factory=dict), 
         target = _own_data_path(str(body.get("path") or ""))
         if target is None:
             return JSONResponse({"error": "path not in the data root",
-                                 "message": "这个位置不归 Peach 管，只能自己打开"}, status_code=403)
+                                 "message": "Peach가 관리하지 않는 위치입니다. 직접 여세요"}, status_code=403)
         if not target.exists():
             return JSONResponse({"error": "file missing",
-                                 "message": "这个位置已经不在了"}, status_code=410)
+                                 "message": "이 위치가 더 이상 존재하지 않습니다"}, status_code=410)
         try:
             if not reveal_path(target):
                 return JSONResponse({"error": "unsupported platform",
-                                     "message": "这台机器上打不开文件管理器"}, status_code=501)
+                                     "message": "이 컴퓨터에서 파일 탐색기를 열 수 없습니다"}, status_code=501)
         except OSError as error:
             LOGGER.warning("reveal failed for %s: %s", target, error)
             return JSONResponse({"error": "reveal failed",
-                                 "message": "打开文件管理器失败，请重试"}, status_code=500)
+                                 "message": "파일 탐색기를 열지 못했습니다. 다시 시도하세요"}, status_code=500)
         return {"ok": True, "path": str(target)}
     try:
         asset_id = int(body.get("id"))
@@ -184,7 +184,7 @@ async def taste_import(
     except ValueError:
         declared = 0
     if declared > maximum:
-        return JSONResponse({"error": "导出文件超过 1 GB"}, status_code=413)
+        return JSONResponse({"error": "내보내기 파일이 1GB를 초과합니다"}, status_code=413)
     filename = unquote(request.headers.get("x-peach-filename") or "history-export")
     filename = re.sub(r"[^\w.()\-\u3400-\u9fff]+", "-", os.path.basename(filename)).strip(".-")
     filename = filename[-160:] or "history-export"
@@ -203,7 +203,7 @@ async def taste_import(
                 digest.update(chunk)
                 await asyncio.to_thread(handle.write, chunk)
         if not size:
-            raise ValueError("导出文件为空")
+            raise ValueError("내보내기 파일이 비어 있습니다")
         target = root / f"{digest.hexdigest()[:12]}-{filename}"
         if target.exists():
             temporary.unlink()
@@ -224,7 +224,7 @@ async def taste_import(
         }
     except OverflowError:
         temporary.unlink(missing_ok=True)
-        return JSONResponse({"error": "导出文件超过 1 GB"}, status_code=413)
+        return JSONResponse({"error": "내보내기 파일이 1GB를 초과합니다"}, status_code=413)
     except (BrowserexportError, OSError, ValueError, TypeError) as exc:
         temporary.unlink(missing_ok=True)
         if imported_target is not None:
@@ -258,14 +258,14 @@ def clouddrive_inbox(request: Request, body: dict[str, Any] = Body(default_facto
     """
     service = request.app.state.push_discovery
     if not (service.available and service.config.enabled and service.config.cloud):
-        raise HTTPException(404, "这个地址下没有页面。")
+        raise HTTPException(404, "이 주소에는 페이지가 없습니다.")
     host = request.client.host if request.client else ""
     if not push_discovery.allowed_source(host):
         LOGGER.warning("推送发现拒收来自 %s 的请求", host or "未知来源")
-        raise HTTPException(404, "这个地址下没有页面。")
+        raise HTTPException(404, "이 주소에는 페이지가 없습니다.")
     if not service.secret.matches(request.headers.get(push_discovery.SECRET_HEADER, "")):
         LOGGER.warning("推送发现拒收密钥不符的请求")
-        raise HTTPException(404, "这个地址下没有页面。")
+        raise HTTPException(404, "이 주소에는 페이지가 없습니다.")
     for cloud_path in push_discovery.parse_notification(body):
         try:
             service.submit_cloud(cloud_path)
@@ -287,7 +287,7 @@ def _conflict(error: TaskRunConflict) -> JSONResponse:
     return JSONResponse(
         {"error": "task already running", "task_key": error.task_key,
          "blocking_run_id": error.blocking_run_id,
-         "message": f"{task_label(error.task_key)}已有一轮在进行，等它跑完再试"},
+         "message": f"{task_label(error.task_key)} 작업이 이미 실행 중입니다. 완료된 후 다시 시도하세요"},
         status_code=409)
 
 

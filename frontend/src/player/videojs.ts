@@ -7,7 +7,7 @@ const MODULES = [
   'video-player.js', 'media/hlsjs-video.js', 'media/dash-video.js', 'ui/container.js', 'ui/play-button.js',
   'ui/mute-button.js', 'ui/fullscreen-button.js', 'ui/pip-button.js', 'ui/time-slider.js',
   'ui/volume-slider.js', 'ui/slider-track.js', 'ui/slider-fill.js', 'ui/slider-buffer.js',
-  'ui/slider-thumb.js', 'ui/slider-value.js', 'i18n.js', 'locales/zh-CN.js',
+  'ui/slider-thumb.js', 'ui/slider-value.js', 'i18n.js', 'locales/ko.js',
 ];
 
 let loader: Promise<VideojsFactory> | null = null;

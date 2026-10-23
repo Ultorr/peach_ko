@@ -25,18 +25,18 @@ import {
 import { SourceIcon } from './source-view';
 import { RiKey2Line } from '@remixicon/react';
 
-const CLEAR_BODY = '将清除这个来源在本机和共享副本中的登录凭据。';
-const WORLD_READABLE = '文件权限过宽。在运行 Peach 的 POSIX 主机上收紧为 0600。';
+const CLEAR_BODY = "이 출처의 로그인 인증 정보를 이 기기와 공유 사본에서 모두 지웁니다.";
+const WORLD_READABLE = "파일 권한이 너무 넓게 설정되어 있습니다. Peach를 실행하는 POSIX 호스트에서 권한을 0600으로 제한하세요.";
 
 /** 一个字段此刻的样子：共享回填的、本机存过的，还是从来没填过。 */
 function fieldHint(row: CredentialRow, name: string): string {
-  if ((row.shared_fields || []).includes(name)) return '来自共享，留空表示不改';
-  return row.fields.includes(name) ? '已保存，留空表示不改' : '未填写';
+  if ((row.shared_fields || []).includes(name)) return "공유 사본에서 가져옴. 비워 두면 변경하지 않습니다";
+  return row.fields.includes(name) ? "저장됨. 비워 두면 변경하지 않습니다" : "미입력";
 }
 
 function StateChip({ row }: { row: CredentialRow }) {
   const done = credentialDone(row);
-  if (done) return <Chip variant="caption" color="lime">已配置</Chip>;
+  if (done) return <Chip variant="caption" color="lime">설정됨</Chip>;
   const color = row.requirement === 'required' ? 'yellow'
     : row.requirement === 'blocked' ? 'rose' : 'neutral';
   return <Chip variant="caption" color={color}>{CREDENTIAL_STATE[row.requirement] || ''}</Chip>;
@@ -57,7 +57,7 @@ function CredentialForm({ row, readOnly, toast }:
       setProblem('');
       setValues({});
       void queryClient.invalidateQueries({ queryKey: FOLLOW_CREDENTIALS_KEY, exact: true });
-      toast(Object.keys(next).length ? '已保存来源凭据' : '已清除来源凭据');
+      toast(Object.keys(next).length ? "출처 인증 정보를 저장했습니다" : "출처 인증 정보를 지웠습니다");
     },
     onError: (cause) => setProblem(errorMessage(cause)),
   });
@@ -65,7 +65,7 @@ function CredentialForm({ row, readOnly, toast }:
   const save = () => {
     const filled = Object.fromEntries(
       Object.entries(values).map(([name, value]) => [name, value.trim()]).filter(([, value]) => value));
-    if (!Object.keys(filled).length) { setProblem('没有填写内容'); return }
+    if (!Object.keys(filled).length) { setProblem("입력한 내용이 없습니다"); return }
     write.mutate(filled);
   };
 
@@ -74,7 +74,7 @@ function CredentialForm({ row, readOnly, toast }:
       <Help>
         {row.why}
         {/* 「去取」跳到那个站自己的页面，会离开 Peach，所以带外链标。 */}
-        {row.where ? <> <ExternalLink href={row.where}>获取凭据</ExternalLink></> : null}
+        {row.where ? <> <ExternalLink href={row.where}>인증 정보 가져오기</ExternalLink></> : null}
       </Help>
       {row.howto ? <Help>{row.howto}</Help> : null}
       <div className="flex w-full flex-col gap-3">
@@ -87,21 +87,21 @@ function CredentialForm({ row, readOnly, toast }:
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="primary" size="small" disabled={readOnly} {...busyProps(write.isPending)}
-          onClick={save}>保存配置</Button>
+          onClick={save}>설정 저장</Button>
         {done ? (
           <Button variant="danger" size="small" disabled={readOnly} {...busyProps(write.isPending)}
             onClick={() => void confirmModal({
-              title: '清除来源凭据', body: CLEAR_BODY, confirmLabel: '清除来源凭据', danger: true,
+              title: "출처 인증 정보 지우기", body: CLEAR_BODY, confirmLabel: "출처 인증 정보 지우기", danger: true,
               onConfirm: () => write.mutateAsync({}),
-            })}>清除</Button>
+            })}>지우기</Button>
         ) : null}
       </div>
       {problem ? <ErrorText>{problem}</ErrorText> : null}
       {(row.shared_fields || []).length
-        ? <Help>{`${row.shared_fields!.join('、')} 是从共享副本回填的，本机没有单独存。清除会把两边一起删。`}</Help>
+        ? <Help>{`${row.shared_fields!.join('、')} 항목은 공유 사본에서 가져왔으며 이 기기에 별도로 저장되어 있지 않습니다. 지우면 양쪽에서 모두 삭제됩니다.`}</Help>
         : null}
       {row.path
-        ? <Disclosure summary="凭据文件"><PathLine path={row.path} className="font-mono text-caption-1-regular text-text-tertiary" onRevealed={toast} /></Disclosure>
+        ? <Disclosure summary="인증 정보 파일"><PathLine path={row.path} className="font-mono text-caption-1-regular text-text-tertiary" onRevealed={toast} /></Disclosure>
         : null}
     </div>
   );
@@ -117,7 +117,7 @@ function CredentialSection({ row, readOnly, toast }:
       <b className="min-w-0 text-body-medium wrap-anywhere text-text-primary">{row.provider_label}</b>
       <StateChip row={row} />
       {row.missing.length
-        ? <Chip variant="caption" color="rose">{`缺 ${row.missing.join('、')}`}</Chip>
+        ? <Chip variant="caption" color="rose">{`누락: ${row.missing.join('、')}`}</Chip>
         : null}
     </span>
   );
@@ -132,11 +132,11 @@ function CredentialSection({ row, readOnly, toast }:
   return (
     <div className="flex flex-col gap-2 border-b border-separator-border px-6 py-5 last:border-b-0 max-sm:px-4">
       {head}
-      <Disclosure summary={credentialDone(row) ? '修改凭据' : '填写凭据'}
+      <Disclosure summary={credentialDone(row) ? "인증 정보 수정" : "인증 정보 입력"}
         defaultOpen={row.requirement === 'required' && !credentialDone(row)}>
         <CredentialForm row={row} readOnly={readOnly} toast={toast} />
       </Disclosure>
-      {row.world_readable ? <Note tone="error" title="凭据文件权限过宽">{WORLD_READABLE}</Note> : null}
+      {row.world_readable ? <Note tone="error" title="인증 정보 파일의 권한이 너무 넓습니다">{WORLD_READABLE}</Note> : null}
     </div>
   );
 }
@@ -148,13 +148,13 @@ export function Credentials(
   const rows = data.providers || [];
   const pending = rows.filter((row) => row.requirement === 'required' && !credentialDone(row));
   if (!rows.length) {
-    return <EmptyState shell="plain" icon={RiKey2Line} title="没有可配置的来源">已接入的站点及其凭据状态会显示在这里。</EmptyState>;
+    return <EmptyState shell="plain" icon={RiKey2Line} title="설정 가능한 출처가 없습니다">연결된 사이트와 인증 정보 상태가 여기에 표시됩니다.</EmptyState>;
   }
-  const pendingLabel = pending.length ? <span className="text-body-2-regular text-text-error-primary">{`${pending.length} 个待配置`}</span> : null;
+  const pendingLabel = pending.length ? <span className="text-body-2-regular text-text-error-primary">{`${pending.length} 개 설정 필요`}</span> : null;
   const groups = <>{[
-        { title: '可配置凭据', rows: rows.filter((row) => row.requirement !== 'none' && row.requirement !== 'blocked') },
-        { title: '不需要凭据', rows: rows.filter((row) => row.requirement === 'none') },
-        { title: '暂不支持', rows: rows.filter((row) => row.requirement === 'blocked') },
+        { title: "인증 정보 설정 가능", rows: rows.filter((row) => row.requirement !== 'none' && row.requirement !== 'blocked') },
+        { title: "인증 정보 불필요", rows: rows.filter((row) => row.requirement === 'none') },
+        { title: "현재 지원하지 않음", rows: rows.filter((row) => row.requirement === 'blocked') },
       ].filter((group) => group.rows.length).map((group) => (
         <section key={group.title} aria-label={group.title} className="flex flex-col gap-2">
           <h4 className="text-body-medium text-text-secondary">{group.title}</h4>
@@ -165,9 +165,9 @@ export function Credentials(
           </div>
         </section>
       ))}</>;
-  return embedded ? <Section title="来源凭据" aside={pendingLabel || undefined}><Stack>{groups}</Stack></Section> :
+  return embedded ? <Section title="출처 인증 정보" aside={pendingLabel || undefined}><Stack>{groups}</Stack></Section> :
     <div className={cardClass({ padding: 'none', className: 'flex flex-col gap-4 px-6 py-5 max-sm:px-4' })}>
-      <div className="flex flex-wrap items-center gap-2"><h3 className="mr-auto text-title-2-medium text-text-primary">来源凭据</h3>{pendingLabel}</div>
+      <div className="flex flex-wrap items-center gap-2"><h3 className="mr-auto text-title-2-medium text-text-primary">출처 인증 정보</h3>{pendingLabel}</div>
       {groups}
     </div>;
 }

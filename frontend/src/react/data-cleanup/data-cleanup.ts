@@ -40,8 +40,8 @@ export const TRASH_KEY = ['trash-summary'] as const;
 
 /** 垃圾判断的分类与界面上的名字。次序就是分项那一行的次序（遗留层 `JUNK_KIND_OPTIONS`）。 */
 export const JUNK_KINDS: [string, string][] = [
-  ['video', '视频'], ['image', '图片'], ['archive', '压缩包'],
-  ['audio', '音频'], ['url', '网址'], ['other', '其它'],
+  ['video', "동영상"], ['image', "이미지"], ['archive', "압축 파일"],
+  ['audio', "오디오"], ['url', "URL"], ['other', "기타"],
 ];
 
 export interface ReviewCounts { counts: Partial<Record<ReviewCategory, number>> }
@@ -76,8 +76,8 @@ export function reviewSummary(data: ReviewCounts | undefined): { figure: string;
   const total = counts.reduce((sum, [, value]) => sum + value, 0);
   const top = counts.slice(0, 3).map(([label, value]) => `${label} ${value.toLocaleString()}`);
   const rest = counts.slice(3).reduce((sum, [, value]) => sum + value, 0);
-  if (rest) top.push(`其余 ${rest.toLocaleString()}`);
-  return { figure: `${total.toLocaleString()} 条待复核`, meta: top.join(' · ') };
+  if (rest) top.push(`나머지 ${rest.toLocaleString()}`);
+  return { figure: `${total.toLocaleString()} 개 검토 대기`, meta: top.join(' · ') };
 }
 
 /** 垃圾文件那张卡的分项：只列真的有东西的类别，已忽略的接在后面。 */
@@ -86,7 +86,7 @@ export function junkBreakdown(summary: JunkSummary | undefined): string {
   const parts = JUNK_KINDS
     .filter(([key]) => Number(summary.counts?.[key]) > 0)
     .map(([key, label]) => `${label} ${count(summary.counts[key])}`);
-  if (Number(summary.dismissed_total) > 0) parts.push(`已忽略 ${count(summary.dismissed_total)}`);
+  if (Number(summary.dismissed_total) > 0) parts.push(`무시됨 ${count(summary.dismissed_total)}`);
   return parts.join(' · ');
 }
 

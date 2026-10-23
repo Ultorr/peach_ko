@@ -23,9 +23,9 @@ LOGGER = logging.getLogger(__name__)
 CREDENTIAL = "jav-browser"
 ACTIVE = {"queued", "searching"}
 MESSAGES = {
-    "idle": "加入 Peach", "queued": "等待搜索磁力", "searching": "正在搜索磁力",
-    "submitted": "云下载进行中", "ingested": "已入库", "owned": "馆藏已有这部作品",
-    "failed": "添加失败，可重试", "no_match": "未找到可自动下载的磁力，可重试",
+    "idle": "Peach에 추가", "queued": "마그넷 검색 대기 중", "searching": "마그넷 검색 중",
+    "submitted": "클라우드 다운로드 중", "ingested": "라이브러리에 추가됨", "owned": "라이브러리에 이미 있는 항목입니다",
+    "failed": "추가에 실패했습니다. 다시 시도할 수 있습니다", "no_match": "자동 다운로드 가능한 마그넷을 찾지 못했습니다. 다시 시도할 수 있습니다",
 }
 
 
@@ -34,18 +34,18 @@ def source_sites() -> list[dict]:
     payload = json.loads((PROJECT_ROOT / "web" / "integrations" / "jav-sites.json").read_text(encoding="utf-8"))
     sites = payload.get("sites")
     if payload.get("version") != 1 or not isinstance(sites, list) or not sites:
-        raise ValueError("JAV 站点清单无法读取")
+        raise ValueError("JAV 사이트 목록을 읽을 수 없습니다")
     ids, domains = set(), set()
     for site in sites:
         if (not isinstance(site, dict) or not site.get("id") or site["id"] in ids
                 or not site.get("label") or not site.get("kind")
                 or site.get("mode") not in {"automatic", "selection"}
                 or not isinstance(site.get("domains"), list) or not site["domains"]):
-            raise ValueError("JAV 站点清单包含无效条目")
+            raise ValueError("JAV 사이트 목록에 유효하지 않은 항목이 있습니다")
         ids.add(site["id"])
         for host in site["domains"]:
             if not isinstance(host, str) or not re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", host) or host in domains:
-                raise ValueError("JAV 站点清单包含无效域名")
+                raise ValueError("JAV 사이트 목록에 유효하지 않은 도메인이 있습니다")
             domains.add(host)
     return sites
 
@@ -54,7 +54,7 @@ def code_key(value: object) -> str:
     raw = str(value or "").strip()
     code = release_code_from_text(raw) if len(raw) <= 80 else None
     if not code or not is_jav_code(code) or normalise_code_key(raw) != normalise_code_key(code):
-        raise ValueError("请提供一个明确的 JAV 番号")
+        raise ValueError("정확한 JAV 품번을 입력하세요")
     return normalise_code_key(code)
 
 
@@ -74,7 +74,7 @@ def source_page(value: object) -> str:
                 for key, value in parameters)):
             raise ValueError
     except ValueError:
-        raise ValueError("请从支持的 JAV 影片详情页添加") from None
+        raise ValueError("지원하는 JAV 동영상 상세 페이지에서 추가하세요") from None
     return parsed._replace(query=urlencode(parameters), fragment="").geturl()
 
 
@@ -98,10 +98,10 @@ class JavBrowser:
             return {}
         payload = json.loads(self.path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict) or len(payload) > 200:
-            raise ValueError("浏览器添加队列无法读取")
+            raise ValueError("브라우저 추가 대기열을 읽을 수 없습니다")
         for key, row in payload.items():
             if not isinstance(row, dict) or code_key(key) != key or row.get("state") not in MESSAGES:
-                raise ValueError("浏览器添加队列无法读取")
+                raise ValueError("브라우저 추가 대기열을 읽을 수 없습니다")
             if row["state"] == "searching":
                 row["state"] = "queued"
         return payload
@@ -124,15 +124,15 @@ class JavBrowser:
     def configure(self, body: dict) -> dict:
         action = body.get("action")
         if action not in {"enable", "rotate", "disable"}:
-            raise ValueError("请选择启用、更新令牌或关闭")
+            raise ValueError("활성화, 토큰 갱신 또는 비활성화를 선택하세요")
         if not self.downloads.available:
-            raise ValueError("浏览器添加只在账本写入端可用")
+            raise ValueError("브라우저 추가는 기록 데이터베이스 쓰기 담당 기기에서만 사용할 수 있습니다")
         with self._lock:
             if action == "disable":
                 self.credentials.clear(CREDENTIAL)
                 for row in self.rows.values():
                     if row["state"] in ACTIVE:
-                        row.update(state="failed", message="浏览器添加已关闭")
+                        row.update(state="failed", message="브라우저 추가가 비활성화되었습니다")
                 self._save()
                 return self.settings()
             provider = str(body.get("provider") or "")
@@ -152,10 +152,10 @@ class JavBrowser:
 
     def _ready(self, provider: str):
         if not self.downloads.available:
-            raise ValueError("浏览器添加只在账本写入端可用")
+            raise ValueError("브라우저 추가는 기록 데이터베이스 쓰기 담당 기기에서만 사용할 수 있습니다")
         state = next((row for row in self.downloads.snapshot(1)["providers"] if row["key"] == provider), None)
         if not state or not state["configured"] or not state["target"]:
-            raise ValueError("请先在下载渠道配置网盘账号和目标目录")
+            raise ValueError("다운로드 채널에서 클라우드 계정과 대상 폴더를 먼저 설정하세요")
 
     def _existing(self, code: str) -> dict | None:
         with self.contract.database.read_connection() as connection:
@@ -194,7 +194,7 @@ class JavBrowser:
         with self._lock:
             config = self._config()
             if not config.get("token_hash"):
-                raise ValueError("请先启用浏览器添加")
+                raise ValueError("브라우저 추가를 먼저 활성화하세요")
             status = self.status(code)
             if status["state"] in ACTIVE | {"owned", "submitted", "ingested"}:
                 return status
@@ -202,7 +202,7 @@ class JavBrowser:
             if code not in self.rows and len(self.rows) >= 200:
                 completed = next((key for key, row in self.rows.items() if row["state"] not in ACTIVE), None)
                 if completed is None:
-                    raise ValueError("添加队列已满，请等待当前任务结束")
+                    raise ValueError("추가 대기열이 가득 찼습니다. 현재 작업이 끝날 때까지 기다리세요")
                 del self.rows[completed]
             self.rows[code] = {"state": "queued", "provider": config["provider"], "source_url": page}
             self._save()
@@ -250,7 +250,7 @@ class JavBrowser:
                 elif candidate is None:
                     failed = result.get("state") in {"error", "unavailable"} or bool(result.get("error"))
                     row.update(state="failed" if failed else "no_match", message=(
-                        "资源搜索暂不可用，请在 Peach 检查来源后重试" if failed else MESSAGES["no_match"]))
+                        "현재 리소스 검색을 사용할 수 없습니다. Peach에서 소스를 확인한 후 다시 시도하세요" if failed else MESSAGES["no_match"]))
                 else:
                     submitted = submit_offline_download(
                         self.downloads, magnet=candidate["uri"], provider=provider, code=code,
@@ -263,7 +263,7 @@ class JavBrowser:
             LOGGER.error("JAV 浏览器添加失败：%s (%s)", code, type(error).__name__)
             with self._lock:
                 if row["state"] == "searching":
-                    row.update(state="failed", message="搜索或云下载提交失败，请在 Peach 检查下载渠道后重试")
+                    row.update(state="failed", message="검색 또는 클라우드 다운로드 제출에 실패했습니다. Peach에서 다운로드 채널을 확인한 후 다시 시도하세요")
                     self._save()
         return True
 

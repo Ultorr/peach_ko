@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 带单位、可选开关与字段错误反馈的数值设置。
  *
  * 可选的那几项（悬停放大、相关推荐、搜索记录、关注自动更新）前面有一枚开关：关掉就是 0，
@@ -10,11 +11,11 @@ import { boundedPreference } from '../../number-setting';
 export interface NumberSpec { min: number; max: number; unit: string; optional?: boolean; fallback: number }
 
 export const NUMBER_SPECS = {
-  batchSizeSetting: { min: 1, max: 200, unit: '个', fallback: 60 },
-  hoverDelaySetting: { min: 1, max: 60, unit: '秒', optional: true, fallback: 5 },
-  seekSecondsSetting: { min: 1, max: 300, unit: '秒', fallback: 10 },
-  relatedLimitSetting: { min: 1, max: 60, unit: '个', optional: true, fallback: 20 },
-  searchHistoryLimitSetting: { min: 1, max: 50, unit: '条', optional: true, fallback: 10 },
+  batchSizeSetting: { min: 1, max: 200, unit: "개", fallback: 60 },
+  hoverDelaySetting: { min: 1, max: 60, unit: "초", optional: true, fallback: 5 },
+  seekSecondsSetting: { min: 1, max: 300, unit: "초", fallback: 10 },
+  relatedLimitSetting: { min: 1, max: 60, unit: "개", optional: true, fallback: 20 },
+  searchHistoryLimitSetting: { min: 1, max: 50, unit: "개", optional: true, fallback: 10 },
   followScheduleSetting: { min: 15, max: 10080, unit: '分钟', optional: true, fallback: 60 },
 } as const satisfies Record<string, NumberSpec>;
 
@@ -27,7 +28,7 @@ const storageKey = (id: string) => `peach.number.${id}`;
 export function dayReading(value: number, unit: string): string {
   if (unit !== '分钟' || !Number.isInteger(value) || value < 1440) return '';
   const days = value / 1440;
-  return Number.isInteger(days) ? `${days.toLocaleString()} 天` : `约 ${days.toFixed(1)} 天`;
+  return Number.isInteger(days) ? `${days.toLocaleString()} 일` : `약 ${days.toFixed(1)} 일`;
 }
 
 export function NumberSetting({ id, label, value, disabled = false, onApply }: {
@@ -64,7 +65,7 @@ export function NumberSetting({ id, label, value, disabled = false, onApply }: {
     if (!node) return;
     if (!node.value || !node.checkValidity()) {
       node.setAttribute('aria-invalid', 'true');
-      setError(`请输入 ${min}–${max} 的整数（${unit}）`);
+      setError(`입력할 정수의 범위: ${min}–${max} （단위:${koreanLabel(unit)}）`);
       return;
     }
     node.removeAttribute('aria-invalid');
@@ -105,7 +106,7 @@ export function NumberSetting({ id, label, value, disabled = false, onApply }: {
   return (
     <div data-number-setting="">
       {optional
-        ? <input type="checkbox" data-toggle="" role="switch" aria-label={`启用${label}`}
+        ? <input type="checkbox" data-toggle="" role="switch" aria-label={`활성화：${label}`}
             checked={on} disabled={blocked} onChange={toggle} />
         : null}
       <div data-number-fields="" hidden={optional && !on}>
@@ -120,7 +121,7 @@ export function NumberSetting({ id, label, value, disabled = false, onApply }: {
               }
             }}
             onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); commit() } }} />
-          <span aria-hidden="true">{unit}{dayReading(Number(draft), unit) ? ` · ${dayReading(Number(draft), unit)}` : ''}</span>
+          <span aria-hidden="true">{koreanLabel(unit)}{dayReading(Number(draft), unit) ? ` · ${dayReading(Number(draft), unit)}` : ''}</span>
         </div>
         <small id={`${id}-error`} data-number-error="" role="status" hidden={!error}>{error}</small>
       </div>

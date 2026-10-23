@@ -18,9 +18,9 @@ import { busyProps, useAction } from './use-action';
 type FieldErrors = Partial<Record<'current_password' | 'password' | 'confirmation', string>>;
 
 const HELP: Partial<Record<AccessState['mode'], string>> = {
-  legacy: '当前使用系统生成的访问口令。改设自己的密码，或关闭登录要求。',
-  locked: '访问设置无法读取，请在本机检查配置文件。',
-  password: '已设置密码。新设备需要登录，登录时勾选「保持登录」可保持 30 天。',
+  legacy: "현재 시스템이 생성한 접속 암호를 사용하고 있습니다. 직접 비밀번호를 설정하거나 로그인 요구를 끄세요.",
+  locked: "접속 설정을 불러올 수 없습니다. 이 기기에서 설정 파일을 확인하세요.",
+  password: "비밀번호가 설정되어 있습니다. 새 기기에서는 로그인해야 하며, 로그인 시 「로그인 상태 유지」를 선택하면 30일 동안 유지됩니다.",
 };
 
 export function AccessSettings({ initial, receipt }: AccessSettingsProps) {
@@ -36,10 +36,10 @@ export function AccessSettings({ initial, receipt }: AccessSettingsProps) {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const issues: FieldErrors = {};
-    if (state.mode === 'password' && !current) issues.current_password = '请输入当前访问密码';
+    if (state.mode === 'password' && !current) issues.current_password = "현재 접속 비밀번호를 입력하세요";
     if (!disable) {
-      if (password.length < 8 || password.length > 256) issues.password = '访问密码需为 8–256 个字符';
-      if (password !== confirmation) issues.confirmation = '两次输入的密码不一致';
+      if (password.length < 8 || password.length > 256) issues.password = "접속 비밀번호는 8~256자여야 합니다";
+      if (password !== confirmation) issues.confirmation = "입력한 두 비밀번호가 일치하지 않습니다";
     }
     setFields(issues);
     if (Object.keys(issues).length) {
@@ -51,7 +51,7 @@ export function AccessSettings({ initial, receipt }: AccessSettingsProps) {
       current_password: current, password: disable ? '' : password, confirmation: disable ? '' : confirmation,
     }, 'POST', signal), (next) => {
       setState(next); setCurrent(''); setPassword(''); setConfirmation(''); setDisable(false); setFields({});
-      receipt(next.mode === 'open' ? '已关闭访问密码' : '已保存配置');
+      receipt(next.mode === 'open' ? "접속 비밀번호 사용이 해제되었습니다" : "설정이 저장되었습니다");
     }, (cause) => {
       const payload = cause instanceof ApiError ? cause.body as { errors?: FieldErrors; detail?: { errors?: FieldErrors } } : null;
       const errors = payload?.errors || payload?.detail?.errors;
@@ -62,33 +62,33 @@ export function AccessSettings({ initial, receipt }: AccessSettingsProps) {
   const help = HELP[state.mode];
   const editable = state.mode !== 'locked';
   return (
-    <Section title="访问密码" onSubmit={submit}>
+    <Section title="접속 비밀번호" onSubmit={submit}>
       <div ref={body}>
         <Stack>
           {help ? <Help>{help}</Help> : null}
           {state.mode === 'open'
-            ? <Note tone="warning" title="未设置访问密码">能连接到 Peach 的设备打开地址就能看馆藏，不需要登录。</Note>
+            ? <Note tone="warning" title="접속 비밀번호가 설정되지 않았습니다">Peach에 연결할 수 있는 기기는 주소를 열어 바로 컬렉션을 볼 수 있습니다. 로그인은 필요하지 않습니다.</Note>
             : null}
           {state.mode === 'password' || state.mode === 'legacy'
-            ? <Checkbox isSelected={disable} onChange={setDisable}>关闭访问密码</Checkbox>
+            ? <Checkbox isSelected={disable} onChange={setDisable}>접속 비밀번호 해제</Checkbox>
             : null}
           {state.mode === 'password'
-            ? <Input id="access-current" type="password" label="当前访问密码" autoComplete="current-password" maxLength={256}
+            ? <Input id="access-current" type="password" label="현재 접속 비밀번호" autoComplete="current-password" maxLength={256}
                 value={current} onChange={setCurrent} isRequired validationBehavior="aria"
                 isInvalid={Boolean(fields.current_password)} hint={fields.current_password} />
             : null}
           {editable
-            ? <PasswordPair label={state.mode === 'password' ? '新访问密码' : '设置访问密码'}
+            ? <PasswordPair label={state.mode === 'password' ? "새 접속 비밀번호" : "접속 비밀번호 설정"}
                 password={password} confirmation={confirmation} onPassword={setPassword} onConfirmation={setConfirmation}
                 disabled={disable} passwordError={fields.password} confirmationError={fields.confirmation}
-                passwordHint={disable ? '关闭访问密码时无需填写。' : '至少 8 个字符。保存后其他设备需要重新登录。'} />
+                passwordHint={disable ? "접속 비밀번호를 해제할 때는 입력하지 않아도 됩니다." : "8자 이상이어야 합니다. 저장하면 다른 기기는 다시 로그인해야 합니다."} />
             : null}
-          {disable ? <Note tone="warning" title="访问范围">保存后，能连接到 Peach 的设备将直接访问馆藏。</Note> : null}
+          {disable ? <Note tone="warning" title="접속 범위">저장하면 Peach에 연결할 수 있는 기기에서 컬렉션에 바로 접속할 수 있습니다.</Note> : null}
           {action.error ? <ErrorText>{action.error}</ErrorText> : null}
         </Stack>
       </div>
       {editable
-        ? <Footer><Button type="submit" {...busyProps(action.busy === 'save')}>保存配置</Button></Footer>
+        ? <Footer><Button type="submit" {...busyProps(action.busy === 'save')}>설정 저장</Button></Footer>
         : null}
     </Section>
   );

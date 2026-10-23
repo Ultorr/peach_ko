@@ -70,39 +70,39 @@ export function ResourceSearch({ initialCode, reason, choose, onSearch, onWork }
     }
   };
   return (
-    <section aria-label="查找资源" aria-busy={Boolean(action.busy)} className="flex min-w-0 flex-col gap-4">
-      {reason ? <Help>版本目标：{reason}。可在下方调整搜索优先项；完整度与水印需要逐条复核。</Help> : null}
-      <Input label="按番号查找资源" value={code} maxLength={80} placeholder="输入番号，按回车搜索" enterKeyHint="search"
+    <section aria-label="리소스 찾기" aria-busy={Boolean(action.busy)} className="flex min-w-0 flex-col gap-4">
+      {reason ? <Help>목표 버전: {reason}. 아래에서 검색 우선순위를 조정할 수 있습니다. 완전성과 워터마크는 각 결과를 직접 확인하세요.</Help> : null}
+      <Input label="품번으로 리소스 찾기" value={code} maxLength={80} placeholder="품번을 입력하고 Enter를 누르세요" enterKeyHint="search"
         leadingIcon={action.busy ? SearchSpinner : RiSearchLine}
         isReadOnly={Boolean(action.busy)} aria-busy={Boolean(action.busy)} onChange={setCode} onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); search() }
         }} />
       <div className="flex flex-col gap-1">
-        <FieldLabel>优先寻找</FieldLabel>
-        <Select aria-label="优先寻找" selectedKey={goal} isDisabled={Boolean(action.busy)}
+        <FieldLabel>우선 검색</FieldLabel>
+        <Select aria-label="우선 검색" selectedKey={goal} isDisabled={Boolean(action.busy)}
           onSelectionChange={(key) => { if (key !== null) setGoal(String(key)) }}>
-          <SelectItem id="quality">高清</SelectItem><SelectItem id="chinese">中字</SelectItem>
-          <SelectItem id="uncensored">无码</SelectItem>
+          <SelectItem id="quality">고화질</SelectItem><SelectItem id="chinese">중국어 자막</SelectItem>
+          <SelectItem id="uncensored">무수정</SelectItem>
         </Select>
       </div>
       <div className="flex gap-3 max-sm:flex-col">
-        <Input label="最小体积（GiB）" inputMode="decimal" value={min} onChange={setMin} />
-        <Input label="最大体积（GiB）" inputMode="decimal" value={max} onChange={setMax} />
+        <Input label="최소 크기 (GiB)" inputMode="decimal" value={min} onChange={setMin} />
+        <Input label="최대 크기(GiB)" inputMode="decimal" value={max} onChange={setMax} />
       </div>
-      {action.busy ? <Help role="status">正在搜索资源</Help> : null}
+      {action.busy ? <Help role="status">리소스를 검색하는 중</Help> : null}
       {action.error ? <ErrorText>{action.error}</ErrorText> : null}
       {result?.error ? <Help role="status">{result.error}</Help> : null}
-      {result?.state === 'ready' && !result.items.length ? <Help role="status">没有符合条件的资源。</Help> : null}
+      {result?.state === 'ready' && !result.items.length ? <Help role="status">조건에 맞는 리소스가 없습니다.</Help> : null}
       {result?.warnings.map((warning) => <Help key={warning}>{warning}</Help>)}
       {result?.items.length ? <ul className="flex min-w-0 flex-col gap-4">
         {result.items.map((item) => <li key={item.id} className="flex min-w-0 flex-col gap-2 border-t border-separator-border pt-4">
           <p className="break-words text-body-2-medium text-text-primary">{item.name}</p>
-          <Help>{[item.size > 0 ? `${(item.size / 1024 ** 3).toFixed(2)} GiB` : '体积未取得', item.seeders >= 0 ? `${item.seeders} 个做种` : '做种未取得',
-            item.resolution ? `${item.resolution}p` : '', item.codec, item.chinese ? '中字' : '',
-            item.uncensored ? '无码' : '', item.origins.join('、')].filter(Boolean).join(' · ')}</Help>
+          <Help>{[item.size > 0 ? `${(item.size / 1024 ** 3).toFixed(2)} GiB` : "크기 확인 불가", item.seeders >= 0 ? `${item.seeders} 개의 시드` : "시드 수 확인 불가",
+            item.resolution ? `${item.resolution}p` : '', item.codec, item.chinese ? "중국어 자막" : '',
+            item.uncensored ? "무수정" : '', item.origins.join('、')].filter(Boolean).join(' · ')}</Help>
           <div><Button type="button" variant="secondary" onClick={() => {
             choose(item.uri, searched); setSelected(item.id);
-          }}>{selected === item.id ? '已填入磁力' : '选用此资源'}</Button></div>
+          }}>{selected === item.id ? "마그넷 링크 입력됨" : "이 리소스 사용"}</Button></div>
         </li>)}
       </ul> : null}
     </section>

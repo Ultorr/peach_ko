@@ -10,10 +10,10 @@ export function JavHeader({ tab, navigate, find }: {
   return <div className="flex w-full flex-col gap-4">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h2 data-page-title="" className="text-display-4-medium text-text-primary max-board-narrow:text-title-1-medium">JAV</h2>
-      <Button variant="primary" onClick={find}>查找资源</Button>
+      <Button variant="primary" onClick={find}>리소스 찾기</Button>
     </div>
     <BoardTabs tabs={JAV_TABS.map(([value, label]) => ({ value, label }))} value={tab}
-      label="JAV 分区" className="" onChange={key => navigate(javPath(key))} />
+      label="JAV 섹션" className="" onChange={key => navigate(javPath(key))} />
   </div>;
 }
 

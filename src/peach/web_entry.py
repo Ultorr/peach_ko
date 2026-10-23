@@ -14,7 +14,7 @@ from html import escape
 #: 三页共用的文档头。`robots` 那一行管只读 HTML 的爬虫，响应头 `X-Robots-Tag` 管所有响应：
 #: 公网入口在跑的时候登录页就在互联网上，不希望它进任何搜索结果。图标声明和主站同一份，
 #: 没有会话时登录页就是书签实际停在的地方。
-_PAGE_HEAD = ('<!doctype html>\n<html lang="zh-CN"><head><meta charset="utf-8">'
+_PAGE_HEAD = ('<!doctype html>\n<html lang="ko"><head><meta charset="utf-8">'
               '<meta name="viewport" content="width=device-width,initial-scale=1">'
               '<meta name="color-scheme" content="light dark">'
               '<meta name="robots" content="noindex, nofollow">'
@@ -60,14 +60,14 @@ def runtime_facts(config) -> tuple[tuple[str, str], ...]:
     from .mp4recover import untrunc_path
 
     available = FFmpegResolver(config.directory("tools") / "ffmpeg").ffmpeg() is not None
-    ffmpeg = "可用" if available else "未安装；MP4 可直接播放，转码和缩略图需要安装 FFmpeg。"
-    untrunc = "可用" if untrunc_path(config.directory("tools")) else "未安装；缺索引的 MP4 需要它才修得了。"
+    ffmpeg = "可用" if available else "설치되지 않음. MP4는 바로 재생할 수 있습니다. 변환과 썸네일 생성에는 FFmpeg가 필요합니다."
+    untrunc = "可用" if untrunc_path(config.directory("tools")) else "설치되지 않음. 인덱스가 없는 MP4 파일을 복구하려면 필요합니다."
     return (
-        ("版本", __version__),
-        ("操作系统", system_platform.system()),
-        ("数据目录", str(config.data_root)),
-        ("设置文件", str(config.path)),
-        ("日志目录", str(config.directory("logs"))),
+        ("버전", __version__),
+        ("운영체제", system_platform.system()),
+        ("데이터 폴더", str(config.data_root)),
+        ("설정 파일", str(config.path)),
+        ("로그 폴더", str(config.directory("logs"))),
         ("FFmpeg", ffmpeg),
         ("untrunc", untrunc),
     )
@@ -82,11 +82,11 @@ def runtime_fact_entries(config) -> list[dict[str, str]]:
                if choice is None]
     if missing:
         entry = next(row for row in entries if row["term"] == "FFmpeg")
-        entry.update(value="未找到 " + "、".join(missing) + "；转码、媒体信息与缩略图需要 FFmpeg 工具包。",
-                     download_url="https://ffmpeg.org/download.html", download_label="下载 FFmpeg")
+        entry.update(value="찾을 수 없음: " + "、".join(missing) + ". 변환, 미디어 정보 조회, 썸네일 생성에는 FFmpeg 도구 모음이 필요합니다.",
+                     download_url="https://ffmpeg.org/download.html", download_label="FFmpeg 다운로드")
     untrunc = next(row for row in entries if row["term"] == "untrunc")
     if untrunc["value"] != "可用":
-        untrunc.update(value=untrunc["value"] + f"解压到 {config.directory('tools') / 'untrunc'}。",
+        untrunc.update(value=untrunc["value"] + f"압축을 {config.directory('tools') / 'untrunc'}에 푸세요.",
                        download_url="https://github.com/anthwlock/untrunc/releases",
-                       download_label="下载 untrunc")
+                       download_label="untrunc 다운로드")
     return [row for row in entries if not (row["term"] in ("FFmpeg", "untrunc") and row["value"] == "可用")]

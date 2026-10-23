@@ -18,10 +18,10 @@ from urllib.parse import urlsplit
 from . import __version__
 
 FIELDS = {
-    "usage": "Peach 版本、操作系统类型；每天最多一次，不含安装标识。",
-    "errors": "Peach 版本、系统类型、Python 版本、CPU 架构、故障环节、异常链、Peach 代码文件名/函数名/行号、结构化错误码、媒体工具故障类别、HTTP 方法/路由模板/关联错误编号、同类故障次数与统计日期；首次立即上传，重复次数每小时或退出时合并，每天最多 20 批。",
+    "usage": "Peach 버전과 운영체제 종류를 하루 최대 1회 전송합니다. 설치 식별자는 포함되지 않습니다.",
+    "errors": "Peach 버전, 운영체제 종류, Python 버전, CPU 아키텍처, 오류 발생 단계, 예외 체인, Peach 코드 파일명·함수명·줄 번호, 구조화된 오류 코드, 미디어 도구 오류 유형, HTTP 메서드·경로 템플릿·관련 오류 번호, 동일 오류 발생 횟수와 집계 날짜를 전송합니다. 최초 발생 시 즉시 업로드하고 반복 횟수는 매시간 또는 종료 시 합산하며 하루 최대 20회 전송합니다.",
 }
-NOTICE = "发送至 Sentry。不上报错误原文、完整日志、诊断 ZIP、媒体名称、路径、网址、观看记录或凭据。接收服务会接触连接 IP；关闭后停止新发送，已发送的信息无法撤回。"
+NOTICE = "Sentry로 전송합니다. 오류 원문, 전체 로그, 진단 ZIP, 미디어 이름, 경로, URL, 시청 기록, 인증 정보는 전송하지 않습니다. 수신 서비스는 접속 IP를 확인할 수 있습니다. 끄면 추가 전송이 중지되며 이미 전송된 정보는 철회할 수 없습니다."
 _lock = threading.RLock()
 _client = None
 _client_dsn = ""
@@ -95,13 +95,13 @@ def snapshot(config=None):
 
 def parse_choices(body, *, partial=False):
     if not isinstance(body, dict):
-        raise ValueError("遥测和自动错误诊断必须是布尔值")
+        raise ValueError("사용 통계 및 자동 오류 진단 옵션은 불리언 값이어야 합니다")
     defaults = consent() if partial else {}
     choices = {key: body.get(key, defaults.get(key)) for key in FIELDS}
     if any(type(value) is not bool for value in choices.values()):
-        raise ValueError("遥测和自动错误诊断必须是布尔值")
+        raise ValueError("사용 통계 및 자동 오류 진단 옵션은 불리언 값이어야 합니다")
     if choices["usage"] != choices["errors"]:
-        raise ValueError("版本统计与错误诊断须同时开启或关闭")
+        raise ValueError("버전 통계와 오류 진단은 함께 켜거나 꺼야 합니다")
     return choices
 
 

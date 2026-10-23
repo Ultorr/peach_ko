@@ -31,8 +31,8 @@ export function revealSkeleton(container:any,write:()=>void):void{
 }
 
 export function configurationSkeletonHtml():string{
-  const groups:[string,number][]=[['通用',2],['媒体',2],['下载',2],['网络与访问',3],['维护',3]];
-  return `<div class="ui-configpage" data-skeleton="configuration" role="status" aria-label="正在读取配置">${groups.map(([label,count])=>`<h2 class="ui-configgroup" aria-hidden="true">${label}</h2>${Array.from({length:count},()=>`<div class="configfieldset config-skeleton-card" aria-hidden="true"><div class="geist-fieldset-content"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div><footer class="geist-fieldset-footer"><span class="skeleton"></span></footer></div>`).join('')}`).join('')}</div>`;
+  const groups:[string,number][]=[["일반",2],["미디어",2],["다운로드",2],["네트워크 및 접속",3],["유지 관리",3]];
+  return `<div class="ui-configpage" data-skeleton="configuration" role="status" aria-label="설정을 읽는 중">${groups.map(([label,count])=>`<h2 class="ui-configgroup" aria-hidden="true">${label}</h2>${Array.from({length:count},()=>`<div class="configfieldset config-skeleton-card" aria-hidden="true"><div class="geist-fieldset-content"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div><footer class="geist-fieldset-footer"><span class="skeleton"></span></footer></div>`).join('')}`).join('')}</div>`;
 }
 
 /** Geist Skeleton: reserve a large content region while its structure is loading. */
@@ -40,7 +40,7 @@ export function configurationSkeletonHtml():string{
    而行政界面往往只有两三个大区。多画的块加载完就消失，那不是占位是误报。
    `cardRatio` 是卡片封面的宽高比，交给调用方按真卡的版式给：大图版式的正封是竖的，
    骨架照 16:9 铺的话，内容一到整屏卡片都要被拉高一截。 */
-export function skeletonHtml(label='正在读取内容',{className='',variant='panel',count=6,fill=true,gridClass='',gridSize='',cardRatio=0}={}):string{
+export function skeletonHtml(label="콘텐츠를 읽는 중",{className='',variant='panel',count=6,fill=true,gridClass='',gridSize='',cardRatio=0}={}):string{
   const kind=new Set(['panel','cards','dashboard']).has(variant)?variant:'panel';
   const body=kind==='cards'
     ?Array.from({length:Math.max(1,count)},
@@ -81,7 +81,7 @@ export function indexSkeletonHtml({kind,layout='big',mode='alphabet'}:{kind?:str
       `<span class="tg skeleton" style="width:${[92,128,76,108,144][i%5]}px">&nbsp;</span>`).join('')}</div>`
     :people?`<div class="${grid}">${cell.repeat(12)}</div>`
     :`<section class="ui-alphagroup"><span class="indexletterskeleton skeleton"></span><div class="${grid}">${cell.repeat(10)}</div></section>`.repeat(3);
-  const label='正在读取索引';
+  const label="인덱스를 읽는 중";
   return `<div class="skeletonpanel index-skeleton" data-skeleton="index/${esc(kind)}/${esc(layout)}/${esc(mode)}"${people?' data-fill=""':''}
     role="status" aria-label="${label}"><span class="sr-only">${label}</span><section aria-hidden="true">${body}</section></div>`;
 }

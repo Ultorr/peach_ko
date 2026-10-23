@@ -39,7 +39,7 @@ const TRASH = spriteGlyph('trash');
 const PLAYLIST = spriteGlyph('playlist');
 
 const MENU_ROW = cx(MENU_ITEM, MENU_ITEM_INTERACTIVE, 'text-body-2-medium');
-const EMPTY_NAME = '播放列表名称不能为空';
+const EMPTY_NAME = "재생목록 이름은 비워 둘 수 없습니다";
 
 type Toast = PlaylistsProps['toast'];
 
@@ -61,9 +61,9 @@ function CreateForm({ toast }: { toast: Toast }) {
       setName('');
       setProblem('');
       void refreshPlaylists();
-      toast('已新建播放列表', { undo: undoing(() => deletePlaylist(result.playlist.id)) });
+      toast("재생목록이 생성되었습니다", { undo: undoing(() => deletePlaylist(result.playlist.id)) });
     },
-    onError: (cause) => setProblem(errorMessage(cause) || '新建失败'),
+    onError: (cause) => setProblem(errorMessage(cause) || "생성 실패"),
   });
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -72,14 +72,14 @@ function CreateForm({ toast }: { toast: Toast }) {
     create.mutate(name);
   };
   return (
-    <form data-playlist-create="" aria-label="新建播放列表" onSubmit={submit}
+    <form data-playlist-create="" aria-label="재생목록 만들기" onSubmit={submit}
       className="flex flex-wrap items-end gap-2">
       <div className="min-w-50 max-w-80 flex-1 basis-50 max-board-narrow:min-w-0 max-board-narrow:max-w-none">
-        <Input label="新播放列表" placeholder="输入名称" maxLength={80} value={name}
+        <Input label="새 재생목록" placeholder="이름 입력" maxLength={80} value={name}
           onChange={(value) => { setName(value); setProblem('') }}
           validationBehavior="aria" isInvalid={Boolean(problem)} hint={problem || undefined} />
       </div>
-      <Button type="submit" {...busyProps(create.isPending)}>新建</Button>
+      <Button type="submit" {...busyProps(create.isPending)}>만들기</Button>
     </form>
   );
 }
@@ -101,7 +101,7 @@ function RenameDialog({ target, close, toast }: { target: PlaylistRow | null; cl
     onSuccess: (_result, { row }) => {
       close();
       void refreshPlaylists();
-      toast('已重命名播放列表', { undo: undoing(() => renamePlaylist(row.id, row.name)) });
+      toast("재생목록 이름이 변경되었습니다", { undo: undoing(() => renamePlaylist(row.id, row.name)) });
     },
     onError: (cause) => setProblem(errorMessage(cause)),
   });
@@ -116,14 +116,14 @@ function RenameDialog({ target, close, toast }: { target: PlaylistRow | null; cl
     <ModalFrame isOpen={Boolean(target)} onOpenChange={(open) => { if (!open) close() }} width="form">
       <form data-playlist-rename="" onSubmit={submit} className="flex min-h-0 flex-col">
         <div className="flex flex-col gap-4 p-5">
-          <Heading slot="title" className="text-title-2-semibold text-text-primary">编辑名称</Heading>
-          <Input ref={input} label="名称" placeholder="输入名称" maxLength={80} value={name}
+          <Heading slot="title" className="text-title-2-semibold text-text-primary">이름 편집</Heading>
+          <Input ref={input} label="이름" placeholder="이름 입력" maxLength={80} value={name}
             onChange={(value) => { setName(value); setProblem('') }}
             validationBehavior="aria" isInvalid={Boolean(problem)} hint={problem || undefined} />
         </div>
         <div className="flex justify-between gap-4 p-3">
-          <Button variant="secondary" onClick={close}>取消</Button>
-          <Button type="submit" {...busyProps(rename.isPending)}>保存名称</Button>
+          <Button variant="secondary" onClick={close}>취소</Button>
+          <Button type="submit" {...busyProps(rename.isPending)}>이름 저장</Button>
         </div>
       </form>
     </ModalFrame>
@@ -141,7 +141,7 @@ function PlaylistMenu({ name, onRename, onDelete }: { name: string; onRename(): 
   const run = (action: () => void) => { setOpen(false); action() };
   return (
     <>
-      <button ref={trigger} type="button" title="更多操作" aria-label={`播放列表操作：${name}`}
+      <button ref={trigger} type="button" title="추가 작업" aria-label={`재생목록 작업:${name}`}
         aria-haspopup="dialog" aria-expanded={open} data-playlist-menu="" onClick={() => setOpen(true)}
         className="flex size-7.5 flex-none cursor-pointer items-center justify-center rounded-2lg text-foreground-icon-secondary outline-none transition-colors hover:bg-background-primary-hover hover:text-foreground-icon-primary aria-expanded:bg-background-primary-hover aria-expanded:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring">
         <ELLIPSIS aria-hidden className="size-4.5" />
@@ -149,12 +149,12 @@ function PlaylistMenu({ name, onRename, onDelete }: { name: string; onRename(): 
       <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen}
         placement="bottom end" offset={4} className={MENU_POPOVER_SURFACE}>
         {/* 面板外宽 172px，同旧卡片菜单：外框再加 10px 内边距与 1px 描边。 */}
-        <Dialog aria-label={`播放列表操作：${name}`} className="flex w-37.5 flex-col gap-0.5 outline-none">
+        <Dialog aria-label={`재생목록 작업:${name}`} className="flex w-37.5 flex-col gap-0.5 outline-none">
           <button type="button" className={MENU_ROW} onClick={() => run(onRename)}>
-            <PENCIL aria-hidden className="size-4 shrink-0" />编辑名称
+            <PENCIL aria-hidden className="size-4 shrink-0" />이름 편집
           </button>
           <button type="button" className={MENU_ROW} onClick={() => run(onDelete)}>
-            <TRASH aria-hidden className="size-4 shrink-0" />删除播放列表
+            <TRASH aria-hidden className="size-4 shrink-0" />재생목록 삭제
           </button>
         </Dialog>
       </Popover>
@@ -178,12 +178,12 @@ export function PlaylistsPage({ openPlaylist, openEntity, canFlip, toast, revisi
 
   const remove = (row: PlaylistRow) => {
     void confirmModal({
-      title: '删除播放列表', body: '这个播放列表将被删除，视频文件保留。', confirmLabel: '删除播放列表', danger: true,
+      title: "재생목록 삭제", body: "이 재생목록을 삭제합니다. 동영상 파일은 유지됩니다.", confirmLabel: "재생목록 삭제", danger: true,
       onConfirm: async () => {
         const kept = await keepPlaylist(row.id);
         await deletePlaylist(row.id);
         void refreshPlaylists();
-        toast('已删除播放列表', kept ? { undo: undoing(() => recreatePlaylist(kept)) } : undefined);
+        toast("재생목록이 삭제되었습니다", kept ? { undo: undoing(() => recreatePlaylist(kept)) } : undefined);
       },
     });
   };
@@ -194,8 +194,8 @@ export function PlaylistsPage({ openPlaylist, openEntity, canFlip, toast, revisi
         <div>
           {/* 遗留样式表那条 `.stats h2` 不在层里，把二级标题定成 24px（窄屏 20px），工具类压不过，
               字形带 `!`；它给的 4px 底距与这里的 `mb-1` 相同。 */}
-          <h2 className="mb-1 text-display-4-medium! text-text-primary">播放列表</h2>
-          <p className="text-body-2-regular text-text-secondary">保存 Mix，按自己的顺序继续播放。</p>
+          <h2 className="mb-1 text-display-4-medium! text-text-primary">재생목록</h2>
+          <p className="text-body-2-regular text-text-secondary">Mix를 저장하고 원하는 순서로 이어서 재생하세요.</p>
         </div>
         <CreateForm toast={toast} />
       </header>
@@ -203,31 +203,31 @@ export function PlaylistsPage({ openPlaylist, openEntity, canFlip, toast, revisi
       {/* 读取失败时页头与新建框照常在，提示与重试键落在列表的位置上。 */}
       {!data
         ? (playlists.isError
-          ? <RetryNote message={errorMessage(playlists.error) || '播放列表读取失败'} onRetry={() => void playlists.refetch()} />
+          ? <RetryNote message={errorMessage(playlists.error) || "재생목록을 불러오지 못했습니다"} onRetry={() => void playlists.refetch()} />
           : null)
         : items.length
         ? (
           <div data-playlist-grid="" className="card-grid-cover gap-4.5">
             {items.map((row) => {
               const resume = resumeAssetId(row);
-              const name = row.name.trim() || '未命名播放列表';
+              const name = row.name.trim() || "이름 없는 재생목록";
               return (
                 <MixCard key={row.id} data-playlist-card={String(row.id)} name={name}
-                  caption={row.source_kind === 'mix' ? '由 Mix 保存' : '手动播放列表'}
+                  caption={row.source_kind === 'mix' ? "Mix에서 저장됨" : "수동 재생목록"}
                   count={row.item_count}
                   poster={row.preview_asset_id ? posterUrl(row.preview_asset_id) : null}
                   flipImages={async () => (row.preview_ids || []).map(posterUrl)}
                   canFlip={canFlip} faces={row.faces || []} onOpenEntity={openEntity}
                   {...(resume ? { onOpen: () => openPlaylist(row.id, resume) } : {})}
-                  openLabel={`打开播放列表 ${name}`}
+                  openLabel={`재생목록 열기: ${name}`}
                   menu={<PlaylistMenu name={name} onRename={() => setRenaming(row)} onDelete={() => remove(row)} />} />
               );
             })}
           </div>
         )
         : (
-          <EmptyState icon={PLAYLIST} title="还没有播放列表">
-            保存 Mix 或新建列表后，会在这里按自己的顺序继续播放。
+          <EmptyState icon={PLAYLIST} title="재생목록이 아직 없습니다">
+            Mix를 저장하거나 재생목록을 만들면 여기에서 원하는 순서로 이어서 재생할 수 있습니다.
           </EmptyState>
         )}
       </div>

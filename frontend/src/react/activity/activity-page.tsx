@@ -95,7 +95,7 @@ function RunCard(
         {children}
       </div>
       {followups?.length ? <div className="border-t border-separator-border px-5 py-2.5">
-        <Disclosure summary={`任务明细 · ${followups.length} 项`}
+        <Disclosure summary={`작업 상세 · ${followups.length} 개`}
           defaultOpen={followups.some((row) => isActive(row) || row.status === 'failed')}>
           <FollowupList rows={followups} />
         </Disclosure>
@@ -112,16 +112,16 @@ function RunCard(
 function RunningRun({ run, followups }: { run: TaskRunPayload; followups?: TaskRunPayload[] }) {
   const total = run.progress_total || 0;
   const current = run.progress_current || 0;
-  const label = run.progress_label || '正在进行';
+  const label = run.progress_label || "진행 중";
   const elapsed = elapsedText(run.elapsed_seconds);
-  const meta = [TRIGGER_LABELS[run.trigger] || run.trigger, elapsed && `已跑 ${elapsed}`]
+  const meta = [TRIGGER_LABELS[run.trigger] || run.trigger, elapsed && `실행 시간 ${elapsed}`]
     .filter(Boolean).join(' · ');
   return (
     <RunCard run={run} meta={meta} followups={followups}>
       {total > 0
         ? <div className="flex flex-col gap-1.5">
             <Progress label={label} value={Math.min(current, total)} max={total} />
-            <p className="text-caption-1-regular text-text-secondary wrap-anywhere">{label} · {progressText(current, total)} 项</p>
+            <p className="text-caption-1-regular text-text-secondary wrap-anywhere">{label} · {progressText(current, total)} 개</p>
           </div>
         : <LoadingDots label={label} />}
     </RunCard>
@@ -137,10 +137,10 @@ function SettledRun(
   const elapsed = elapsedText(run.elapsed_seconds);
   const oldest = runs && runs.length > 1 ? runs[runs.length - 1] : undefined;
   const meta = (oldest
-    ? [TRIGGER_LABELS[run.trigger] || run.trigger, `近 ${runs!.length} 轮`,
+    ? [TRIGGER_LABELS[run.trigger] || run.trigger, `최근 ${runs!.length} 회`,
        `${momentText(oldest.finished_at)} – ${momentText(run.finished_at)}`]
     : [TRIGGER_LABELS[run.trigger] || run.trigger, momentText(run.finished_at),
-       elapsed && `用时 ${elapsed}`]).filter(Boolean).join(' · ');
+       elapsed && `소요 시간 ${elapsed}`]).filter(Boolean).join(' · ');
   return (
     <RunCard run={run} meta={meta} footer={run.error} followups={followups}>
       {summary ? <p className="text-caption-1-regular text-text-secondary wrap-anywhere">{summary}</p> : null}
@@ -191,7 +191,7 @@ export function ActivityPage() {
   });
   const problem = tasks.error ? errorMessage(tasks.error) : '';
   // 首屏就没拿到数据：只剩这一条，不画空的三段。
-  if (!data) return <Page><Note tone="error">{problem || '读取任务中心失败'}</Note></Page>;
+  if (!data) return <Page><Note tone="error">{problem || "작업 센터를 불러오지 못했습니다"}</Note></Page>;
 
   const allFinished = mergeFinished(data.finished || [], earlier);
   const allRuns = [...(data.running || []), ...(data.skipped || []), ...allFinished];
@@ -223,14 +223,14 @@ export function ActivityPage() {
     <Page>
       {problem ? <Note tone="error">{problem}</Note> : null}
       {data.available === false
-        ? <Note tone="warning">{data.message || '账本上还没有任务中心的表'}</Note>
+        ? <Note tone="warning">{data.message || "원장에 작업 센터 테이블이 아직 없습니다"}</Note>
         : null}
       {quiet
-        ? <EmptyState shell="plain" icon={RiHistoryLine} title="还没有任务记录">
-            扫描、追更检查、批量操作和命令行批处理跑起来之后，这里会显示它们的进度与结果。
+        ? <EmptyState shell="plain" icon={RiHistoryLine} title="작업 기록이 없습니다">
+            스캔, 업데이트 확인, 일괄 작업 또는 명령줄 작업을 실행하면 여기에 진행 상황과 결과가 표시됩니다.
           </EmptyState>
         : <>
-            <Section title="正在进行">
+            <Section title="진행 중">
               {running.length || working.length
                 ? <RunList live>
                     {running.map((run) => (
@@ -238,18 +238,18 @@ export function ActivityPage() {
                     {working.map((run) => (
                       <SettledRun key={run.id} run={run} followups={byParent.get(run.id)} />))}
                   </RunList>
-                : <Note tone="neutral">没有任务在跑。</Note>}
+                : <Note tone="neutral">실행 중인 작업이 없습니다.</Note>}
             </Section>
             {/* 「刚才那一轮为什么没跑」只有这一段答得出：定时触发撞上在跑的那一轮会
                 安静跳过，不留记录的话它在界面上和从没触发过一模一样。 */}
             {skipped.length
-              ? <Section title="被挡下的">
+              ? <Section title="차단됨">
                   <RunList>{skipped.map((run) => (
                     <SettledRun key={run.id} run={run} followups={byParent.get(run.id)} />))}</RunList>
                 </Section>
               : null}
             {finished.length || hasEarlier
-              ? <Section title="最近完成">
+              ? <Section title="최근 완료">
                   {finished.length
                     ? <RunList>{folds.map(({ run, runs }) => (
                         <SettledRun key={run.id} run={run} runs={runs}
@@ -259,7 +259,7 @@ export function ActivityPage() {
                   {hasEarlier
                     ? <Button variant="secondary" size="small" leadingIcon={RiArrowDownSLine}
                         className="self-start" {...busyProps(more.isPending)} onClick={loadEarlier}>
-                        加载更早
+                        이전 기록 불러오기
                       </Button>
                     : null}
                 </Section>

@@ -16,7 +16,7 @@ export function ProcessingControls({ state, disabled = false }: {
 }) {
   const action = useAction();
   const active = processingActive(state);
-  const controlLabel = state.status === 'paused' ? '继续' : state.status === 'pausing' ? '正在暂停' : '暂停';
+  const controlLabel = state.status === 'paused' ? "재개" : state.status === 'pausing' ? "일시 중지 중" : "일시 정지";
   const change = (command: ProcessingControlCommand) => {
     if (disabled || action.busy) return;
     void action.run(command.action, signal =>

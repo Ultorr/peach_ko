@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 标签页的三块：筛选浮层、正文（字母表或标签云）、所选标签的操作条。
  *
  * 两套词表共用这三块，区别在颜色和去处：本地是 ledger 里的中文标签，按 ledger 的九类着色，
@@ -59,7 +60,7 @@ export function TagAlphabet({ groups, actions }: { groups: [string, TagEntry[]][
         <section key={letter} data-alpha-group={at}
           className={cardClass({ radius: 'plain', padding: 'none', className: 'px-5 pt-4 pb-3' })}>
           <h3 className="mb-2 flex items-center text-title-2-medium text-text-primary">
-            {letter}<TabCount value={tags.length} />
+            {koreanLabel(letter)}<TabCount value={tags.length} />
           </h3>
           <div className="index-tag-list gap-x-4 gap-y-0.5">
             {tags.map((tag) => <AlphaTag key={tag.k} tag={tag} actions={actions} />)}
@@ -95,7 +96,7 @@ export function TagCloud({ tags, actions }: { tags: TagEntry[]; actions: TagActi
 }
 
 const VIEWS: readonly (readonly [TagView, string, string])[] = [
-  ['cloud', '标签云', 'tags'], ['alphabet', '字母表', 'text-aa'],
+  ['cloud', "태그 클라우드", 'tags'], ['alphabet', "알파벳순", 'text-aa'],
 ];
 
 /** 筛选浮层：上排类型药丸，下排读数、按首字跳转与视图切换。只摆数得到的那几类。 */
@@ -114,7 +115,7 @@ export function TagFilters(
 ) {
   const alphaScroll = useHorizontalScroller<HTMLElement>();
   return (
-    <FilterGlassRows label="标签筛选" topLabel="标签类型"
+    <FilterGlassRows label="태그 필터" topLabel="태그 유형"
       top={categories.map(([key, label]) => (
         <FilterPill key={key} data-tag-pill="" data-tag-cat={key === 'all' ? 'all' : tagColorKey(online, key)}
           pressed={category === key} onPress={() => onCategory(key)}>
@@ -126,17 +127,17 @@ export function TagFilters(
           {readout}
         </span>
         {letters.length > 1 ? (
-          <nav ref={alphaScroll} aria-label="按首字跳转" data-alpha-jump=""
+          <nav ref={alphaScroll} aria-label="첫 글자로 이동" data-alpha-jump=""
             className="flex min-w-0 gap-0.5 overflow-x-auto overscroll-x-contain">
             {letters.map((letter, at) => (
               <button key={letter} type="button" onClick={() => onJump(at)}
                 className="h-7.5 min-w-7.5 flex-none cursor-pointer rounded-glass-key px-1.5 text-caption-1-regular leading-5 text-(--glass-text)/60 outline-none hover:text-(--glass-text) focus-visible:ring-2 focus-visible:ring-border-focus-ring">
-                {letter}
+                {koreanLabel(letter)}
               </button>
             ))}
           </nav>
         ) : null}
-        <RadioGroup aria-label="标签视图" orientation="horizontal" value={view}
+        <RadioGroup aria-label="태그 보기" orientation="horizontal" value={view}
           onChange={(next) => onView(next as TagView)} className={`ml-auto ${SEGMENTED_GLASS_TRACK}`}>
           {VIEWS.map(([value, label, symbol]) => {
             const Glyph = spriteGlyph(symbol);
@@ -159,15 +160,15 @@ export function TagDock(
   { count: number; match: 'any' | 'all'; onMatch(match: 'any' | 'all'): void; onClear(): void; onApply(): void },
 ) {
   return (
-    <SelectionDock visible={count > 0} label="所选标签操作" count={`已选 ${count.toLocaleString()} 个标签`}>
+    <SelectionDock visible={count > 0} label="선택한 태그 작업" count={`선택됨 ${count.toLocaleString()} 개 태그`}>
       <Checkbox isSelected={match === 'any'} onChange={(on) => onMatch(on ? 'any' : 'all')}>
         <span className="flex flex-col">
-          <span className="text-body-medium">广泛匹配</span>
-          <span className="text-caption-1-regular text-text-secondary">开启后匹配任一所选标签；关闭后必须同时包含全部标签。</span>
+          <span className="text-body-medium">넓게 일치</span>
+          <span className="text-caption-1-regular text-text-secondary">켜면 선택한 태그 중 하나라도 일치하는 항목을 찾고, 끄면 모든 태그를 포함한 항목만 찾습니다.</span>
         </span>
       </Checkbox>
-      <Button variant="secondary" size="small" onClick={onClear}>清空</Button>
-      <Button variant="primary" size="small" disabled={!count} onClick={onApply}>显示结果</Button>
+      <Button variant="secondary" size="small" onClick={onClear}>비우기</Button>
+      <Button variant="primary" size="small" disabled={!count} onClick={onApply}>결과 표시</Button>
     </SelectionDock>
   );
 }

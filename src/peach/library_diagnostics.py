@@ -98,8 +98,8 @@ def _library_item(row):
 
 
 def library(settings, config):
-    groups = {key: group(label) for key, label in (("identification", "识别失败"),
-              ("metadata", "补资料失败"), ("cover", "缺封面"), ("duration", "缺时长"))}
+    groups = {key: group(label) for key, label in (("identification", "식별 실패"),
+              ("metadata", "메타데이터 보완 실패"), ("cover", "표지 없음"), ("duration", "재생 시간 없음"))}
     try:
         with closing(sqlite3.connect(settings.db_path.resolve().as_uri() + "?mode=ro", uri=True, timeout=1)) as connection:
             connection.execute("PRAGMA query_only=ON")
@@ -109,45 +109,45 @@ def library(settings, config):
     except (sqlite3.Error, OSError):
         return {"groups": groups, "issue_at": None}
     assets = {row[0]: _library_item(row) for row in rows}
-    groups["duration"] = group("缺时长", [assets[row[0]] for row in rows if not row[2] or row[2] <= 0])
+    groups["duration"] = group("재생 시간 없음", [assets[row[0]] for row in rows if not row[2] or row[2] <= 0])
     covers, posters = inventory(settings.cover_root), inventory(settings.poster_root)
     if covers is not None and posters is not None:
         missing = [assets[row[0]] for row in rows
                    if (normalise_code_key(row[1]).casefold() not in covers if row[1]
                        else f"{row[0]}_4" not in posters)]
-        groups["cover"] = group("缺封面", missing)
+        groups["cover"] = group("표지 없음", missing)
     failed, issue_at = failures(config)
     if failed is not None:
-        for key, label in (("identification", "识别失败"), ("metadata", "补资料失败")):
+        for key, label in (("identification", "식별 실패"), ("metadata", "메타데이터 보완 실패")):
             groups[key] = group(label, [assets[value] for value in failed[key] if value in assets])
     return {"groups": groups, "issue_at": issue_at}
 
 
 SOURCE_CHECK_REASONS = {
-    "proxy": "代理连接失败", "timeout": "来源连接超时", "network": "来源连接未取得",
-    "auth_required": "来源要求登录或拒绝当前出口", "cloudflare_challenge": "来源要求人机验证",
-    "cloudflare_blocked": "来源拦截当前出口", "ip_banned": "来源拦截当前出口",
-    "geo_restricted": "来源限制当前地区", "rate_limited": "来源正在限流",
-    "server_error": "来源服务异常", "parse_error": "资料解析失败",
-    "not_found": "上次查询未命中", "cooldown": "来源正在冷却",
+    "proxy": "프록시 연결 실패", "timeout": "소스 연결 시간 초과", "network": "소스 연결을 확인하지 못했습니다",
+    "auth_required": "소스에서 로그인을 요구하거나 현재 접속 경로를 거부했습니다", "cloudflare_challenge": "소스에서 보안 인증을 요구합니다",
+    "cloudflare_blocked": "소스에서 현재 접속 경로를 차단했습니다", "ip_banned": "소스에서 현재 접속 경로를 차단했습니다",
+    "geo_restricted": "소스에서 현재 지역의 접근을 제한합니다", "rate_limited": "소스에서 요청 속도를 제한하고 있습니다",
+    "server_error": "소스 서비스 오류", "parse_error": "메타데이터 분석 실패",
+    "not_found": "이전 조회에서 결과가 없었습니다", "cooldown": "소스 재시도 대기 중",
 }
 
 
 def _source_health(cooling, failed, fresh, recent, connection_ok, reason_key, *, has_success, has_check):
     """来源诊断优先报告冷却与失败，再报告解析和连接证据。"""
     if cooling:
-        return "warning", "来源正在冷却"
+        return "warning", "소스 재시도 대기 중"
     if failed:
-        return "warning", SOURCE_CHECK_REASONS.get(reason_key, "来源未取得资料")
+        return "warning", SOURCE_CHECK_REASONS.get(reason_key, "소스에서 메타데이터를 가져오지 못했습니다")
     if fresh:
-        return "ok", "资料解析通过"
+        return "ok", "메타데이터 분석 성공"
     if has_success:
-        return "stale", "曾解析成功，近期解析状态待复查"
+        return "stale", "이전에 분석에 성공했으나 최근 상태는 다시 확인해야 합니다"
     if recent and connection_ok:
-        return "unknown", "连接检查通过；解析状态未取得"
+        return "unknown", "연결 확인은 통과했으나 분석 상태는 확인하지 못했습니다"
     if has_check:
-        return "stale", "已有检查记录，解析状态待复查"
-    return "unchecked", "尚无检查或解析记录，可在来源和凭证中检查连接"
+        return "stale", "확인 기록이 있으나 분석 상태는 다시 확인해야 합니다"
+    return "unchecked", "확인 또는 분석 기록이 없습니다. 소스 및 인증 정보에서 연결을 확인하세요"
 
 
 def _profile_success(settings):

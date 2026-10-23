@@ -34,18 +34,18 @@ function RequestedSourceImage({ source }: { source: string }) {
   return (
     <div className="relative flex h-review-image items-center justify-center overflow-hidden rounded-surface bg-background-secondary-default">
       {status === 'loading' ? <span role="status" className="absolute flex items-center gap-2 text-body-2-regular text-text-secondary">
-        <span dangerouslySetInnerHTML={{ __html: spinnerHtml('正在加载图片') }} />正在加载图片
+        <span dangerouslySetInnerHTML={{ __html: spinnerHtml("이미지 불러오는 중") }} />이미지 불러오는 중
       </span> : null}
       {source && (status === 'loading' || status === 'ready')
-        ? <img src={source} alt="来源候选图片" referrerPolicy="no-referrer" decoding="async"
+        ? <img src={source} alt="출처 후보 이미지" referrerPolicy="no-referrer" decoding="async"
             className={`size-full object-contain ${status === 'loading' ? 'invisible' : ''}`} onLoad={() => setStatus('ready')}
             onError={() => setStatus('failed')} />
         : source ? <div className="flex flex-col items-center gap-2">
-            {status === 'failed' ? <span className="text-body-2-regular text-text-secondary">未取得来源图片</span> : null}
+            {status === 'failed' ? <span className="text-body-2-regular text-text-secondary">출처 이미지를 불러오지 못했습니다</span> : null}
             <Button variant="secondary" size="small" onClick={() => setStatus('loading')}>
-              {status === 'failed' ? '重新加载图片' : '查看来源图片'}
+              {status === 'failed' ? "이미지 다시 불러오기" : "출처 이미지 보기"}
             </Button>
-          </div> : <span className="text-body-2-regular text-text-secondary">未取得来源图片</span>}
+          </div> : <span className="text-body-2-regular text-text-secondary">출처 이미지를 불러오지 못했습니다</span>}
     </div>
   );
 }
@@ -61,15 +61,15 @@ export function OriginAsset(
         className="flex aspect-card-cover w-review-cover-narrow shrink-0 review-tight:w-review-cover cursor-pointer items-center justify-center overflow-hidden rounded-2lg bg-background-tertiary-default outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
         {asset.preview_url
           ? <img src={asset.preview_url} alt="" loading="lazy" className="size-full object-cover" />
-          : <span className="text-caption-1-regular text-text-secondary">无封面</span>}
-        <VisuallyHidden>{`打开原视频 ${name}`}</VisuallyHidden>
+          : <span className="text-caption-1-regular text-text-secondary">표지 없음</span>}
+        <VisuallyHidden>{`원본 동영상 열기: ${name}`}</VisuallyHidden>
       </button>
       <div className="flex min-w-0 flex-col items-start gap-1">
         <b title={name} className="w-full truncate text-body-medium text-text-primary">
-          {asset.code || name || '原视频'}
+          {asset.code || name || "원본 동영상"}
         </b>
         <Button variant="secondary" size="small" leadingIcon={RiPlayLine}
-          onClick={() => openItem(asset.id)}>打开原视频</Button>
+          onClick={() => openItem(asset.id)}>원본 동영상 열기</Button>
       </div>
     </div>
   );
@@ -89,7 +89,7 @@ export function EntityHead(
   return (
     <div className="flex min-w-0 items-center gap-3">
       {/* `card-art` 的 `avatarInner` 是唯一那份「有图走图、没图退首字母」的实现，页面不重画一遍。 */}
-      <button type="button" aria-label={`打开创作者页：${name}`} onClick={() => openEntity(kind, name)}
+      <button type="button" aria-label={`크리에이터 페이지 열기:${name}`} onClick={() => openEntity(kind, name)}
         className={`relative inline-grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-background-secondary-default text-caption-1-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring ${LEGACY_AVATAR_IMG}`}
         dangerouslySetInnerHTML={{ __html: avatar }} />
       <div className="flex min-w-0 flex-col items-start">
@@ -98,7 +98,7 @@ export function EntityHead(
           {name}
         </button>
         {works
-          ? <small className="tabular-nums text-body-2-regular text-text-secondary">{`${works.toLocaleString()} 部作品`}</small>
+          ? <small className="tabular-nums text-body-2-regular text-text-secondary">{`${works.toLocaleString()} 개 항목`}</small>
           : null}
       </div>
     </div>
@@ -121,21 +121,21 @@ export function IdentityEvidence(
   const works = Math.max(0, Number(row.video_count || row.videos || 0));
   return (
     <section className="flex flex-col gap-3">
-      <h5 className="text-body-medium text-text-primary">{`候选身份：${row.babepedia_name || '未标注'}`}</h5>
+      <h5 className="text-body-medium text-text-primary">{`신원 후보:${row.babepedia_name || "미표기"}`}</h5>
       <div className="flex flex-wrap items-center gap-2">
         {profile
           ? <ButtonLink variant="secondary" size="small" trailingIcon={RiExternalLinkLine}
-              href={profile} target="_blank" rel="noopener noreferrer">来源资料</ButtonLink>
+              href={profile} target="_blank" rel="noopener noreferrer">출처 정보</ButtonLink>
           : null}
         <Button variant="secondary" size="small"
           onClick={() => openEntity('creator', row.creator || '')}>
-          {`查看全部 ${works.toLocaleString()} 部作品`}
+          {`전체 보기: ${works.toLocaleString()} 개 항목`}
         </Button>
       </div>
       <SourceImage url={row.preview_url} />
-      <p className="text-body-2-regular text-text-secondary">通过后记录身份判断。</p>
+      <p className="text-body-2-regular text-text-secondary">승인 후 신원 판정을 기록합니다.</p>
       {samples.length ? <>
-        <h5 className="text-body-medium text-text-primary">本地作品样本</h5>
+        <h5 className="text-body-medium text-text-primary">로컬 항목 샘플</h5>
         <ul className="flex flex-col gap-1">
           {samples.map((asset) => (
             <li key={asset.id} className="flex min-w-0 items-center gap-2">
@@ -143,13 +143,13 @@ export function IdentityEvidence(
                 onClick={() => openItem(asset.id)}>
                 <span title={asset.name} className="block max-w-full truncate">{asset.name}</span>
               </Button>
-              <Button variant="ghost" size="small" aria-label={`打开 ${asset.name} 的文件位置`}
+              <Button variant="ghost" size="small" aria-label={`열기: ${asset.name} 의 파일 위치`}
                 {...busyProps(revealing === asset.id)}
-                onClick={() => onReveal(asset.id)}>文件位置</Button>
+                onClick={() => onReveal(asset.id)}>파일 위치</Button>
             </li>
           ))}
         </ul>
-      </> : <p className="text-body-2-regular text-text-secondary">暂无本地作品样本，打开全部作品核对。</p>}
+      </> : <p className="text-body-2-regular text-text-secondary">로컬 항목 샘플이 없습니다. 전체 항목을 열어 확인하세요.</p>}
       {note ? <p role="status" className="text-body-2-regular text-text-error-primary">{note}</p> : null}
     </section>
   );
@@ -184,12 +184,12 @@ export function AssetPicker(
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <span className="tabular-nums text-body-2-regular text-text-secondary">
-          {`已选 ${chosen.size} / ${assets.length}`}
+          {`선택됨 ${chosen.size} / ${assets.length}`}
         </span>
         <Button variant="ghost" size="small" disabled={locked}
-          onClick={() => onPicked(assets.map((asset) => asset.id))}>全选</Button>
+          onClick={() => onPicked(assets.map((asset) => asset.id))}>전체 선택</Button>
         <Button variant="ghost" size="small" disabled={locked}
-          onClick={() => onPicked([])}>清空</Button>
+          onClick={() => onPicked([])}>비우기</Button>
       </div>
       <div className="review-asset-grid gap-1.5">
         {assets.map((asset, index) => {
@@ -205,7 +205,7 @@ export function AssetPicker(
                 <CheckboxGlyph size="sm" state={{ isSelected: on, isIndeterminate: false,
                   isFocusVisible: false, isDisabled: locked, isHovered: false }} />
               </span>
-              <VisuallyHidden>{`${on ? '已选' : '未选'} ${asset.name || asset.id}`}</VisuallyHidden>
+              <VisuallyHidden>{`${on ? "선택됨" : "선택 안 됨"} ${asset.name || asset.id}`}</VisuallyHidden>
             </button>
           );
         })}

@@ -46,9 +46,9 @@ PROBE_TIMEOUT = 3.0
 
 #: 「检查」要报的三项离线权限。取消要用到第三项，缺它只是不能取消。
 OFFLINE_PERMISSIONS = {
-    "allow_add_offline_download": "提交离线任务",
-    "allow_list_offline_downloads": "查看离线任务与配额",
-    "allow_modify_offline_downloads": "取消离线任务",
+    "allow_add_offline_download": "오프라인 작업 제출",
+    "allow_list_offline_downloads": "오프라인 작업 및 할당량 보기",
+    "allow_modify_offline_downloads": "오프라인 작업 취소",
 }
 
 #: CloudDrive2 自报的云盘类型（`CloudDriveFile.CloudAPI.name`），比对不分大小写。115 开放平台
@@ -79,7 +79,7 @@ def channel_target(address: str) -> tuple[str, bool]:
     """`http://host:port` → (`host:port`, 不加密)。设置层已经校验过形态。"""
     parts = urlsplit(address if "://" in address else "http://" + address)
     if not parts.hostname:
-        raise DownloadError("config", "CloudDrive2 地址没填")
+        raise DownloadError("config", "CloudDrive2 주소를 입력하지 않았습니다")
     port = parts.port or (443 if parts.scheme == "https" else 19798)
     host = parts.hostname if ":" not in parts.hostname else f"[{parts.hostname}]"
     return f"{host}:{port}", parts.scheme == "https"
@@ -111,20 +111,20 @@ def discover(addresses: tuple[str, ...] = LOCAL_ADDRESSES) -> str:
         if answers(address):
             return address
     tried = "、".join(addresses)
-    raise DownloadError("network", f"没有填 CloudDrive2 地址，本机 {tried} 都没有应答。"
-                                   "确认 CloudDrive2 已启动，或在地址栏填上它的实际地址")
+    raise DownloadError("network", f"CloudDrive2 주소가 입력되지 않았으며 로컬 {tried}에서 응답이 없습니다. "
+                                   "CloudDrive2가 실행 중인지 확인하거나 주소 입력란에 실제 주소를 입력하세요")
 
 
 def _translate(error: grpc.RpcError, action: str) -> DownloadError:
     code = error.code() if hasattr(error, "code") else None
     details = (error.details() if hasattr(error, "details") else "") or ""
     if code in _NETWORK_CODES:
-        return DownloadError("network", f"{action}时连不上 CloudDrive2：{details or code}")
+        return DownloadError("network", f"{action} 중 CloudDrive2에 연결할 수 없습니다: {details or code}")
     if code in _AUTH_CODES:
-        return DownloadError("config", f"CloudDrive2 拒绝了这个 API 令牌（{action}）：{details or code}")
+        return DownloadError("config", f"CloudDrive2가 이 API 토큰을 거부했습니다({action}): {details or code}")
     if code == grpc.StatusCode.NOT_FOUND:
         return DownloadError("config", f"{action}：CloudDrive2 里没有这个路径")
-    return DownloadError("rejected", f"{action}失败：{details or code}")
+    return DownloadError("rejected", f"{action} 실패: {details or code}")
 
 
 def split_remote(path: str) -> tuple[str, str]:
@@ -146,7 +146,7 @@ class CloudDriveClient:
 
     def __init__(self, address: str, token: str, *, timeout: float = CALL_TIMEOUT):
         if not token:
-            raise DownloadError("config", "还没有填 CloudDrive2 的 API 令牌")
+            raise DownloadError("config", "CloudDrive2 API 토큰을 아직 입력하지 않았습니다")
         self.token = token
         self.timeout = timeout
         self.channel = open_channel(address)
@@ -174,9 +174,9 @@ class CloudDriveClient:
     # -- 读
 
     def token_info(self) -> pb.TokenInfo:
-        return self.call("GetApiTokenInfo", pb.StringValue(value=self.token), "核对 API 令牌")
+        return self.call("GetApiTokenInfo", pb.StringValue(value=self.token), "API 토큰 확인")
 
-    def find(self, path: str, action: str = "查找目标目录") -> pb.CloudDriveFile | None:
+    def find(self, path: str, action: str = "대상 폴더 찾기") -> pb.CloudDriveFile | None:
         parent, name = split_remote(path)
         try:
             found = self.call("FindFileByPath", pb.FindFileByPathRequest(parentPath=parent, path=name),
@@ -190,18 +190,18 @@ class CloudDriveClient:
     def folder(self, path: str) -> Folder:
         found = self.find(path)
         if found is None or not found.isDirectory:
-            raise DownloadError("config", f"CloudDrive2 里没有 {path} 这个文件夹")
+            raise DownloadError("config", f"CloudDrive2에 {path} 폴더가 없습니다")
         return Folder(path, bool(found.canOfflineDownload), found.CloudAPI.name,
                       found.CloudAPI.userName)
 
     def quota(self, folder: Folder) -> pb.OfflineQuotaInfo:
         return self.call("GetOfflineQuotaInfo", pb.OfflineQuotaRequest(
             cloudName=folder.cloud_name, cloudAccountId=folder.cloud_account, path=folder.path),
-            "查离线配额")
+            "오프라인 다운로드 할당량 확인")
 
     def offline_files(self, path: str) -> list[pb.OfflineFile]:
         result = self.call("ListOfflineFilesByPath", pb.FileRequest(path=path, forceRefresh=True),
-                           "查离线任务")
+                           "오프라인 작업 확인")
         return list(result.offlineFiles)
 
     # -- 写
@@ -210,25 +210,25 @@ class CloudDriveClient:
         """在父目录下建一层。父目录要已经存在；令牌要有「新建文件夹」权限。"""
         parent, name = split_remote(path)
         created = self.call("CreateFolder", pb.CreateFolderRequest(parentPath=parent, folderName=name),
-                            "新建目录")
+                            "폴더 만들기")
         if created.result.success or created.folderCreated.fullPathName or created.folderCreated.name:
             return
-        reason = created.result.errorMessage or "没有给出原因"
-        raise DownloadError("rejected", f"CloudDrive2 没有新建 {path}：{reason}")
+        reason = created.result.errorMessage or "원인이 제공되지 않았습니다"
+        raise DownloadError("rejected", f"CloudDrive2에서 {path}을(를) 만들지 못했습니다: {reason}")
 
     def add(self, magnet: str, path: str) -> None:
         result = self.call("AddOfflineFiles", pb.AddOfflineFileRequest(
             urls=magnet, toFolder=path, checkFolderAfterSecs=CHECK_FOLDER_AFTER_SECS),
-            "提交离线任务")
+            "오프라인 작업 제출")
         if not result.success:
             raise classify_remote_message(result.errorMessage)
 
     def remove(self, folder: Folder, info_hash: str) -> None:
         result = self.call("RemoveOfflineFiles", pb.RemoveOfflineFilesRequest(
             cloudName=folder.cloud_name, cloudAccountId=folder.cloud_account, deleteFiles=False,
-            infoHashes=[info_hash], path=folder.path), "取消离线任务")
+            infoHashes=[info_hash], path=folder.path), "오프라인 작업 취소")
         if not result.success:
-            raise DownloadError("rejected", f"CloudDrive2 没有取消这个任务：{result.errorMessage}")
+            raise DownloadError("rejected", f"CloudDrive2에서 이 작업을 취소하지 못했습니다: {result.errorMessage}")
 
 
 def match_offline(files: list[pb.OfflineFile], info_hash: str) -> pb.OfflineFile | None:
@@ -249,7 +249,7 @@ def offline_status(item: pb.OfflineFile | None) -> RemoteStatus:
     if item.status == pb.OFFLINE_ERROR:
         # 列表里的失败没有原文；拦截码只在提交那一下的 errorMessage 里出现。
         return RemoteStatus(ERROR, item.fileId, item.name, progress,
-                            "115 报告离线失败，多半是资源无人做种或被拒")
+                            "115에서 오프라인 다운로드 실패를 보고했습니다. 시드가 없거나 리소스가 거부되었을 가능성이 높습니다")
     return RemoteStatus(RUNNING, item.fileId, item.name, progress)
 
 
@@ -264,14 +264,14 @@ class CloudDriveProvider:
 
     def client(self) -> CloudDriveClient:
         if not self.address:
-            raise DownloadError("config", "还没有填 CloudDrive2 地址，先在设置页「检查」探测本机端口后保存")
+            raise DownloadError("config", "CloudDrive2 주소를 아직 입력하지 않았습니다. 설정 페이지의 ‘확인’으로 로컬 포트를 검색한 후 저장하세요")
         return CloudDriveClient(self.address, self.token)
 
     def submit(self, magnet: Magnet, target: str) -> RemoteStatus:
         with self.client() as client:
             folder = client.folder(target)
             if not folder.can_offline:
-                raise DownloadError("config", f"{target} 所在的网盘不支持离线下载")
+                raise DownloadError("config", f"{target}이(가) 있는 클라우드 드라이브는 오프라인 다운로드를 지원하지 않습니다")
             existing = match_offline(client.offline_files(target), magnet.info_hash)
             if existing is not None:
                 status = offline_status(existing)
@@ -284,7 +284,7 @@ class CloudDriveProvider:
                     raise
                 quota = None  # 这一侧不支持查配额时照常提交，由提交接口自己拒。
             if quota is not None and quota.total > 0 and quota.left <= 0:
-                raise DownloadError("quota", f"115 离线配额已用完（本月 {quota.used}/{quota.total}）")
+                raise DownloadError("quota", f"115 오프라인 다운로드 할당량을 모두 사용했습니다(이번 달 {quota.used}/{quota.total})")
             client.add(magnet.uri, target)
         return RemoteStatus(RUNNING, name=magnet.name)
 
@@ -297,7 +297,7 @@ class CloudDriveProvider:
         if not names:
             return False
         with self.client() as client:
-            return any(client.find(f"{task.target.rstrip('/')}/{name}", "查目标目录里的文件")
+            return any(client.find(f"{task.target.rstrip('/')}/{name}", "대상 폴더의 파일 확인")
                        is not None for name in names)
 
     def cancel(self, task: DownloadTask) -> None:
@@ -402,7 +402,7 @@ class _PrefixProbe:
 
     def lookup(self, prefix: str) -> pb.CloudDriveFile | None:
         if prefix not in self.found:
-            self.found[prefix] = self.client.find(prefix, "查推送发现的云端路径前缀")
+            self.found[prefix] = self.client.find(prefix, "푸시 검색의 클라우드 경로 접두어 확인")
         return self.found[prefix]
 
     def of_cloud(self, clouds: frozenset[str]) -> list[tuple[CloudPrefix, pb.CloudDriveFile]]:
@@ -428,11 +428,11 @@ def _suggest_target(report: dict, client: CloudDriveClient, probe: _PrefixProbe,
     if not hits:
         known = "、".join(entry.prefix for entry in probe.prefixes)
         report["problems"].append(
-            f"还没有填 115 目标目录，「推送发现」登记的前缀（{known}）里也没有 115 网盘上的。"
-            "在「推送发现」卡里加上 CloudDrive2 里 115 的挂载根，再点检查；也可以直接填目标目录"
+            f"115 대상 폴더를 아직 입력하지 않았으며 ‘푸시 검색’에 등록된 접두어({known})에도 115 클라우드 드라이브의 경로가 없습니다. "
+            "‘푸시 검색’ 카드에 CloudDrive2의 115 마운트 루트를 추가한 후 확인을 누르거나 대상 폴더를 직접 입력하세요"
             if known else
-            "还没有填 115 目标目录，「推送发现」里也没有登记云端路径前缀。在「推送发现」卡里登记 "
-            "CloudDrive2 里 115 的挂载根和它对应的媒体文件夹，再点检查；也可以直接填目标目录")
+            "115 대상 폴더와 ‘푸시 검색’의 클라우드 경로 접두어가 아직 등록되지 않았습니다. ‘푸시 검색’ 카드에 "
+            "CloudDrive2의 115 마운트 루트와 대응하는 미디어 폴더를 등록한 후 확인을 누르거나 대상 폴더를 직접 입력하세요")
         return ""
     candidate = f"{hits[0][0].prefix}/{SUGGESTED_FOLDER}"
     found = client.find(candidate)
@@ -453,5 +453,5 @@ def _suggest_pikpak_root(report: dict, probe: _PrefixProbe, hints: Hints) -> Non
             report["suggested_pikpak_root"] = declared[entry.root.casefold()]
             return
     report["problems"].append(
-        "还没有选 PikPak 根目录对应的媒体文件夹，「推送发现」里也没有 PikPak 云盘根那条前缀可以推。"
-        "在下拉框里直接选，或在「推送发现」卡里登记 PikPak 的挂载根")
+        "PikPak 루트에 대응하는 미디어 폴더를 아직 선택하지 않았으며 ‘푸시 검색’에도 PikPak 클라우드 루트의 접두어가 없습니다. "
+        "목록에서 직접 선택하거나 ‘푸시 검색’ 카드에 PikPak 마운트 루트를 등록하세요")

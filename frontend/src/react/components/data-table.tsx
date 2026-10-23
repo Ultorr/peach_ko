@@ -45,7 +45,7 @@ interface DataTableProps<T> {
 
 /** 数据表共用排序、跨页选择与分页；业务动作只接收仍在清单里的所选行。 */
 export function DataTable<T extends RowData>({ label, items, columns, rowId, rowLabel, selected, onSelected, actions,
-  title = label, titleId, description, footerActions, panel = true, unit = '条记录' }: DataTableProps<T>) {
+  title = label, titleId, description, footerActions, panel = true, unit = "개 기록" }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 });
   const activateSelection = useTableSelection(() => onSelected([]));
@@ -56,10 +56,10 @@ export function DataTable<T extends RowData>({ label, items, columns, rowId, row
     const helper = createColumnHelper<typeof features, T>();
     return helper.columns([
       helper.display({ id: 'select', header: ({ table }) => (
-        <Checkbox slot={null} aria-label={`全选${label}`} isSelected={table.getIsAllRowsSelected()}
+        <Checkbox slot={null} aria-label={`전체 선택${label}`} isSelected={table.getIsAllRowsSelected()}
           isIndeterminate={table.getIsSomeRowsSelected()} onChange={(on) => table.toggleAllRowsSelected(on)} />
       ), cell: ({ row }) => (
-        <Checkbox slot={null} aria-label={`选择 ${rowLabel(row.original)}`} isSelected={row.getIsSelected()}
+        <Checkbox slot={null} aria-label={`선택: ${rowLabel(row.original)}`} isSelected={row.getIsSelected()}
           onChange={(on) => row.toggleSelected(on)} />
       ) }),
       ...columns.map((column) => helper.accessor((item: T) => column.value?.(item) ?? '', {
@@ -89,7 +89,7 @@ export function DataTable<T extends RowData>({ label, items, columns, rowId, row
     <div data-data-table-panel={panel || undefined} className={panel
       ? cardClass({ padding: 'none', bordered: 'line', className: 'flex flex-col gap-4 px-6 py-5 max-sm:px-4' })
       : 'flex min-w-0 flex-col gap-4'}>
-      <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label={`${label}工具栏`}>
+      <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label={`${label}도구 모음`}>
         <h3 id={titleId} className="mr-auto text-title-2-medium text-text-primary">{title}</h3>
         <span className="text-body-2-regular tabular-nums text-text-secondary">
           {`${items.length.toLocaleString()} ${unit}`}
@@ -98,9 +98,9 @@ export function DataTable<T extends RowData>({ label, items, columns, rowId, row
           sorting={sorting} onChange={(next) => { setSorting(next); setPagination((now) => ({ ...now, pageIndex: 0 })); }} />
       </div>
       {description ? <p className="text-body-2-regular text-text-secondary">{description}</p> : null}
-      <SelectionDock label={`${label}批量操作`} visible={chosen.length > 0} count={`已选 ${chosen.length.toLocaleString()} ${unit}`}>
+      <SelectionDock label={`${label}일괄 작업`} visible={chosen.length > 0} count={`선택됨 ${chosen.length.toLocaleString()} ${unit}`}>
         {actions(chosen, () => onSelected([]))}
-        <Button variant="ghost" size="small" onClick={() => onSelected([])}>取消选择</Button>
+        <Button variant="ghost" size="small" onClick={() => onSelected([])}>선택 해제</Button>
       </SelectionDock>
       <DataTableFrame follow onRowClick={(id) => table.getRow(id)?.toggleSelected()}>
         <Table aria-label={label} size="sm"
@@ -116,7 +116,7 @@ export function DataTable<T extends RowData>({ label, items, columns, rowId, row
               </TableColumn>
             ))}
           </TableHeader>
-          <TableBody renderEmptyState={() => '没有记录'}>
+          <TableBody renderEmptyState={() => "기록 없음"}>
             {table.getRowModel().rows.map((row) => (
               <TableRow key={row.id} id={row.id} data-board-selected={row.getIsSelected() || undefined}>
                 {row.getAllCells().map((cell) => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}

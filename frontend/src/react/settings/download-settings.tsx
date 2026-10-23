@@ -149,7 +149,7 @@ function DownloadForm({ state, settle, receipt, pikpakAccount }: CardProps & { p
           setSaveBlocked(false);
           setFailure('');
         }
-        receipt('已保存配置');
+        receipt("설정이 저장되었습니다");
       }, (cause) => setFailure(errorMessage(cause)));
   };
 
@@ -173,52 +173,52 @@ function DownloadForm({ state, settle, receipt, pikpakAccount }: CardProps & { p
         setSuggested((current) => ({ ...current, target: { path, exists: true } }));
         setSaveBlocked(false);
         setFailure('');
-        receipt('已新建目录');
+        receipt("폴더가 생성되었습니다");
       }, (cause) => setFailure(errorMessage(cause)));
   };
 
   return (
-    <Section title="云下载" onSubmit={submit}>
+    <Section title="클라우드 다운로드" onSubmit={submit}>
       <Stack>
-        <Input label="CloudDrive2 地址" placeholder="留空自动查找" autoComplete="off" maxLength={200}
+        <Input label="CloudDrive2 주소" placeholder="비워 두면 자동 검색" autoComplete="off" maxLength={200}
           value={config.clouddrive_address} isDisabled={!state.available}
           onChange={(value) => setConfig({ ...config, clouddrive_address: value })} />
-        <Input label="CloudDrive2 API 令牌" type="password" autoComplete="off" maxLength={400}
-          placeholder={state.token_set ? '已保存，留空不改' : '在 CloudDrive2「设置 → API 令牌」中生成'}
-          hint="需要离线任务权限。"
+        <Input label="CloudDrive2 API 토큰" type="password" autoComplete="off" maxLength={400}
+          placeholder={state.token_set ? "저장됨. 비워 두면 유지" : "CloudDrive2의 「설정 → API 토큰」에서 생성"}
+          hint="오프라인 작업 권한이 필요합니다."
           value={token} isDisabled={!state.available} onChange={setToken} />
-        <Input label={<SourceLabel source="115" label="115 目标目录" />} placeholder="留空时按推送发现自动填写" autoComplete="off" maxLength={300}
+        <Input label={<SourceLabel source="115" label="115 대상 폴더" />} placeholder="비워 두면 푸시로 발견한 정보를 자동 입력" autoComplete="off" maxLength={300}
           validationBehavior="aria" isInvalid={missing}
-          hint={missing ? (saveBlocked ? '先新建这个目录，或填写已有目录。' : '这个目录不存在。') : '应位于自动入库的云端路径前缀内。'}
+          hint={missing ? (saveBlocked ? "먼저 이 폴더를 만들거나 기존 폴더를 입력하세요." : "이 폴더가 없습니다.") : "자동 라이브러리 추가에 사용할 클라우드 경로 접두사 아래에 있어야 합니다."}
           value={target('115')} isDisabled={!state.available} onChange={(value) => setTarget('115', value)} />
-        <Input label={<SourceLabel source="pikpak" label="PikPak 目标目录" />} placeholder="以 / 开头的网盘路径" autoComplete="off" maxLength={300}
-          hint="目录要已经存在。"
+        <Input label={<SourceLabel source="pikpak" label="PikPak 대상 폴더" />} placeholder="/로 시작하는 클라우드 드라이브 경로" autoComplete="off" maxLength={300}
+          hint="이미 존재하는 폴더여야 합니다."
           value={target('pikpak')} isDisabled={!state.available} onChange={(value) => setTarget('pikpak', value)} />
         <div className="flex flex-col gap-1">
-          <FieldLabel><SourceLabel source="pikpak" label="PikPak 根目录对应的媒体文件夹" /></FieldLabel>
+          <FieldLabel><SourceLabel source="pikpak" label="PikPak 루트 폴더에 대응하는 미디어 폴더" /></FieldLabel>
           {state.pikpak_roots.length ? (
-            <Select aria-label="PikPak 根目录对应的媒体文件夹" selectedKey={config.pikpak_root || null}
-              isDisabled={!state.available} placeholder="检查时按推送发现选"
+            <Select aria-label="PikPak 루트 폴더에 대응하는 미디어 폴더" selectedKey={config.pikpak_root || null}
+              isDisabled={!state.available} placeholder="확인 시 푸시로 발견한 정보에 따라 선택"
               onSelectionChange={(key) => setConfig({ ...config, pikpak_root: key === null ? '' : String(key) })}>
               {state.pikpak_roots.map((root) => <SelectItem key={root} id={root}>{root}</SelectItem>)}
             </Select>
           ) : (
-            <Help>先在「媒体库与入库」添加 PikPak 挂载文件夹。</Help>
+            <Help>먼저 「미디어 라이브러리 및 추가」에서 PikPak 마운트 폴더를 추가하세요.</Help>
           )}
         </div>
-        <Input label="等待上限（小时）" type="number" inputMode="numeric" autoComplete="off"
-          hint={`超时标为停滞；可填 1–${state.max_wait_hours} 小时。`}
+        <Input label="대기 시간 한도(시간)" type="number" inputMode="numeric" autoComplete="off"
+          hint={`시간 초과 시 정체 상태로 표시합니다. 입력 범위: 1~${state.max_wait_hours} 시간.`}
           value={hours} isDisabled={!state.available} onChange={setHours} />
       </Stack>
-      {action.busy === 'auto' ? <Stack divided><LoadingDots label="正在检查 CloudDrive2" /></Stack> : null}
+      {action.busy === 'auto' ? <Stack divided><LoadingDots label="CloudDrive2 확인 중" /></Stack> : null}
       {report ? (
         <CheckReport report={report} detected={detected} suggested={suggested}
           create={state.available ? create : undefined} creating={action.busy === 'folder'} />
       ) : null}
       {failure || action.error ? <Stack divided><ErrorText>{failure || action.error}</ErrorText></Stack> : null}
-      <Footer status={state.available ? undefined : '云下载只在账本写入端可用。'}>
-        <Button variant="secondary" onClick={check} disabled={!state.available} {...busyProps(action.busy === 'check')}>检查连接</Button>
-        <Button type="submit" disabled={!state.available} {...busyProps(action.busy === 'save')}>保存配置</Button>
+      <Footer status={state.available ? undefined : "클라우드 다운로드는 원장을 기록하는 기기에서만 사용할 수 있습니다."}>
+        <Button variant="secondary" onClick={check} disabled={!state.available} {...busyProps(action.busy === 'check')}>연결 확인</Button>
+        <Button type="submit" disabled={!state.available} {...busyProps(action.busy === 'save')}>설정 저장</Button>
       </Footer>
     </Section>
   );
@@ -252,31 +252,31 @@ function CheckReport({ report, detected, suggested, create, creating }: {
   return (
     <Stack divided>
       <FactList>
-        {detected ? <Fact term="CloudDrive2 地址">{`探测到 ${detected}，保存配置后生效`}</Fact> : null}
+        {detected ? <Fact term="CloudDrive2 주소">{`감지됨: ${detected}, 설정을 저장하면 적용됩니다`}</Fact> : null}
         {folder?.exists ? (
-          <Fact term={<SourceLabel source="115" label="115 目标目录" />}>
-            {suggested.saved ? `已按推送发现填入 ${folder.path}` : `按推送发现填入 ${folder.path}，保存配置后生效`}
+          <Fact term={<SourceLabel source="115" label="115 대상 폴더" />}>
+            {suggested.saved ? `푸시로 발견한 정보 입력 완료: ${folder.path}` : `푸시로 발견한 정보 입력: ${folder.path}, 설정을 저장하면 적용됩니다`}
           </Fact>
         ) : null}
         {folder && !folder.exists ? (
-          <Fact term={<SourceLabel source="115" label="115 目标目录" />}>
-            {`${folder.path} 不存在`}
-            {create ? <Button variant="secondary" size="small" onClick={() => create(folder.path)} {...busyProps(creating)}>新建这个目录</Button> : null}
+          <Fact term={<SourceLabel source="115" label="115 대상 폴더" />}>
+            {`${folder.path} 없음`}
+            {create ? <Button variant="secondary" size="small" onClick={() => create(folder.path)} {...busyProps(creating)}>이 폴더 만들기</Button> : null}
           </Fact>
         ) : null}
-        {suggested.root ? <Fact term={<SourceLabel source="pikpak" label="PikPak 根目录" />}>{`按推送发现填入 ${suggested.root}，保存配置后生效`}</Fact> : null}
+        {suggested.root ? <Fact term={<SourceLabel source="pikpak" label="PikPak 루트 폴더" />}>{`푸시로 발견한 정보 입력: ${suggested.root}, 설정을 저장하면 적용됩니다`}</Fact> : null}
         {report.permissions.length ? (
-          <Fact term="离线权限">
+          <Fact term="오프라인 권한">
             <Chip variant="caption" color={report.missing.length ? 'yellow' : 'lime'}>
-              {report.missing.length ? `缺少：${report.missing.join('、')}` : '齐全'}
+              {report.missing.length ? `누락:${report.missing.join('、')}` : "모두 있음"}
             </Chip>
           </Fact>
         ) : null}
         {report.folder ? (
-          <Fact term="目标目录">{report.folder.can_offline ? `${report.folder.path} 可以离线下载` : `${report.folder.path} 不支持离线下载`}</Fact>
+          <Fact term="대상 폴더">{report.folder.can_offline ? `${report.folder.path} 오프라인 다운로드 가능` : `${report.folder.path} 오프라인 다운로드 미지원`}</Fact>
         ) : null}
         {report.quota ? (
-          <Fact term={<SourceLabel source="115" label="115 离线配额" />}>{`本月还剩 ${report.quota.left} 条，共 ${report.quota.total} 条`}</Fact>
+          <Fact term={<SourceLabel source="115" label="115 오프라인 할당량" />}>{`이번 달 잔여 ${report.quota.left} 개 남음, 전체 ${report.quota.total} 개`}</Fact>
         ) : null}
       </FactList>
       {report.problems.map((problem) => <ErrorText key={problem}>{problem}</ErrorText>)}
@@ -311,7 +311,7 @@ function PikPakAccount({ state, settle, receipt, username, setUsername }: CardPr
         const next = await apiGet<DownloadSettingsState>(BROWSER_URL, controller.signal);
         if (controller.signal.aborted) return;
         settle(next);
-        if (next.pikpak_browser.state === 'done') receipt('已登录 PikPak');
+        if (next.pikpak_browser.state === 'done') receipt("PikPak에 로그인되었습니다");
         else if (next.pikpak_browser.state !== 'waiting') setOutcome(next.pikpak_browser.message);
         if (next.pikpak_browser.state !== 'waiting') return;
       } catch (cause) {
@@ -350,47 +350,47 @@ function PikPakAccount({ state, settle, receipt, username, setUsername }: CardPr
         }
         setCaptcha('');
         setPassword('');
-        receipt('已登录 PikPak');
+        receipt("PikPak에 로그인되었습니다");
       }, (cause) => setFailure(errorMessage(cause)));
   };
 
   const logout = () => {
     void action.run('logout', (signal) => apiSend<DownloadSettingsState>(LOGOUT_URL, {}, 'POST', signal),
-      (next) => { settle(next); setFailure(''); receipt('已登出 PikPak'); },
+      (next) => { settle(next); setFailure(''); receipt("PikPak에서 로그아웃되었습니다"); },
       (cause) => setFailure(errorMessage(cause)));
   };
 
   const passwordForm = (
     <>
-      <Input label="账号" placeholder="邮箱或手机号" autoComplete="username" maxLength={200}
+      <Input label="계정" placeholder="이메일 또는 휴대전화 번호" autoComplete="username" maxLength={200}
         value={username} isDisabled={!state.available} onChange={setUsername} />
-      <Input label="密码" type="password" autoComplete="current-password" maxLength={200}
+      <Input label="비밀번호" type="password" autoComplete="current-password" maxLength={200}
         value={password} isDisabled={!state.available} onChange={setPassword} />
       <Checkbox isSelected={remember} isDisabled={!state.available} onChange={setRemember}>
-        保存密码，登录过期时自动重新登录
+        비밀번호를 저장하고 로그인 만료 시 자동으로 다시 로그인
       </Checkbox>
       {captcha ? (
-        <Note tone="warning" title="需要人机验证"
-          extra={<div className="pt-2"><ExternalLink href={captcha}>打开 PikPak 验证页</ExternalLink></div>}>
-          在浏览器里完成验证后，回到这里再点一次「登录」。
+        <Note tone="warning" title="사람 인증이 필요합니다"
+          extra={<div className="pt-2"><ExternalLink href={captcha}>PikPak 인증 페이지 열기</ExternalLink></div>}>
+          브라우저에서 인증을 마친 후 여기로 돌아와 「로그인」을 다시 누르세요.
         </Note>
       ) : null}
     </>
   );
   const passwordLogin = (
-    <Button type="submit" disabled={!state.available || waiting} {...busyProps(action.busy === 'login')}>登录</Button>
+    <Button type="submit" disabled={!state.available || waiting} {...busyProps(action.busy === 'login')}>로그인</Button>
   );
   const outcomeFailed = browser.state === 'timeout' || browser.state === 'failed';
 
   return (
-    <Section title="PikPak 账号" icon={<PROVIDER_ICONS.pikpak />} onSubmit={login}>
+    <Section title="PikPak 계정" icon={<PROVIDER_ICONS.pikpak />} onSubmit={login}>
       {account.logged_in ? (
         <FactList>
-          <Fact term="账号">{account.username || '已登录'}</Fact>
+          <Fact term="계정">{account.username || "로그인됨"}</Fact>
           {account.method === 'browser' ? (
-            <Fact term="登录方式">浏览器登录，由 Peach 续期</Fact>
+            <Fact term="로그인 방식">브라우저 로그인, Peach에서 세션 갱신</Fact>
           ) : (
-            <Fact term="密码">{account.remember ? '已保存，登录过期时自动重新登录' : '未保存，登录过期后需要回到这里重新登录'}</Fact>
+            <Fact term="비밀번호">{account.remember ? "저장됨. 로그인 만료 시 자동으로 다시 로그인" : "저장하지 않음. 로그인 만료 후 여기로 돌아와 다시 로그인해야 합니다"}</Fact>
           )}
         </FactList>
       ) : (
@@ -401,14 +401,14 @@ function PikPakAccount({ state, settle, receipt, username, setUsername }: CardPr
       )}
       {failure || action.error ? <Stack divided><ErrorText>{failure || action.error}</ErrorText></Stack> : null}
       <Footer status={!account.logged_in && waiting
-        ? <LoadingDots label={browser.message || '等你在浏览器窗口里登录 PikPak'} /> : null}>
+        ? <LoadingDots label={browser.message || "브라우저 창에서 PikPak에 로그인하기를 기다리는 중"} /> : null}>
         {account.logged_in ? (
-          <Button variant="secondary" onClick={logout} disabled={!state.available} {...busyProps(action.busy === 'logout')}>登出</Button>
+          <Button variant="secondary" onClick={logout} disabled={!state.available} {...busyProps(action.busy === 'logout')}>로그아웃</Button>
         ) : <>{passwordLogin}{!browser.available ? null : waiting ? (
-          <Button variant="secondary" type="button" onClick={cancelBrowser} {...busyProps(action.busy === 'cancel')}>取消</Button>
+          <Button variant="secondary" type="button" onClick={cancelBrowser} {...busyProps(action.busy === 'cancel')}>취소</Button>
         ) : (
           <Button type="button" onClick={openBrowser} disabled={!state.available}
-            {...busyProps(action.busy === 'browser')}>用浏览器登录</Button>
+            {...busyProps(action.busy === 'browser')}>브라우저로 로그인</Button>
         )}</>}
       </Footer>
     </Section>

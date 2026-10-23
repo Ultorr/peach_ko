@@ -16,7 +16,7 @@ import { groupRoot } from './configuration-panel';
 import { Disclosure, ErrorText, ExternalLink, Fact, FactList, Footer, Help, Rows, Section, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
-const INTERVALS = [['6', '每 6 小时'], ['24', '每天'], ['168', '每周']] as const;
+const INTERVALS = [['6', "6시간마다"], ['24', "매일"], ['168', "매주"]] as const;
 
 export function MaintenanceSettings(
   { data, receipt, reopenTutorial, panel }: ConfigurationGroupProps & Pick<ConfigurationProps, 'reopenTutorial'>,
@@ -34,11 +34,11 @@ export function MaintenanceSettings(
 export function TutorialSettings({ receipt, reopenTutorial }: ConfigurationProps) {
   const action = useAction();
   const reopen = () => void action.run('reopen', () => reopenTutorial(),
-    () => receipt('已重新打开安装教程'));
+    () => receipt("설치 안내를 다시 열었습니다"));
   return (
-    <section aria-label="安装教程" className="w-full"><SettingsCard>
-      <Rows><SettingsRow label="安装教程">
-        <Button variant="secondary" onClick={reopen} {...busyProps(action.busy === 'reopen')}>重新打开教程</Button>
+    <section aria-label="설치 안내" className="w-full"><SettingsCard>
+      <Rows><SettingsRow label="설치 안내">
+        <Button variant="secondary" onClick={reopen} {...busyProps(action.busy === 'reopen')}>설치 안내 다시 열기</Button>
       </SettingsRow></Rows>
       {action.error ? <Stack><ErrorText>{action.error}</ErrorText></Stack> : null}
     </SettingsCard></section>
@@ -54,28 +54,28 @@ export function AutomaticUpdates({ initial, receipt }: { initial: AutomaticUpdat
     event.preventDefault();
     if (!initial.available) return;
     void action.run('save', (signal) => apiSend<AutomaticUpdateState>('/api/configuration/automatic-updates',
-      { mode, interval_hours: hours }, 'POST', signal), () => receipt('已保存配置'));
+      { mode, interval_hours: hours }, 'POST', signal), () => receipt("설정이 저장되었습니다"));
   };
 
   const help = !initial.available
-    ? '自动更新需要由托盘管理的服务。'
+    ? "자동 업데이트에는 트레이에서 관리하는 서비스가 필요합니다."
     : initial.download_available
-      ? '下载完成后在这里确认重启安装。'
+      ? "다운로드가 완료되면 여기에서 재시작 및 설치를 확인하세요."
       : undefined;
   return (
-    <Section title="自动更新" onSubmit={submit}>
+    <Section title="자동 업데이트" onSubmit={submit}>
       <Rows>
-        <SettingsRow label="自动检查新版本">
-          <Switch aria-label="自动检查新版本" isSelected={mode !== 'off'} isDisabled={!initial.available}
+        <SettingsRow label="새 버전 자동 확인">
+          <Switch aria-label="새 버전 자동 확인" isSelected={mode !== 'off'} isDisabled={!initial.available}
             onChange={(on) => setMode(on ? 'check' : 'off')} />
         </SettingsRow>
-        <SettingsRow label="自动下载更新">
-          <Switch aria-label="自动下载更新" isSelected={mode === 'download'}
+        <SettingsRow label="업데이트 자동 다운로드">
+          <Switch aria-label="업데이트 자동 다운로드" isSelected={mode === 'download'}
             isDisabled={!initial.available || !initial.download_available || mode === 'off'}
             onChange={(on) => setMode(on ? 'download' : 'check')} />
         </SettingsRow>
-        <SettingsRow label="检查频率" description={help}>
-          <Select aria-label="检查频率" selectedKey={String(hours)} isDisabled={!initial.available}
+        <SettingsRow label="확인 주기" description={help}>
+          <Select aria-label="확인 주기" selectedKey={String(hours)} isDisabled={!initial.available}
             onSelectionChange={(key) => { if (key !== null) setHours(Number(key)); }}>
             {INTERVALS.map(([key, name]) => <SelectItem key={key} id={key}>{name}</SelectItem>)}
           </Select>
@@ -83,7 +83,7 @@ export function AutomaticUpdates({ initial, receipt }: { initial: AutomaticUpdat
       </Rows>
       {action.error ? <Stack divided><ErrorText>{action.error}</ErrorText></Stack> : null}
       <Footer>
-        <Button type="submit" disabled={!initial.available} {...busyProps(action.busy === 'save')}>保存配置</Button>
+        <Button type="submit" disabled={!initial.available} {...busyProps(action.busy === 'save')}>설정 저장</Button>
       </Footer>
     </Section>
   );
@@ -91,8 +91,14 @@ export function AutomaticUpdates({ initial, receipt }: { initial: AutomaticUpdat
 
 function Facts({ facts }: { facts: ConfigurationFact[] }) {
   return (
-    <Section title="运行信息">
+    <Section title="실행 정보">
       <FactList>
+        <Fact term="한국어판 소스">
+          <ExternalLink href="https://github.com/Ultorr/peach_ko/tree/korean-0.46.1">소스 코드 받기</ExternalLink>
+        </Fact>
+        <Fact term="라이선스">
+          <ExternalLink href="https://github.com/Ultorr/peach_ko/blob/korean-0.46.1/LOCALIZATION_LICENSE.md">AGPL-3.0-or-later · 비공식 한국어판</ExternalLink>
+        </Fact>
         {facts.map((fact) => (
           <Fact key={fact.term} term={fact.term}>
             {fact.value}
@@ -110,12 +116,12 @@ export function UninstallSettings(
   const [removeData, setRemoveData] = useState(false);
   const [accepted, setAccepted] = useState('');
   const remove = () => void confirmModal({
-    title: '卸载 Peach',
+    title: "Peach 제거",
     danger: true,
     body: removeData
-      ? '将退出 Peach，移除程序、开机自启、桌面图标、设置、本地数据库、观看记录、凭据和缓存。原始媒体文件保留。'
-      : '将退出 Peach 并移除程序、开机自启和桌面图标。设置、本地数据库、观看记录与缓存保留。',
-    confirmLabel: '卸载 Peach',
+      ? "Peach를 종료하고 프로그램, 시작 프로그램 등록, 바탕 화면 아이콘, 설정, 로컬 데이터베이스, 시청 기록, 인증 정보 및 캐시를 삭제합니다. 원본 미디어 파일은 유지됩니다."
+      : "Peach를 종료하고 프로그램, 시작 프로그램 등록 및 바탕 화면 아이콘을 삭제합니다. 설정, 로컬 데이터베이스, 시청 기록 및 캐시는 유지됩니다.",
+    confirmLabel: "Peach 제거",
     onConfirm: async () => {
       const result = await apiSend<{ message: string }>('/api/configuration/uninstall', { delete_data: removeData, confirmation: '卸载 Peach' });
       setAccepted(result.message);
@@ -126,22 +132,22 @@ export function UninstallSettings(
   const status = accepted || uninstall.message;
   const paths = [...new Set([uninstall.data_root, ...uninstall.directories])];
   return (
-    <Section id="uninstallPeach" title="卸载 Peach">
-      {uninstall.available ? <Stack><Help>卸载移除 Peach 程序本身，原始媒体文件保留。</Help></Stack> : null}
+    <Section id="uninstallPeach" title="Peach 제거">
+      {uninstall.available ? <Stack><Help>Peach 프로그램을 제거합니다. 원본 미디어 파일은 유지됩니다.</Help></Stack> : null}
       <Rows>
-        <SettingsRow label="完全卸载" description="同时删除设置、本地数据库、观看记录、凭据和缓存">
-          <Switch aria-label="完全卸载" isSelected={removeData} isDisabled={!uninstall.full_available || Boolean(accepted)} onChange={setRemoveData} />
+        <SettingsRow label="완전히 제거" description="설정, 로컬 데이터베이스, 시청 기록, 인증 정보 및 캐시도 삭제">
+          <Switch aria-label="완전히 제거" isSelected={removeData} isDisabled={!uninstall.full_available || Boolean(accepted)} onChange={setRemoveData} />
         </SettingsRow>
       </Rows>
       <Stack divided>
-        <Disclosure summary="数据目录">
+        <Disclosure summary="데이터 폴더">
           {paths.map((path) => (
             <PathLine key={path} path={path} className="text-body-2-regular text-text-secondary" onRevealed={receipt} />
           ))}
         </Disclosure>
       </Stack>
       <Footer status={status ? <p role={accepted ? 'status' : undefined}>{status}</p> : null}>
-        <Button variant="danger" disabled={!uninstall.available || Boolean(accepted)} onClick={remove}>卸载 Peach</Button>
+        <Button variant="danger" disabled={!uninstall.available || Boolean(accepted)} onClick={remove}>Peach 제거</Button>
       </Footer>
     </Section>
   );

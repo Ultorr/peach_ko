@@ -16,7 +16,7 @@ import { TunnelSettings } from './tunnel-settings';
 import { ErrorText, Footer, Rows, Section, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
-const PROXY_MODES = [['environment', '系统代理'], ['direct', '直连'], ['proxy', '自定义']] as const;
+const PROXY_MODES = [['environment', "시스템 프록시"], ['direct', "직접 연결"], ['proxy', "사용자 지정"]] as const;
 
 export function NetworkSettings({ data, receipt, panel }: ConfigurationGroupProps) {
   return (
@@ -38,14 +38,14 @@ export function PeachProxy({ initial, receipt }: { initial: PeachProxyState; rec
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void action.run('save', (signal) => apiSend<PeachProxyState>('/api/configuration/peach-proxy', { mode, proxy: address }, 'POST', signal),
-      (next) => { setSaved(next); setAddress(''); receipt('已保存配置'); });
+      (next) => { setSaved(next); setAddress(''); receipt("설정이 저장되었습니다"); });
   };
 
   return (
-    <Section id="peachProxy" title="Peach 代理" onSubmit={submit}>
+    <Section id="peachProxy" title="Peach 프록시" onSubmit={submit}>
       <Rows>
-        <SettingsRow label="连接方式">
-          <Select aria-label="连接方式" selectedKey={mode} onSelectionChange={(key) => { if (key !== null) setMode(String(key)); }}>
+        <SettingsRow label="연결 방식">
+          <Select aria-label="연결 방식" selectedKey={mode} onSelectionChange={(key) => { if (key !== null) setMode(String(key)); }}>
             {PROXY_MODES.map(([key, name]) => <SelectItem key={key} id={key}>{name}</SelectItem>)}
           </Select>
         </SettingsRow>
@@ -53,15 +53,15 @@ export function PeachProxy({ initial, receipt }: { initial: PeachProxyState; rec
       {mode === 'proxy' || saved.needs_selection || action.error ? (
         <Stack divided>
           {mode === 'proxy'
-            ? <Input id="peachProxyAddress" type="password" label="代理地址" autoComplete="off" value={address} onChange={setAddress}
-                placeholder={saved.proxy_saved ? '已保存，留空保留' : 'http://127.0.0.1:7890'} />
+            ? <Input id="peachProxyAddress" type="password" label="프록시 주소" autoComplete="off" value={address} onChange={setAddress}
+                placeholder={saved.proxy_saved ? "저장됨. 비워 두면 유지됩니다" : 'http://127.0.0.1:7890'} />
             : null}
-          {saved.needs_selection ? <Note tone="warning" title="需要选择连接方式">已有来源的代理地址不同，请选择公共连接方式。</Note> : null}
+          {saved.needs_selection ? <Note tone="warning" title="연결 방식을 선택해야 합니다">기존 소스의 프록시 주소가 서로 다릅니다. 공통 연결 방식을 선택하세요.</Note> : null}
           {action.error ? <ErrorText>{action.error}</ErrorText> : null}
         </Stack>
       ) : null}
       <Footer>
-        <Button type="submit" {...busyProps(action.busy === 'save')}>保存配置</Button>
+        <Button type="submit" {...busyProps(action.busy === 'save')}>설정 저장</Button>
       </Footer>
     </Section>
   );

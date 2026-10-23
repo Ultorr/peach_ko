@@ -188,7 +188,7 @@ export interface SuggestData { q: string; groups: SuggestGroup[] }
 /* ── 视图与排序的取值 ── */
 
 /** 两种视图共用同一份来源集合、创作者顺序与勾选；表格视图一行一条来源。 */
-export const LAYOUTS = [['default', '默认视图'], ['table', '表格视图']] as const;
+export const LAYOUTS = [['default', "기본 보기"], ['table', "표 보기"]] as const;
 export type Layout = (typeof LAYOUTS)[number][0];
 
 export const PAGE_SIZES = [10, 20, 50, 100] as const;
@@ -213,15 +213,15 @@ export const pageSizeOf = (value: unknown): number =>
 /** 方向词按维度各说各的：时间说远近、数量说多少，「正序」对一个时间戳不成立。
  *  第一项是从升序点下去会得到的那一头，第二项是它的反面。 */
 const SORT_DIR_WORDS: Record<SortKey, readonly [string, string]> = {
-  checked: ['从近到远', '从远到近'], added: ['从近到远', '从远到近'],
-  name: ['倒序', '正序'], sources: ['从多到少', '从少到多'],
-  source: ['倒序', '正序'], provider: ['倒序', '正序'], status: ['倒序', '正序'],
+  checked: ["최근순", "오래된순"], added: ["최근순", "오래된순"],
+  name: ["내림차순", "오름차순"], sources: ["많은순", "적은순"],
+  source: ["내림차순", "오름차순"], provider: ["내림차순", "오름차순"], status: ["내림차순", "오름차순"],
 };
 
 /** 方向按钮的无障碍名称：说的是点下去会得到什么，所以取反方向的词。照抄当前方向，
  *  读屏那边会以为点下去还是这个顺序。 */
 export const sortLabel = (sort: SortKey, dir: SortDir): string =>
-  `按${SORT_LABELS[sort]}${SORT_DIR_WORDS[sort][dir === 'asc' ? 0 : 1]}排序`;
+  `정렬 기준:${SORT_LABELS[sort]}${SORT_DIR_WORDS[sort][dir === 'asc' ? 0 : 1]}정렬`;
 
 /* ── 分组、排序、分页 ── */
 
@@ -235,10 +235,10 @@ export function statusRank(source: FollowSource): number {
 
 /** 这一条此刻是什么状态。四种写法对应四种徽章。 */
 export function statusText(source: FollowSource): string {
-  if (source.history_exhausted) return '没有更多';
-  if (!source.enabled) return '已暂停';
-  if (source.last_status === 'ok') return '正常';
-  return source.last_status === 'error' || source.last_status === 'unauthorized' ? '检查失败' : '未检查';
+  if (source.history_exhausted) return "더 이상 없음";
+  if (!source.enabled) return "일시 중지됨";
+  if (source.last_status === 'ok') return "정상";
+  return source.last_status === 'error' || source.last_status === 'unauthorized' ? "확인 실패" : "확인하지 않음";
 }
 
 export const isBroken = (source: FollowSource): boolean =>
@@ -247,9 +247,9 @@ export const isBroken = (source: FollowSource): boolean =>
 /** 订阅源的拉取频率：一小时以内按分钟，两天以内按小时，再长按天。 */
 export function feedIntervalText(minutes: number): string {
   const value = Number(minutes) || 0;
-  if (value >= 2880) return `每 ${Math.round(value / 1440).toLocaleString()} 天`;
-  if (value >= 60) return `每 ${Math.round(value / 60)} 小时`;
-  return `每 ${value} 分钟`;
+  if (value >= 2880) return `매 ${Math.round(value / 1440).toLocaleString()} 일`;
+  if (value >= 60) return `매 ${Math.round(value / 60)} 시간`;
+  return `매 ${value} 분`;
 }
 
 /** 一段报错在列表里只露的那一行。Python traceback 的第一行永远是「Traceback (most recent call
@@ -512,7 +512,7 @@ export interface FeedsData {
 /** 认不出的响应当读失败：没有 sources 的那份不是订阅源的数据，画出来只会在第一次取长度时炸掉。 */
 export async function fetchFeeds(signal?: AbortSignal): Promise<FeedsData> {
   const payload = await apiGet<FeedsData>(FEEDS_URL, signal);
-  if (!Array.isArray(payload?.sources)) throw new Error('没有读到订阅源');
+  if (!Array.isArray(payload?.sources)) throw new Error("구독 출처를 읽지 못했습니다");
   return payload;
 }
 
@@ -613,12 +613,12 @@ export function checkReceipt(job: Pick<CheckJob, 'results'>): string {
   const updated = rows.reduce((total, row) => total + (row.updated || 0), 0);
   const failed = rows.filter((row) => !row.ok).length;
   const bits: string[] = [];
-  if (added) bits.push(`新增 ${added} 条`);
-  if (updated) bits.push(`更新 ${updated} 条`);
-  if (!bits.length && failed < rows.length) bits.push('没有更新');
-  if (failed) bits.push(`${failed} 个失败`);
-  if (!bits.length) bits.push('没有更新');
-  return `已检查 ${rows.length} 个来源：${bits.join(' · ')}`;
+  if (added) bits.push(`새로 추가 ${added} 개`);
+  if (updated) bits.push(`업데이트 ${updated} 개`);
+  if (!bits.length && failed < rows.length) bits.push("업데이트 없음");
+  if (failed) bits.push(`${failed} 개 실패`);
+  if (!bits.length) bits.push("업데이트 없음");
+  return `확인 완료: ${rows.length} 개 출처：${bits.join(' · ')}`;
 }
 
 /** 一次检查的完整统计。 */
@@ -635,19 +635,19 @@ export function checkSummary(job: CheckJob): string {
   const quiet = rows.filter((row) => row.ok && !row.added && !row.updated).length;
   const failed = rows.filter((row) => !row.ok).length;
   const bits: string[] = [];
-  if (added) bits.push(`新增 ${added} 条`);
-  if (updated) bits.push(`更新 ${updated} 条`);
-  if (skipped) bits.push(`跳过 ${skipped} 条无资源`);
-  if (compilations) bits.push(`排除 ${compilations} 个超大合集`);
-  if (history) bits.push(`跳过 ${history} 条超出首次采集范围的历史内容`);
-  if (probed) bits.push(`回查 ${probed} 条`);
-  if (quiet) bits.push(`${quiet} 个来源没有更新`);
-  if (!bits.length) bits.push('没有任何更新');
+  if (added) bits.push(`새로 추가 ${added} 개`);
+  if (updated) bits.push(`업데이트 ${updated} 개`);
+  if (skipped) bits.push(`건너뜀 ${skipped} 개 리소스 없는 항목`);
+  if (compilations) bits.push(`제외 ${compilations} 개 대규모 모음`);
+  if (history) bits.push(`건너뜀 ${history} 개 최초 수집 범위를 벗어난 과거 콘텐츠`);
+  if (probed) bits.push(`재확인 ${probed} 개`);
+  if (quiet) bits.push(`${quiet} 개 출처에 업데이트 없음`);
+  if (!bits.length) bits.push("업데이트가 전혀 없습니다");
   /* 来源没有更多内容与本次没有更新分别计数。 */
   const exhausted = rows.filter((row) => row.exhausted).length;
-  if (exhausted) bits.push(`${exhausted} 个没有更多内容`);
-  if (failed) bits.push(`${failed} 个失败`);
-  return `检查了 ${rows.length} 个来源：${bits.join(' · ')}`;
+  if (exhausted) bits.push(`${exhausted} 개 출처에 추가 콘텐츠 없음`);
+  if (failed) bits.push(`${failed} 개 실패`);
+  return `확인 완료: ${rows.length} 개 출처：${bits.join(' · ')}`;
 }
 
 /** 页内持久行只装要处理的东西：失败与取证缺档。全部成功时没有这一行。 */
@@ -660,7 +660,7 @@ export const checkEvidenceGap = (job: CheckJob | null): string =>
 export { localTime };
 
 export const checkedText = (source: FollowSource): string =>
-  (source.last_checked_at ? localTime(source.last_checked_at) : '未检查');
+  (source.last_checked_at ? localTime(source.last_checked_at) : "확인하지 않음");
 
 /** 有站点图标的来源。图标由服务端按 `follow_assets.SOURCE_ICON_URLS` 取回并存在本机，
  *  页面只认这份名单：没登记的来源直接不出 `<img>`。 */
@@ -674,7 +674,7 @@ export const sourceIconUrl = (provider: string): string =>
 
 /** 四种凭据状态四种说法：待办（缺凭据）和完成（已配置）不能同色，那正是要一眼分开的两件事。 */
 export const CREDENTIAL_STATE: Record<string, string> = {
-  required: '需要', optional: '可选', none: '不需要', blocked: '接不进来',
+  required: "필수", optional: "선택 사항", none: "불필요", blocked: "연결 불가",
 };
 
 export const credentialDone = (row: CredentialRow): boolean =>

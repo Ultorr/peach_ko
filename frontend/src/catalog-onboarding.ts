@@ -24,19 +24,19 @@ export async function catalogSuggestions(state: Record<string, string>, request:
 
 /** 空馆藏、筛选无结果与资料尚未建立分别给出可执行入口。 */
 export function catalogEmptyHtml({ kind = 'catalog', filtered = false, jav = false, configurable = false, online = false } = {}): string {
-  const add = configurable ? '<button class="geist-button primary" data-empty-settings>添加内容</button>' : '';
-  const follow = '<a class="geist-button' + (!configurable || online ? ' primary' : '') + '" href="/subscriptions?tab=add">添加关注</a>';
-  if (filtered || jav) return emptyStateHtml('search', jav ? '还没有符合条件的 JAV 作品' : '没有符合条件的内容',
-    jav ? '已扫描但尚未补充发行资料的视频可在全部内容中查看。' : '清除筛选或搜索条件后查看全部内容。',
-    { actions: '<a class="geist-button primary" href="/?loc=&thumb=0">查看全部内容</a>' });
+  const add = configurable ? "<button class=\"geist-button primary\" data-empty-settings>콘텐츠 추가</button>" : '';
+  const follow = '<a class="geist-button' + (!configurable || online ? ' primary' : '') + "\" href=\"/subscriptions?tab=add\">팔로우 추가</a>";
+  if (filtered || jav) return emptyStateHtml('search', jav ? "조건에 맞는 JAV 항목이 없습니다" : "조건에 맞는 콘텐츠가 없습니다",
+    jav ? "스캔했지만 출시 정보가 없는 동영상은 전체 콘텐츠에서 볼 수 있습니다." : "필터나 검색 조건을 해제하면 전체 콘텐츠를 볼 수 있습니다.",
+    { actions: "<a class=\"geist-button primary\" href=\"/?loc=&thumb=0\">전체 콘텐츠 보기</a>" });
   if (kind !== 'catalog') {
-    const labels: Record<string, string> = { tags: '标签', performers: '艺人', creators: '卖家', studios: '厂牌', agencies: '事务所', series: '系列' };
+    const labels: Record<string, string> = { tags: "태그", performers: "아티스트", creators: "판매자", studios: "스튜디오", agencies: "소속사", series: "시리즈" };
     // 在线那一档数的是来源上的东西，名字也跟着来源的说法：艺人页在线摆的是关注来源里的创作者。
-    const onlineLabels: Record<string, string> = { tags: '标签', performers: '创作者' };
-    const label = (online ? onlineLabels[kind] : '') || labels[kind] || '资料';
-    return emptyStateHtml(kind === 'tags' ? 'tags' : 'user-round', '还没有' + label,
-      online ? '添加关注来源并获取内容后，这里会显示来源上的' + label + '。' : '添加内容并补充资料后，这里会显示对应信息。',
+    const onlineLabels: Record<string, string> = { tags: "태그", performers: "크리에이터" };
+    const label = (online ? onlineLabels[kind] : '') || labels[kind] || "정보";
+    return emptyStateHtml(kind === 'tags' ? 'tags' : 'user-round', "아직 없음: " + label,
+      online ? "팔로우 소스를 추가하고 콘텐츠를 가져오면 여기에 표시됩니다: " + label + '。' : "콘텐츠를 추가하고 정보를 보완하면 관련 정보가 표시됩니다.",
       { actions: online ? follow : add + follow });
   }
-  return emptyStateHtml('play', '还没有视频', '添加媒体文件夹或关注来源，开始建立你的馆藏。', { actions: add + follow });
+  return emptyStateHtml('play', "동영상이 없습니다", "미디어 폴더나 팔로우 소스를 추가해 컬렉션을 만드세요.", { actions: add + follow });
 }

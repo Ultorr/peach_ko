@@ -63,7 +63,7 @@ const mapLimit=async<T,R>(items:Iterable<T>,limit:number,run:(item:T,index:numbe
 };
 const STATE_ROUTES:Record<string,string>={fresh:'/unseen',later:'/watch-later',flagged:'/flagged',ads:'/junk-files'};
 const ROUTE_STATES:Record<string,string>=Object.fromEntries(Object.entries(STATE_ROUTES).map(([state,path])=>[path,state]));
-const STATE_LABELS:Record<string,string>={fresh:'没看过',later:'稍后看',flagged:'已标记',ads:'垃圾文件'};
+const STATE_LABELS:Record<string,string>={fresh:"미시청",later:"나중에 보기",flagged:"표시한 항목",ads:"불필요한 파일"};
 const isCatalogPath=(path:string)=>path==='/'||path==='/wall'||Object.prototype.hasOwnProperty.call(ROUTE_STATES,path);
 const ENTITY_ROUTES:Record<string,string>={performer:'performers',studio:'studios',creator:'creators',series:'series',agency:'agencies',tag:'tags'};
 const ROUTE_ENTITIES:Record<string,string>={performers:'performer',studios:'studio',creators:'creator',series:'series',agencies:'agency',tags:'tag'};
@@ -152,7 +152,7 @@ const officialLinkText=(link:{url?:string;label?:string},kind:string,names:reado
       const folded=foldName(name);
       return Boolean(folded)&&(folded.includes(shown)||shown.includes(folded));
     }));
-  return own?'官方网站':text;
+  return own?"공식 웹사이트":text;
 };
 /* 什么才算一个真时长——只有这一处说了算。
 
@@ -167,7 +167,7 @@ const realDuration=(value:unknown)=>{const n=Number(value);return Number.isFinit
 /** 秒数格式化成 `h:mm:ss`／`m:ss`，48 小时起写成 `N 天 N 小时`；`0`、负数与非有限值都是 `—`
  *  （probe 的硬失败哨兵）。 */
 const fmtDur:(seconds:number|null|undefined)=>string=(s:any)=>{s=realDuration(s);if(!s)return'—';s=Math.round(s);
-  if(s>=48*3600){const d=Math.floor(s/86400),hours=Math.floor((s%86400)/3600);return hours?`${d} 天 ${hours} 小时`:`${d} 天`}
+  if(s>=48*3600){const d=Math.floor(s/86400),hours=Math.floor((s%86400)/3600);return hours?`${d} 일 ${hours} 시간`:`${d} 일`}
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
   return h?`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${m}:${String(x).padStart(2,'0')}`};
 /** 秒数格式化成播放器时钟 `h:mm:ss`／`m:ss`；非数值当 0。 */
@@ -177,9 +177,9 @@ const fmtClock:(seconds:unknown)=>string=(s:any)=>{s=Math.max(0,Math.floor(Numbe
    非零的最少写 1 KB，免得 1 字节读成「0」。缺值、NaN 与负数是「大小未知」；0 是真的 0——
    可回收空间、已下载量这类读数会是 0，单个文件的 0 字节由调用方判成未知。 */
 const fmtSize:(bytes:number|null|undefined)=>string=(value:any)=>{
-  if(value===null||value===undefined||value==='')return '大小未知';
+  if(value===null||value===undefined||value==='')return "크기 알 수 없음";
   const b=Number(value);
-  if(!Number.isFinite(b)||b<0)return '大小未知';
+  if(!Number.isFinite(b)||b<0)return "크기 알 수 없음";
   if(b===0)return '0 B';
   if(b<1048576)return `${Math.max(1,Math.round(b/1024))} KB`;
   return b>=1125899906842624?(b/1125899906842624).toFixed(2)+' PB':b>=1099511627776?(b/1099511627776).toFixed(2)+' TB':b>=1073741824?(b/1073741824).toFixed(1)+' GB':Math.floor(b/1048576)+' MB'};
@@ -206,7 +206,7 @@ const clipGraphemes=(value:unknown,max:number)=>{
   return parts.length>max?`${parts.slice(0,Math.max(0,max-1)).join('')}…`:parts.join('');
 };
 /** 来源代号到界面名称：`local`→`本地`、`115`→`115`、`pikpak`→`PikPak`、`online`→`在线`。 */
-const LOC:Record<string,string>={...SOURCE_LABELS,local:'本地',online:'在线'};
+const LOC:Record<string,string>={...SOURCE_LABELS,local:"로컬",online:"온라인"};
 /* 种子随机：FNV-1a 把「种子 + 键」压成一个 32 位数当排序键。同一个种子下顺序稳定，
    换种子就是另一套顺序，客户端不必存 PRNG 状态，也不必让后端多带一个参数。首页的
    抽样和关注页岛的两排共用这一份，同一粒种子两边取到的是同一批。 */

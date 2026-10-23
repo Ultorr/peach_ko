@@ -38,15 +38,15 @@ receiptsState.actionReceipt = (message,{undo=null,timeout=undo?8000:6000}={})=>{
   let item=null;
   item=receiptsState.toast({text:message},{
     timeout,
-    action:undo?{label:'撤销',run:async()=>{
-      try{await undo();item.replaceMessage({text:'已撤销'})}
-      catch(error){item.replaceMessage({text:`撤销失败：${error.message||'请重试'}`},{warn:true})}
+    action:undo?{label:"실행 취소",run:async()=>{
+      try{await undo();item.replaceMessage({text:"실행 취소했습니다"})}
+      catch(error){item.replaceMessage({text:`실행 취소 실패: ${error.message||"다시 시도하세요"}`},{warn:true})}
     }}:null,
   });
   return item;
 };
 receiptsState.actionFailure = (message,error)=>receiptsState.toast(
-  {text:`${message}失败：${error?.message||'请重试'}`},{warn:true});
+  {text:`${message}실패: ${error?.message||"다시 시도하세요"}`},{warn:true});
 receiptsState.rollSeed = ()=>newSeed();
 receiptsState.seededSample = (rows,count,seed,key=row=>row.k)=>{
   if(rows.length<=count)return rows;

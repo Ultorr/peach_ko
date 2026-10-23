@@ -65,7 +65,7 @@ const stageDialog = (): HTMLDialogElement | null => {
 };
 
 function stageHost(): StageHost {
-  if (!host) throw new Error('舞台还没有接上宿主（configureStage）');
+  if (!host) throw new Error("상세 화면이 아직 호스트에 연결되지 않았습니다(configureStage)");
   return host;
 }
 
@@ -93,7 +93,7 @@ function StageTree({ view: current }: { view: View | null }) {
 }
 
 const DetailSkeleton = () => (
-  <div data-skeleton="detail" role="status" aria-label="正在读取作品详情" dangerouslySetInnerHTML={{ __html: detailSkeletonBody() }} />
+  <div data-skeleton="detail" role="status" aria-label="항목 상세 정보를 읽는 중" dangerouslySetInnerHTML={{ __html: detailSkeletonBody() }} />
 );
 
 /* 点浮窗外面就退出。原生模态里「外面」还是这个 dialog 自己——遮罩归它，落在遮罩上的事件 target
@@ -126,7 +126,7 @@ function StageDialog({ view: current }: { view: View }) {
     : content.kind === 'jav' ? <JavDetailPage key={content.props.code} {...content.props} />
     : <FollowDetailPage key={content.props.id} {...content.props} />;
   return (
-    <dialog ref={ref} id="stage" data-stage="" data-stage-kind={content.kind} aria-label="作品详情"
+    <dialog ref={ref} id="stage" data-stage="" data-stage-kind={content.kind} aria-label="항목 상세 정보"
       onKeyDown={(event) => {
         /* 里层弹层（标签搜索框、右键菜单）先处理 Escape 并 `preventDefault`，这一下就不再关浮窗。 */
         if (event.key !== 'Escape' || event.defaultPrevented) return;
@@ -181,7 +181,7 @@ function contentFor(request: StageRequest): Content {
       present: (item, queue) => {
         const performers = item.performers as string[] | undefined;
         player.setStageMeta({ kind: 'item', item, title: String(item.title || item.name || ''),
-          sub: String(performers?.[0] || item.creator || '未归属') });
+          sub: String(performers?.[0] || item.creator || "소속 없음") });
         toggleStageModes(settings().ambientMode, settings().theaterMode);
         queueMicrotask(() => { if (live()) base.present(item, queue) });
       },

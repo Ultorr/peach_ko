@@ -28,12 +28,12 @@ export function javContentSkeleton(tab: string, layout = javLayout()): string {
 }
 
 export function javPageSkeleton(tab: string): string {
-  const filterLabel = tab === 'wants' ? '筛选想要' : '筛选推荐';
+  const filterLabel = tab === 'wants' ? "위시리스트 필터" : "추천 필터";
   return `<div class="peach-react"><div class="flex w-full flex-col gap-6">
-    <div class="flex w-full flex-col gap-4"><div class="flex flex-wrap items-center justify-between gap-2"><h2 data-page-title class="text-display-4-medium text-text-primary max-board-narrow:text-title-1-medium">JAV</h2>${islandButton({ variant: 'primary', label: '查找资源', attrs: 'disabled data-skeleton-action' })}</div>
+    <div class="flex w-full flex-col gap-4"><div class="flex flex-wrap items-center justify-between gap-2"><h2 data-page-title class="text-display-4-medium text-text-primary max-board-narrow:text-title-1-medium">JAV</h2>${islandButton({ variant: 'primary', label: "리소스 찾기", attrs: 'disabled data-skeleton-action' })}</div>
     <div class="relative flex flex-none gap-1 overflow-x-auto max-board-narrow:gap-0">${JAV_TABS.map(([key, label]) => `<span class="relative flex flex-none items-center whitespace-nowrap rounded-md px-3 py-2 text-body-regular max-board-narrow:px-2.25 max-board-narrow:text-body-2-regular ${key === tab ? 'bg-background-tertiary-default text-text-primary' : 'text-text-secondary'}">${label}</span>`).join('')}</div></div>
-    <form aria-label="${filterLabel}">${islandSearchInput('筛选番号、女优或标题', '', filterLabel)}</form>
-    ${tab === 'wants' ? `<div class="rounded-2lg bg-background-secondary-default px-6 py-5"><h3 class="mb-4 text-title-2-medium text-text-primary">按番号添加</h3>${text('100%')}</div>${javContentSkeleton(tab)}`
+    <form aria-label="${filterLabel}">${islandSearchInput("품번, 배우 또는 제목으로 필터", '', filterLabel)}</form>
+    ${tab === 'wants' ? `<div class="rounded-2lg bg-background-secondary-default px-6 py-5"><h3 class="mb-4 text-title-2-medium text-text-primary">품번으로 추가</h3>${text('100%')}</div>${javContentSkeleton(tab)}`
       : `<section class="flex min-w-0 flex-col gap-4">${javFilterSkeleton()}${javContentSkeleton(tab)}</section>`}</div></div>`;
 }
 
@@ -43,12 +43,12 @@ function javFilterSkeleton(): string {
   const size = (value: string, glyph: string) => `<span data-glass-segment="" ${javLayout() === value ? 'data-selected="true"' : ''} class="flex size-7.5 flex-none items-center justify-center rounded-lg text-(--glass-text)/62">${islandGlyph(glyph, 'size-4')}</span>`;
   return `<div data-filter-glass data-glass-pane data-filter-frame data-jav-filter data-catalog-frame class="sticky top-topbar z-10 mb-5.5 flex flex-col">
     <div data-filter-row="top" class="flex h-12 min-w-0 items-center overscroll-x-contain px-3 py-2 gap-1.5 overflow-visible">
-      <div data-catalog-scroll><div data-catalog-views>${scope('external', '库外发现')}${scope('library', '馆藏探索')}<span data-entity-sep aria-hidden="true"></span></div><div data-catalog-tags>${javTagSkeleton()}</div></div>
+      <div data-catalog-scroll><div data-catalog-views>${scope('external', "라이브러리 밖에서 발견")}${scope('library', "컬렉션 탐색")}<span data-entity-sep aria-hidden="true"></span></div><div data-catalog-tags>${javTagSkeleton()}</div></div>
     </div>
     <div data-filter-row="bottom" aria-busy="true" class="flex min-h-12 min-w-0 items-center gap-3 px-3 py-2">
       <span data-catalog-readout><span data-skeleton="count" class="relative inline-block h-3.5 w-37.5 rounded-md align-middle skeleton-sheen"></span></span>
       ${islandShortcutsEntry()}
-      <span data-entity-sorts><button type="button" data-entity-batch data-filter-action data-skeleton-action data-jav-metadata-update title="更新资料" aria-label="更新资料" disabled>${islandGlyph('refresh-cw', 'size-4')}</button><span data-entity-layout class="inline-flex w-max max-w-full flex-none items-center gap-0.5 rounded-lg">${size('big', 'maximize')}${size('small', 'layout-grid')}</span>
+      <span data-entity-sorts><button type="button" data-entity-batch data-filter-action data-skeleton-action data-jav-metadata-update title="정보 업데이트" aria-label="정보 업데이트" disabled>${islandGlyph('refresh-cw', 'size-4')}</button><span data-entity-layout class="inline-flex w-max max-w-full flex-none items-center gap-0.5 rounded-lg">${size('big', 'maximize')}${size('small', 'layout-grid')}</span>
         ${DISCOVERY_SORTS.map(([key, label]) => `<button type="button" data-entity-sort="${key}" data-entity-press aria-pressed="${key === 'taste'}">${label}${key === 'taste' ? islandGlyph('arrow-down', 'size-3.5') : ''}</button>`).join('')}
       </span>
     </div>

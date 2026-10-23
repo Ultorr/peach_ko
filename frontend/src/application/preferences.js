@@ -24,6 +24,7 @@ import { rereadPlaylists } from './playlists.js';
 import { receiptsState } from './receipts.js';
 import { dropBars } from './../catalog-bars';
 import { applicationEffects } from './effects';
+import { koreanLabel } from '../korean-label';
 export const preferencesState = { sourceOnline: undefined, sourceProblems: undefined, sourceOffline: undefined, OFFLINE_HINT: undefined, OFFLINE_REASON: undefined, offlineReason: undefined, settingsStore: undefined, appSettings: undefined, saveSettings: undefined, catalogLoadWaiters: undefined, nextCatalogLoad: undefined, handOff: undefined, settingsEffects: undefined, syncGlassOptics: undefined, placeSidebarHead: undefined, SRCICON: undefined, srcBadge: undefined, emptyState: undefined, CENSOR_KEY: undefined };
 
 export async function loadSourceStatus(){
@@ -63,7 +64,8 @@ export function sidebarFacets(facetData,context){
   return {
     locations:(facetData.locations||[]).map(row=>({value:row.k,label:LOC[row.k]||row.k,n:row.n??null,dot:sidebarDot(row.k),
       ...(preferencesState.sourceOffline(row.k)?{offline:preferencesState.OFFLINE_HINT}:{})})),
-    regions:rows(facetData.regions),orientations:rows(facetData.orientations),
+    regions:rows(facetData.regions,row=>koreanLabel(row.label||tagLabel(row.k))),
+    orientations:rows(facetData.orientations,row=>koreanLabel(row.label||tagLabel(row.k))),
     creators:rows(creators),tags:rows(facetData.tags),tech:rows(facetData.tech),
     followTags:rows(facetData.follow_tags,row=>tagLabel(row.k)),
     duration:!!facetData.stats?.duration,
@@ -135,11 +137,11 @@ export function installPreferences5() {
 preferencesState.sourceOnline = {};
 preferencesState.sourceProblems = {};
 preferencesState.sourceOffline = key=>preferencesState.sourceOnline[key]===false;
-preferencesState.OFFLINE_HINT = '脱盘模式：这个来源当前没有挂载';
-preferencesState.OFFLINE_REASON = {local:'本地硬盘没有挂载，接上后点重新检测即可播放。',
-  '115':'115 网盘没有挂载，检查 CloudDrive 是否在运行。',
-  pikpak:'PikPak 没有挂载，检查 CloudDrive 是否在运行。'};
-preferencesState.offlineReason = key=>preferencesState.sourceProblems[key]||preferencesState.OFFLINE_REASON[key]||'这个来源当前没有挂载。';
+preferencesState.OFFLINE_HINT = "오프라인 모드: 현재 이 소스가 마운트되지 않았습니다";
+preferencesState.OFFLINE_REASON = {local:"로컬 디스크가 연결되지 않았습니다. 연결 후 다시 감지를 누르면 재생할 수 있습니다.",
+  '115':"115 클라우드가 마운트되지 않았습니다. CloudDrive가 실행 중인지 확인하세요.",
+  pikpak:"PikPak이 마운트되지 않았습니다. CloudDrive가 실행 중인지 확인하세요."};
+preferencesState.offlineReason = key=>preferencesState.sourceProblems[key]||preferencesState.OFFLINE_REASON[key]||"현재 이 소스가 마운트되지 않았습니다.";
 preferencesState.settingsStore = appSettingsStore();
 preferencesState.appSettings = preferencesState.settingsStore.value;
 preferencesState.saveSettings = ()=>preferencesState.settingsStore.save();
@@ -199,7 +201,7 @@ preferencesState.SRCICON = {
     [location,mark.startsWith('data:')?`<img class="source-icon" src="${mark}" alt="">`:icon(mark)])),
   online:icon('rss'),
 };
-preferencesState.srcBadge = (loc,cost,cls)=>{const label=`${LOC[loc]||loc}${cost==='metered'?' · 计费':''}`;
+preferencesState.srcBadge = (loc,cost,cls)=>{const label=`${LOC[loc]||loc}${cost==='metered'?" · 유료":''}`;
   return `<span class="${cls||'src'} ${cost==='metered'?'metered':'free'}" title="${esc(label)}" aria-label="${esc(label)}">`
     +(preferencesState.SRCICON[loc]||'')+'</span>'};
 preferencesState.emptyState = emptyStateHtml;

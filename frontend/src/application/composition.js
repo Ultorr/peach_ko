@@ -173,7 +173,7 @@ applicationEffects.own(peachHistory.listen(navigation=>{
   // 历史通知内先同步页面代次，再由路由元素的微任务领取取数代次。
   if(compositionState.routing&&!navigation.claimed)syncRouteChrome();
 }));
-loadRouter(compositionState.shellActions).catch(error=>console.error('客户端导航装载失败',error));
+loadRouter(compositionState.shellActions).catch(error=>console.error("클라이언트 탐색을 불러오지 못했습니다",error));
 mountManageHeader();
 mountBatchDock();
 buildManageBar();
@@ -185,5 +185,5 @@ Promise.all([loadSourceStatus(),loadSyncedSettings(),loadingState.entityShapesRe
     // 路由树里按匹配打开的页面等这一下才开始打开：壳的状态到这时才齐。
     compositionState.routing=true;writeShell({pageOpens:1});syncRouteChrome();
     scheduleStickySurfaces();
-  }).catch(error=>{if(effects.isActive)console.error('应用启动失败',error)});
+  }).catch(error=>{if(effects.isActive)console.error("앱을 시작하지 못했습니다",error)});
 }

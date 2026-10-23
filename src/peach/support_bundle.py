@@ -171,7 +171,7 @@ def save_bundle(destination: Path | None = None) -> Path:
             return target
         except OSError:
             continue
-    raise OSError("诊断报告无法写入数据目录或临时目录")
+    raise OSError("진단 보고서를 데이터 폴더 또는 임시 폴더에 저장할 수 없습니다")
 
 
 def main(argv=None) -> int:

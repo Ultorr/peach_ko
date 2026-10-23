@@ -25,7 +25,7 @@ async def convert_subtitle(request: Request, name: str = ""):
     async for chunk in request.stream():
         data.extend(chunk)
         if len(data) > subtitle_search.MAX_BYTES:
-            return JSONResponse({"error": "字幕文件超过 4 MiB"}, status_code=413)
+            return JSONResponse({"error": "자막 파일이 4MiB를 초과합니다"}, status_code=413)
     try:
         return _track(subtitle_search.convert(bytes(data), subtitles.subtitle_format(name)))
     except (subtitle_search.SubtitleSearchError, subtitles.SubtitleUndecodable) as error:

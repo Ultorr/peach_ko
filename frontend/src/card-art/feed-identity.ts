@@ -14,7 +14,7 @@ export function feedIdentity(item: { code?: string; performers?: string; perform
     const attrs = source ? ` data-feed-source-avatar data-code="${esc(item.code!)}" data-actor="${esc(ref.source_actor_id!)}" data-name="${esc(ref.name)}"` : '';
     const html = source ? '' : avatarInner(ref.name, ref, null);
     return 'id' in ref && ref.id
-      ? `<a class="mav"${attrs} href="${esc(entityPath('performer', ref.name, ref.id))}" aria-label="打开女优页：${esc(ref.name)}">${html}</a>`
+      ? `<a class="mav"${attrs} href="${esc(entityPath('performer', ref.name, ref.id))}" aria-label="배우 페이지 열기: ${esc(ref.name)}">${html}</a>`
       : `<span class="mav"${attrs} title="${esc(ref.name)}">${html}</span>`;
   }).join('');
   return people.length > 1 ? `<div class="mavstack">${faces}</div>` : faces;

@@ -61,7 +61,7 @@ const fieldErrorsOf = (cause: unknown): FieldErrors | null => {
 export function MediaSettings({ data, receipt, panel }: ConfigurationGroupProps) {
   return (
     <div {...groupRoot(panel)}>
-      {data.editable ? <MediaForm data={data} receipt={receipt} /> : <Note tone="neutral" title="只读">{data.notice}</Note>}
+      {data.editable ? <MediaForm data={data} receipt={receipt} /> : <Note tone="neutral" title="읽기 전용">{data.notice}</Note>}
       {data.editable ? null : <MountStatus data={data} />}
       {data.push_discovery
         ? <PushDiscoveryForm initial={data.push_discovery} receipt={receipt} />
@@ -106,7 +106,7 @@ function MediaForm({ data, receipt }: ConfigurationGroupProps) {
     }, 'POST', signal), (result) => {
       revision.current = result.revision;
       setRowErrors([]);
-      receipt('已保存配置');
+      receipt("설정이 저장되었습니다");
       setSaved(result);
     }, (cause) => {
       const fields = fieldErrorsOf(cause);
@@ -117,10 +117,10 @@ function MediaForm({ data, receipt }: ConfigurationGroupProps) {
 
   if (saved) {
     return (
-      <Section title="媒体文件夹">
+      <Section title="미디어 폴더">
         <Stack>
-          <Note tone="success" title="配置已保存">
-            Peach 正在重新启动。稍后自动跳转，或点击<LinkButton href={saved.url} size="small">进入馆藏</LinkButton>。
+          <Note tone="success" title="설정을 저장했습니다">
+            Peach를 다시 시작하는 중입니다. 잠시 후 자동으로 이동합니다. 바로 이동하려면 다음을 클릭하세요:<LinkButton href={saved.url} size="small">컬렉션으로 이동</LinkButton>。
           </Note>
         </Stack>
       </Section>
@@ -132,13 +132,13 @@ function MediaForm({ data, receipt }: ConfigurationGroupProps) {
   const cloud = rows.some((row) => isCloudSource(row.location));
   const missing = cloud ? (data.mount_dependencies ?? []).filter((dependency) => !dependency.available) : [];
   return (
-    <Section title="媒体文件夹" onSubmit={submit}>
+    <Section title="미디어 폴더" onSubmit={submit}>
       <Stack>
         <div className="flex flex-col gap-3">
-          <FieldLabel>媒体文件夹</FieldLabel>
-          <div role="group" aria-label="媒体文件夹" className="flex flex-col gap-3">
+          <FieldLabel>미디어 폴더</FieldLabel>
+          <div role="group" aria-label="미디어 폴더" className="flex flex-col gap-3">
             {rows.map((row, index) => (
-              <FolderRow key={index} label={`媒体文件夹 ${index + 1}`} path={row.path}
+              <FolderRow key={index} label={`미디어 폴더 ${index + 1}`} path={row.path}
                 onPath={(path) => edit(index, { path })} error={rowErrors[index]} inputRef={inputRef(index)}
                 picking={picking === index} onPick={() => void pick(index)}
                 onRemove={rows.length > 1 ? () => remove(index) : undefined}
@@ -146,11 +146,11 @@ function MediaForm({ data, receipt }: ConfigurationGroupProps) {
                 <SourceSelect index={index} value={row.location}
                   onChange={(location) => edit(index, { location, cost: location === 'local' ? 'free' : '' })} />
                 <MediaReadPolicy index={index} cost={row.cost} onChange={(cost) => edit(index, { cost })}
-                  error={requireReadPolicy && !row.cost ? '请选择媒体读取策略' : undefined} />
-                <Input className="min-w-40 flex-1" aria-label={`媒体库名称 ${index + 1}`} maxLength={80}
-                  placeholder="媒体库名称"
+                  error={requireReadPolicy && !row.cost ? "미디어 읽기 정책을 선택하세요" : undefined} />
+                <Input className="min-w-40 flex-1" aria-label={`미디어 라이브러리 이름 ${index + 1}`} maxLength={80}
+                  placeholder="미디어 라이브러리 이름"
                   value={row.library} onChange={(library) => edit(index, { library })} />
-                <LibraryIconPicker label={`媒体库图标 ${index + 1}`} value={row.library_icon} kind={row.location}
+                <LibraryIconPicker label={`미디어 라이브러리 아이콘 ${index + 1}`} value={row.library_icon} kind={row.location}
                   onChange={(library_icon) => edit(index, { library_icon })} />
                 {data.windows === false
                   ? <WindowsRootInput value={row.root} onChange={(root) => edit(index, { root })} />
@@ -158,22 +158,22 @@ function MediaForm({ data, receipt }: ConfigurationGroupProps) {
               </FolderRow>
             ))}
           </div>
-          <Button variant="secondary" className="self-start" onClick={add}>添加文件夹</Button>
+          <Button variant="secondary" className="self-start" onClick={add}>폴더 추가</Button>
         </div>
         {cloud ? <><MediaReadPolicyHelp /><CloudDriveGuide /></> : null}
         {missing.map((dependency) => (
           <Help key={dependency.name}>
-            未检测到 {dependency.name}。<ExternalLink href={dependency.download_url}>下载 {dependency.name}</ExternalLink>
+            감지되지 않은 항목: {dependency.name}。<ExternalLink href={dependency.download_url}>다운로드: {dependency.name}</ExternalLink>
           </Help>
         ))}
         {data.windows === false
-          ? <Help>Windows 对应路径应与馆藏中记录的路径一致。</Help>
+          ? <Help>Windows 경로는 컬렉션에 기록된 경로와 일치해야 합니다.</Help>
           : null}
-        <Checkbox isSelected={scanNow} onChange={setScanNow}>保存后扫描并补全资料</Checkbox>
-        {failure ? <Note tone="error" title="没有保存">{failure}</Note> : null}
+        <Checkbox isSelected={scanNow} onChange={setScanNow}>저장 후 스캔하고 정보 보완</Checkbox>
+        {failure ? <Note tone="error" title="저장되지 않음">{failure}</Note> : null}
       </Stack>
-      <Footer status="保存后 Peach 会重新启动。">
-        <Button type="submit" {...busyProps(action.busy === 'save')}>保存配置</Button>
+      <Footer status="저장하면 Peach가 다시 시작됩니다.">
+        <Button type="submit" {...busyProps(action.busy === 'save')}>설정 저장</Button>
       </Footer>
     </Section>
   );
@@ -192,17 +192,17 @@ function MountStatus({ data }: { data: ConfigurationData }) {
   const refresh = () => void action.run('refresh', (signal) => fetchConfiguration(signal),
     (result) => queryClient.setQueryData(CONFIGURATION_KEY, result));
   return (
-    <Section title="挂载状态">
+    <Section title="마운트 상태">
       <FactList>
         {sources.map((row, index) => (
           <Fact key={index} term={<><SourceMark mark={sourceMark(row.location)} />{sourceName(row.location)}</>}>
-            {row.path || '未配置挂载点'}<MountBadge online={row.online} />
+            {row.path || "설정된 마운트 지점이 없습니다"}<MountBadge online={row.online} />
           </Fact>
         ))}
       </FactList>
       {action.error ? <Stack divided><ErrorText>{action.error}</ErrorText></Stack> : null}
       <Footer>
-        <Button variant="secondary" onClick={refresh} {...busyProps(action.busy === 'refresh')}>刷新挂载状态</Button>
+        <Button variant="secondary" onClick={refresh} {...busyProps(action.busy === 'refresh')}>마운트 상태 새로 고침</Button>
       </Footer>
     </Section>
   );

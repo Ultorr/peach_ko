@@ -18,7 +18,7 @@ import { busyProps, useAction } from './use-action';
 export function GeneralSettings({ data, receipt, panel }: ConfigurationGroupProps) {
   return (
     <div {...groupRoot(panel)}>
-      {data.remote_reporting || data.library_sharing ? <Section title="数据上传">
+      {data.remote_reporting || data.library_sharing ? <Section title="데이터 업로드">
         {data.remote_reporting ? <RemoteReportingSettings initial={data.remote_reporting} receipt={receipt} /> : null}
         {data.library_sharing ? <div className="border-t border-separator-border">
           <LibrarySharingSettings initial={data.library_sharing} receipt={receipt} />
@@ -44,20 +44,20 @@ export function StartupSettings({ startup, receipt }: { startup: StartupState; r
     event.preventDefault();
     if (!startup.available) return;
     void action.run('save', (signal) => apiSend('/api/configuration/startup', { enabled, silent, desktop }, 'POST', signal),
-      () => receipt('已保存配置'));
+      () => receipt("설정이 저장되었습니다"));
   };
 
   return (
-    <Section title="开机自启" onSubmit={submit}>
+    <Section title="시스템 시작 시 자동 실행" onSubmit={submit}>
       <Rows>
-        <SettingsRow label="开机后启动 Peach">
-          <Switch aria-label="开机后启动 Peach" isSelected={enabled} isDisabled={!startup.available} onChange={setEnabled} />
+        <SettingsRow label="시스템 시작 후 Peach 실행">
+          <Switch aria-label="시스템 시작 후 Peach 실행" isSelected={enabled} isDisabled={!startup.available} onChange={setEnabled} />
         </SettingsRow>
-        <SettingsRow label="只启动托盘，不打开网页">
-          <Switch aria-label="只启动托盘，不打开网页" isSelected={silent} isDisabled={!startup.available || !enabled} onChange={setSilent} />
+        <SettingsRow label="웹페이지를 열지 않고 트레이만 실행">
+          <Switch aria-label="웹페이지를 열지 않고 트레이만 실행" isSelected={silent} isDisabled={!startup.available || !enabled} onChange={setSilent} />
         </SettingsRow>
-        <SettingsRow label="在桌面创建快捷方式" description={startup.desktop_message || undefined}>
-          <Switch aria-label="在桌面创建快捷方式" isSelected={desktop} isDisabled={!desktopReady} onChange={setDesktop} />
+        <SettingsRow label="바탕 화면에 바로가기 만들기" description={startup.desktop_message || undefined}>
+          <Switch aria-label="바탕 화면에 바로가기 만들기" isSelected={desktop} isDisabled={!desktopReady} onChange={setDesktop} />
         </SettingsRow>
       </Rows>
       {startup.message || action.error ? (
@@ -67,7 +67,7 @@ export function StartupSettings({ startup, receipt }: { startup: StartupState; r
         </Stack>
       ) : null}
       <Footer>
-        <Button type="submit" disabled={!startup.available} {...busyProps(action.busy === 'save')}>保存配置</Button>
+        <Button type="submit" disabled={!startup.available} {...busyProps(action.busy === 'save')}>설정 저장</Button>
       </Footer>
     </Section>
   );

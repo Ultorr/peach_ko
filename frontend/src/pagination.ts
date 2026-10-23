@@ -27,10 +27,10 @@ export function paginationHtml(page: number, pages: number, label: string): stri
   if (pages <= 1) return '';
   const cells = paginationRange(page, pages).map(item => item === DOTS
     ? '<li class="ui-board-page-dots" aria-hidden="true">…</li>'
-    : `<li><button type="button" class="ui-board-page" data-page="${item}" aria-label="第 ${item} 页"${item === page ? ' aria-current="page"' : ''}>${item}</button></li>`).join('');
+    : `<li><button type="button" class="ui-board-page" data-page="${item}" aria-label="페이지 ${item} "${item === page ? ' aria-current="page"' : ''}>${item}</button></li>`).join('');
   return `<nav class="board-pagination" aria-label="${label}">
-    <button type="button" class="geist-button" data-page="${page - 1}"${page <= 1 ? ' disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron-left"></use></svg>上一页</button>
+    <button type="button" class="geist-button" data-page="${page - 1}"${page <= 1 ? ' disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron-left"></use></svg>이전 페이지</button>
     <ul>${cells}</ul>
-    <button type="button" class="geist-button" data-page="${page + 1}"${page >= pages ? ' disabled' : ''}>下一页<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron-right"></use></svg></button>
+    <button type="button" class="geist-button" data-page="${page + 1}"${page >= pages ? ' disabled' : ''}>다음 페이지<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron-right"></use></svg></button>
   </nav>`;
 }

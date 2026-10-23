@@ -73,7 +73,7 @@ class Step:
 def _tail(completed: subprocess.CompletedProcess) -> str:
     parts = [str(part).strip() for part in (completed.stdout, completed.stderr) if part]
     text = "\n".join(part for part in parts if part)
-    return text[-OUTPUT_TAIL:] if text else f"退出码 {completed.returncode}，没有输出"
+    return text[-OUTPUT_TAIL:] if text else f"종료 코드 {completed.returncode}, 출력 없음"
 
 
 def _quiet() -> dict:
@@ -111,14 +111,14 @@ class Dependencies:
 
     def _skip(self) -> tuple[str | None, Path | None]:
         if self._frozen:
-            return "打包进程不加载项目 venv，依赖由重启脚本核对", None
+            return "패키지 프로세스는 프로젝트 venv를 로드하지 않습니다. 의존성은 재시작 스크립트에서 확인합니다", None
         if not (self.root / "uv.lock").is_file():
-            return f"没有 uv.lock：{self.root}", None
+            return f"uv.lock 파일이 없습니다: {self.root}", None
         if not (self.root / ".venv" / "pyvenv.cfg").is_file():
-            return f"没有项目 venv：{self.root / '.venv'}", None
+            return f"프로젝트 venv가 없습니다: {self.root / '.venv'}", None
         uv = find_uv(which=self._which, environ=self._environ)
         if uv is None:
-            return "未取得 uv：PATH 与 winget 安装目录里都没有", None
+            return "uv를 찾을 수 없습니다. PATH와 winget 설치 폴더에 없습니다", None
         return None, uv
 
     def _uv(self, uv: Path, *extra: str) -> subprocess.CompletedProcess:
@@ -139,17 +139,17 @@ class Dependencies:
         try:
             completed = self._uv(uv, "--check")
         except OSError as exc:
-            return Step("dependencies", "failed", f"uv 没能运行：{exc}")
+            return Step("dependencies", "failed", f"uv를 실행하지 못했습니다: {exc}")
         if completed.returncode == 0:
-            return Step("dependencies", "current", "项目 venv 与 uv.lock 一致")
+            return Step("dependencies", "current", "프로젝트 venv와 uv.lock이 일치합니다")
         output = f"{completed.stdout or ''}\n{completed.stderr or ''}"
         if "outdated" not in output:
-            return Step("dependencies", "failed", f"核对依赖失败：{_tail(completed)}")
+            return Step("dependencies", "failed", f"의존성 확인 실패: {_tail(completed)}")
         wanted = [line.strip()[2:] for line in output.splitlines()
                   if line.strip().startswith("+ ")]
-        listed = "、".join(wanted[:6]) + ("等" if len(wanted) > 6 else "")
+        listed = "、".join(wanted[:6]) + (" 등" if len(wanted) > 6 else "")
         return Step("dependencies", "stale",
-                    f"项目 venv 与 uv.lock 不一致，要装 {len(wanted)} 个包" + (f"：{listed}" if listed else ""))
+                    f"프로젝트 venv와 uv.lock이 일치하지 않습니다. 패키지 {len(wanted)}개를 설치해야 합니다" + (f"：{listed}" if listed else ""))
 
     def sync(self) -> Step:
         checked = self.check()
@@ -160,32 +160,32 @@ class Dependencies:
         try:
             completed = self._uv(uv)
         except OSError as exc:
-            return Step("dependencies", "failed", f"uv 没能运行：{exc}")
+            return Step("dependencies", "failed", f"uv를 실행하지 못했습니다: {exc}")
         if completed.returncode != 0:
-            return Step("dependencies", "failed", f"uv sync 失败：{_tail(completed)}")
+            return Step("dependencies", "failed", f"uv sync 실패: {_tail(completed)}")
         return Step("dependencies", "synced",
-                    f"已按 uv.lock 同步依赖（{checked.message}，用时 {self._clock() - started:.1f} 秒）")
+                    f"uv.lock에 따라 의존성을 동기화했습니다({checked.message}, 소요 시간: {self._clock() - started:.1f}초)")
 
 
 def ledger_writer(*, replication_enabled: bool, db: Path, shared_db: Path,
                   state_dir: Path) -> tuple[bool, str]:
     """本机是不是账本写入端。只读：不像 `sync.device_id` 那样在缺文件时写一个新标识。"""
     if not replication_enabled:
-        return True, "replication.enabled = false，按独立写者"
+        return True, "replication.enabled = false이므로 독립 쓰기 담당 기기로 동작합니다"
     path = Path(state_dir) / "device-id"
     try:
         device = path.read_text(encoding="utf-8").strip()
     except OSError:
         device = ""
     if not device:
-        return False, "本机没有 device-id，判不出是不是写入端"
+        return False, "이 컴퓨터에 device-id가 없어 쓰기 담당 기기인지 확인할 수 없습니다"
     from .sync import writer_device
     owner = writer_device(Path(db), Path(shared_db))
     if owner is None:
-        return False, "没有可验证的写入端"
+        return False, "확인할 수 있는 쓰기 담당 기기가 없습니다"
     if owner != device:
-        return False, f"写入端是 {owner}，本机是只读端"
-    return True, "本机是写入端"
+        return False, f"쓰기 담당 기기는 {owner}이며 이 컴퓨터는 읽기 전용입니다"
+    return True, "이 컴퓨터가 쓰기 담당 기기입니다"
 
 
 class Migrations:
@@ -211,36 +211,36 @@ class Migrations:
 
     def apply(self) -> Step:
         if not self.db.is_file():
-            return Step("migrations", "skipped", f"账本不存在：{self.db}")
+            return Step("migrations", "skipped", f"기록 데이터베이스가 없습니다: {self.db}")
         writer, why = self._writer()
         if not writer:
-            return Step("migrations", "skipped", f"不迁移：{why}")
+            return Step("migrations", "skipped", f"마이그레이션하지 않음: {why}")
         try:
             executable = self._peach()
             status = self._migrate(executable, "status")
         except OSError as exc:
-            return Step("migrations", "failed", f"迁移没能启动：{exc}")
+            return Step("migrations", "failed", f"마이그레이션을 시작하지 못했습니다: {exc}")
         if status.returncode != 0:
-            return Step("migrations", "failed", f"migrate status 失败：{_tail(status)}")
+            return Step("migrations", "failed", f"migrate status 실패: {_tail(status)}")
         # `_migrate` 打的是 `migrations: <总数>, pending: <待迁移数>`。
         found = re.search(r"pending:\s*(\d+)", status.stdout or "")
         if found is None:
-            return Step("migrations", "failed", f"migrate status 没有报待迁移数：{_tail(status)}")
+            return Step("migrations", "failed", f"migrate status에 적용 대기 마이그레이션 수가 없습니다: {_tail(status)}")
         if int(found.group(1)) == 0:
-            return Step("migrations", "current", "账本结构已是最新")
+            return Step("migrations", "current", "기록 데이터베이스 구조가 최신입니다")
         try:
             upgrade = self._migrate(executable, "upgrade", "--yes")
         except OSError as exc:
-            return Step("migrations", "failed", f"迁移没能启动：{exc}")
+            return Step("migrations", "failed", f"마이그레이션을 시작하지 못했습니다: {exc}")
         if upgrade.returncode != 0:
             return Step("migrations", "failed",
-                        f"执行 {found.group(1)} 个待迁移时失败，账本目录里有迁移前备份："
+                        f"대기 중인 마이그레이션 {found.group(1)}개를 실행하다 실패했습니다. 기록 데이터베이스 폴더에 마이그레이션 전 백업이 있습니다: "
                         f"{_tail(upgrade)}")
         applied = re.search(r"^applied:\s*(.+)$", upgrade.stdout or "", re.MULTILINE)
         backup = re.search(r"^backup:\s*(.+)$", upgrade.stdout or "", re.MULTILINE)
         return Step("migrations", "applied",
-                    f"已执行迁移 {applied.group(1).strip() if applied else found.group(1) + ' 个'}"
-                    f"，迁移前备份 {backup.group(1).strip() if backup else '未取得'}")
+                    f"적용한 마이그레이션: {applied.group(1).strip() if applied else found.group(1) + ' 个'}"
+                    f", 마이그레이션 전 백업: {backup.group(1).strip() if backup else '未取得'}")
 
 
 def record(state_dir: Path, steps: Iterable[Step], *, pid: int | None = None) -> dict:
@@ -297,9 +297,9 @@ class TaskGate:
 
     def refusal(self) -> str:
         if self.error is not None:
-            return f"拒绝重启：读不了任务表（{self.error}）；确认没有任务在跑后加 --force"
+            return f"재시작 거부: 작업 테이블을 읽을 수 없습니다({self.error}). 실행 중인 작업이 없는지 확인한 후 --force를 추가하세요"
         listed = "、".join(run.describe() for run in self.blocking)
-        return f"拒绝重启：这些任务重启后续跑不了：{listed}；等它们结束，或加 --force"
+        return f"재시작 거부: 다음 작업은 재시작 후 이어서 실행할 수 없습니다: {listed}. 작업이 끝날 때까지 기다리거나 --force를 추가하세요"
 
     def as_dict(self) -> dict:
         return {
@@ -315,7 +315,7 @@ def task_gate(db: Path, *, host: str, alive: Callable[[int], bool]) -> TaskGate:
     """只读查 `task_run`，把本机的活跃行分类。"""
     db = Path(db)
     if not db.is_file():
-        return TaskGate(note=f"账本不存在：{db}")
+        return TaskGate(note=f"기록 데이터베이스가 없습니다: {db}")
     try:
         with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True,
                                      timeout=2)) as connection:
@@ -326,7 +326,7 @@ def task_gate(db: Path, *, host: str, alive: Callable[[int], bool]) -> TaskGate:
                 (host,)).fetchall()
     except sqlite3.OperationalError as exc:
         if "no such table" in str(exc) or "no such column" in str(exc):
-            return TaskGate(note=f"账本里还没有可判的任务表：{exc}")
+            return TaskGate(note=f"기록 데이터베이스에 확인 가능한 작업 테이블이 없습니다: {exc}")
         return TaskGate(error=str(exc))
     except sqlite3.Error as exc:
         return TaskGate(error=str(exc))
@@ -370,8 +370,8 @@ class RestartPreparation:
         holding = self.holders(tray_pid)
         if holding:
             listed = "、".join(str(pid) for pid in holding)
-            return (f"拒绝重启：{self.checked.message}，但这些进程还在用项目 venv："
-                    f"PID {listed}；先停掉它们再重启")
+            return (f"재시작 거부: {self.checked.message}. 다음 프로세스가 프로젝트 venv를 사용 중입니다: "
+                    f"PID {listed}; 해당 프로세스를 중지한 후 다시 시작하세요")
         return None
 
     def while_stopped(self) -> tuple[bool, str | None]:

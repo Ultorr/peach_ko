@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" data-theme-color="light">
 <meta name="theme-color" content="#080A0D" media="(prefers-color-scheme: dark)" data-theme-color="dark">
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
-<title>Peach · 蜜桃</title>
+<title>Peach · 피치</title>
 <!-- React 子树（BoardUI 源码 + Tailwind）排在旧样式表前面：`:root` 上同名的 `--color-*` token
      由后面的 board.css 定值，未迁移页面的颜色不受这份样式影响；React 子树在 `.peach-react`
      容器上重新声明上游值。 -->
@@ -35,7 +35,7 @@ if(location.pathname==='/wall')document.documentElement.setAttribute('data-wall-
 </script>
 </head>
 <body>
-<a class="skiplink" href="#main">跳到正文</a>
+<a class="skiplink" href="#main">본문으로 이동</a>
 <!-- Lucide static 1.56.0, ISC. Local pinned subset; no CDN/runtime dependency.
      Climax uses Health Icons 2.0.0 sperm outline-24px, CC0/public domain.
      Phosphor 2.1.1 regular, MIT: filled glyphs where a stroked icon cannot say it. -->
@@ -220,23 +220,23 @@ if(location.pathname==='/wall')document.documentElement.setAttribute('data-wall-
 </svg>
 
 <header class="top">
-  <button class="ib" id="filterBtn" title="导航与筛选" aria-label="展开导航与筛选"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
-  <a class="brand" href="#" id="brandHome"><img class="mark" src="/peach-logo.png" alt=""><h1 class="disp">Peach</h1><span class="sub mono">蜜桃</span></a>
-  <button class="ib searchback" id="searchBack" title="退出搜索" aria-label="退出搜索"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+  <button class="ib" id="filterBtn" title="탐색 및 필터" aria-label="탐색 및 필터 펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
+  <a class="brand" href="#" id="brandHome"><img class="mark" src="/peach-logo.png" alt=""><h1 class="disp">Peach</h1><span class="sub mono">피치</span></a>
+  <button class="ib searchback" id="searchBack" title="검색 종료" aria-label="검색 종료"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
   <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg>
-    <input id="q" name="q" type="search" enterkeyhint="search" placeholder="搜索馆藏" data-suggestion="" autocomplete="off" aria-label="搜索作品、女优、厂牌或标签">
+    <input id="q" name="q" type="search" enterkeyhint="search" placeholder="컬렉션 검색" data-suggestion="" autocomplete="off" aria-label="항목, 배우, 스튜디오 또는 태그 검색">
     <div class="searchmenu" id="searchMenu" data-search-menu hidden></div></div>
-  <button class="ib" id="searchBtn" title="搜索" aria-label="搜索"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg></button>
-  <button class="ib" id="immerseBtn" title="沉浸模式 · 随机连播" aria-label="进入沉浸模式"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
-  <button class="ib" id="wallBtn" title="播放墙" aria-label="进入播放墙"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-gallery-thumbnails"/></svg></button>
-  <button class="ib" id="selectMode" title="多选（Ctrl 单项，Shift 连续）" aria-label="多选模式" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-square-check-big"/></svg></button>
-  <button class="ib" id="density" title="密度：大图 / 密集" aria-label="切换卡片密度"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-layout-grid"/></svg></button>
-  <button class="ib" id="settingsBtn" title="设置" aria-label="打开设置"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-settings"/></svg></button>
+  <button class="ib" id="searchBtn" title="검색" aria-label="검색"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg></button>
+  <button class="ib" id="immerseBtn" title="몰입 모드 · 무작위 연속 재생" aria-label="몰입 모드 시작"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
+  <button class="ib" id="wallBtn" title="비디오 월" aria-label="비디오 월 열기"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-gallery-thumbnails"/></svg></button>
+  <button class="ib" id="selectMode" title="다중 선택 (Ctrl 개별, Shift 범위)" aria-label="다중 선택 모드" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-square-check-big"/></svg></button>
+  <button class="ib" id="density" title="밀도: 큰 이미지 / 촘촘하게" aria-label="카드 밀도 전환"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-layout-grid"/></svg></button>
+  <button class="ib" id="settingsBtn" title="설정" aria-label="설정 열기"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-settings"/></svg></button>
 
 </header>
 
 <!-- 首页筛选条（`catalog-filter` 岛）：两排头像与筛选浮层。宿主不生成盒子，里面那几块直接当 body 的孩子排。 -->
-<div id="catalogPageHeading" hidden><h2 class="disp" data-page-title>首页</h2></div>
+<div id="catalogPageHeading" hidden><h2 class="disp" data-page-title>홈</h2></div>
 <div id="javLibraryHeader" class="peach-react" hidden></div>
 <h2 class="disp listtitle" id="listTitle" hidden></h2>
 <div id="catalogFilter" data-catalog-filter></div>
@@ -245,7 +245,7 @@ if(location.pathname==='/wall')document.documentElement.setAttribute('data-wall-
   <aside id="catalogFoldersTree" class="peach-react" hidden></aside>
   <div id="catalogFolderHeader" class="peach-react" hidden></div>
   <!-- 订阅源发现的新作（ADR-0042）。只在首页那几条目录路径上出现，由应用控制器按路径开合。 -->
-  <section class="feednew" id="feedNew" aria-label="未入库的新作" hidden></section>
+  <section class="feednew" id="feedNew" aria-label="아직 등록하지 않은 신작" hidden></section>
   <div id="combo"></div>
   <section class="index" id="index" hidden></section>
   <!-- 管理条、面包屑、标题与说明行是常驻面 manage-header（`frontend/src/react/manage-header/`），由路由树画进这个节点。 -->
@@ -256,7 +256,7 @@ if(location.pathname==='/wall')document.documentElement.setAttribute('data-wall-
   <div class="loadmore mono" id="loadSentinel" hidden></div>
 </main>
 
-<section id="postSetupTutorial" aria-label="Peach 安装教程" aria-live="polite" hidden></section>
+<section id="postSetupTutorial" aria-label="Peach 설치 안내" aria-live="polite" hidden></section>
 
 <div id="scrim" data-sidebar-scrim></div>
 <!-- 左侧抽屉：滚动层是常驻面 sidebar（`react/sidebar/`），由路由树画进 #drawerScroll；抽屉本身、覆盖式滚动条与底栏归壳。

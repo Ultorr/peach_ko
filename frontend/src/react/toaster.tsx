@@ -40,13 +40,13 @@ export const mountToaster: typeof Bundle.mountToaster = (host, icons) => {
       style={{ ...FRAME, '--width': 'min(560px, calc(100vw - 48px))' } as CSSProperties}
       offset={{ right: 24, bottom: 'calc(var(--toast-bottom, 24px) + var(--processing-toast-space, 0px))' }}
       mobileOffset={{ right: 16, left: 16, bottom: 'calc(var(--toast-bottom, 16px) + var(--processing-toast-space, 0px))' }}
-      toastOptions={{ closeButtonAriaLabel: '关闭提示' }} containerAriaLabel="通知"
+      toastOptions={{ closeButtonAriaLabel: "알림 닫기" }} containerAriaLabel="알림"
       icons={{ success: glyph(icons.success, true), error: glyph(icons.error, false) }} />
       <Toaster id="processing" position="bottom-right" gap={8} expand
         style={{ ...FRAME, '--width': 'min(400px, calc(100vw - 32px))' } as CSSProperties}
         offset={{ right: 24, bottom: 'var(--toast-bottom, 24px)' }}
         mobileOffset={{ right: 16, left: 16, bottom: 'var(--toast-bottom, 16px)' }}
-        toastOptions={{ closeButtonAriaLabel: '关闭任务提示' }} containerAriaLabel="后台任务" />
+        toastOptions={{ closeButtonAriaLabel: "작업 알림 닫기" }} containerAriaLabel="백그라운드 작업" />
     </Providers>,
   );
 };

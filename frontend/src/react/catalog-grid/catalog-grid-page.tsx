@@ -144,7 +144,7 @@ function GridBody(props: CatalogGridProps) {
       error={!result.data && !result.isPending ? requestErrorMessage(result.error) : ''}
       retry={() => void result.refetch()}
       emptyHtml={result.data && !wallPool.length ? tiles.length
-        ? emptyStateHtml('image', '这批作品没有封面', result.hasNextPage ? '载入更多作品后继续浏览。' : '换个筛选范围再试。')
+        ? emptyStateHtml('image', "이 항목들에는 표지가 없습니다", result.hasNextPage ? "항목을 더 불러와 계속 탐색하세요." : "필터 범위를 변경해 다시 시도하세요.")
         : props.emptyHtml?.({ trash, libraryEmpty:!!result.data.pages[0]?.libraryEmpty }) : ''}
       loadMore={loadNext} actions={actions} helpers={helpers} javImage={layout.javImage} />;
     if (result.isPending) return null;
@@ -224,10 +224,10 @@ export function LoadMore({ entity, load, enabled, children }: {
   return (
     <>
       {entity
-        ? <button ref={attach} type="button" data-entity-more="" {...aria} onClick={() => void run(true)}>{children ?? '载入更多'}</button>
+        ? <button ref={attach} type="button" data-entity-more="" {...aria} onClick={() => void run(true)}>{children ?? "더 불러오기"}</button>
         /* 失败时只留下面那条重试：哨兵收起但不卸下，重试接上之后照旧由它续页。 */
         : <div ref={attach} data-load-more="" {...aria} hidden={Boolean(state.error)} onClick={() => void run(true)}
-          dangerouslySetInnerHTML={{ __html: loadingDotsHtml('继续载入中…') }} />}
+          dangerouslySetInnerHTML={{ __html: loadingDotsHtml("추가로 불러오는 중…") }} />}
       {state.error ? <RetryNote message={state.error} onRetry={() => void run(true)} /> : null}
     </>
   );
@@ -287,9 +287,9 @@ function ShortsStrip({ cut, props, onOpen }: {
   return (
     <section data-shorts-strip="">
       <h2>
-        竖屏 <span data-shorts-count="">{`${cut.total.toLocaleString()} 个`}</span>
+        세로 영상 <span data-shorts-count="">{`${cut.total.toLocaleString()} 개`}</span>
         <button type="button" data-shorts-enter="" onClick={() => props.actions.openShorts()}>
-          <Icon name="gallery-vertical-end" /><span>进入沉浸模式</span>
+          <Icon name="gallery-vertical-end" /><span>몰입 모드 열기</span>
         </button>
       </h2>
       <div ref={row} data-shorts-row="">
@@ -328,13 +328,13 @@ function HomeMix({ seed, layout, helpers, actions }: {
   const artwork = mixFace(seed, layout, false);
   return (
     <MixCard data-mix-seed={String(seed.id)} name={`Mix · ${label}`}
-      caption={`${helpers.displayName(seed, seed.name || '')}及相似作品`} count={0} badge="Mix" glyph wholeCard
+      caption={`${helpers.displayName(seed, seed.name || '')}및 유사 항목`} count={0} badge="Mix" glyph wholeCard
       poster={null} artwork={artwork}
       artworkIdentity={size === 'small' ? artwork.html : mixFace(seed, { ...layout, size: 'small' }, false).html}
       relayoutArt={(root) => relayoutCovers(root, size)}
       ratio={cardRatio(seed, 'grid', layout)}
       flipImages={flipImages} faceHtml={(id) => faces.current.get(id) || ''} canFlip={actions.canFlip}
       faces={[]} onOpenEntity={actions.openEntity}
-      onOpen={(anchor) => actions.openMix(seed.id, anchor)} openLabel={`打开 Mix · ${label}`} />
+      onOpen={(anchor) => actions.openMix(seed.id, anchor)} openLabel={`Mix 열기 · ${label}`} />
   );
 }

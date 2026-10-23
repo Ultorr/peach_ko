@@ -23,26 +23,26 @@ export function openTasteSignal(kind,name){
 }
 
 export function playlistNameField(value=''){
-  return `<label class="modalfield"><span>名称</span><input class="geist-input" name="name"
-    maxlength="80" placeholder="输入名称" value="${esc(value)}"></label>`;
+  return `<label class="modalfield"><span>이름</span><input class="geist-input" name="name"
+    maxlength="80" placeholder="이름 입력" value="${esc(value)}"></label>`;
 }
 
 export async function saveMixAsPlaylist({title,count,save}){
   const modal=formModal({
-    title:'保存为播放列表',
-    description:`这个 Mix 的 ${count} 个视频会存成一份可以继续播放的列表。`,
+    title:"재생 목록으로 저장",
+    description:`이 Mix의 동영상 ${count}개를 이어서 재생할 수 있는 목록으로 저장합니다.`,
     body:playlistNameField(title),
-    confirmLabel:'保存为播放列表',
+    confirmLabel:"재생 목록으로 저장",
     onConfirm:()=>{
       const name=modal.dialog.querySelector('[name="name"]').value.trim();
-      if(!name)throw new Error('播放列表名称不能为空');
+      if(!name)throw new Error("재생 목록 이름은 비워 둘 수 없습니다");
       return save(name);
     }});
   modal.dialog.querySelector('[name="name"]').select();
   const {confirmed,result}=await modal.done;
   if(!confirmed)return;
   await openPlaylist(result.id,result.current_asset_id,true);
-  receiptsState.actionReceipt('已保存为播放列表',{undo:async()=>{
+  receiptsState.actionReceipt("재생 목록으로 저장했습니다",{undo:async()=>{
     await playlistsState.playlistWrite({action:'delete',id:result.id});openRoutedPage('/playlists');
   }});
 }
@@ -50,14 +50,14 @@ export async function saveMixAsPlaylist({title,count,save}){
 export async function openAddToPlaylist(item){
   const lists=(await api('/api/playlists')).items||[];
   const rows=lists.map(list=>`<label class="pickrow">${checkboxHtml(`data-pick-playlist="${list.id}"`)}
-    <span class="pickrowtext"><b>${esc(list.name)}</b><small>${list.item_count} 个视频</small></span></label>`).join('');
+    <span class="pickrowtext"><b>${esc(list.name)}</b><small>${list.item_count}개 동영상</small></span></label>`).join('');
   const modal=formModal({
-    title:'加入播放列表',
-    description:'勾选要加入的列表，或者填个名称新建一份。',
+    title:"재생 목록에 추가",
+    description:"추가할 목록을 선택하거나 이름을 입력하여 새로 만드세요.",
     body:playlistNameField()+(rows
-      ?`<div class="picklist" role="group" aria-label="已有播放列表">${rows}</div>`
-      :noteHtml('还没有播放列表，填个名称就能新建一份。',{size:'small'})),
-    confirmLabel:'保存',
+      ?`<div class="picklist" role="group" aria-label="기존 재생 목록">${rows}</div>`
+      :noteHtml("재생 목록이 없습니다. 이름을 입력하여 새로 만드세요.",{size:'small'})),
+    confirmLabel:"저장",
     confirmDisabled:true,
     onConfirm:async()=>{
       const name=modal.dialog.querySelector('[name="name"]').value.trim();
@@ -77,7 +77,7 @@ export async function openAddToPlaylist(item){
   const {confirmed,result}=await modal.done;
   if(!confirmed)return;
   const total=(result.created?1:0)+result.added.length;
-  receiptsState.actionReceipt(`已加入 ${total} 个播放列表`,{undo:async()=>{
+  receiptsState.actionReceipt(`추가한 재생 목록: ${total}개`,{undo:async()=>{
     for(const id of result.added)await playlistsState.playlistWrite({action:'remove',id,asset_id:item.id});
     if(result.created)await playlistsState.playlistWrite({action:'delete',id:result.created.id});
   }});

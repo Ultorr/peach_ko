@@ -34,22 +34,22 @@ def _generated_backups(root: Path) -> list[Path]:
 
 def plan(config, *, delete_data: bool, program: Path | None = None) -> dict:
     if type(delete_data) is not bool:
-        raise ValueError("请选择是否删除 Peach 数据")
+        raise ValueError("Peach 데이터를 삭제할지 선택하세요")
     target = (program or Path(sys.executable).parent).resolve()
     root = config.data_root.resolve()
     if not (target / "_internal/standalone.txt").is_file() or not (target / "Peach.exe").is_file():
-        raise ValueError("源码安装请先退出托盘，再手动移除项目；数据目录见下方")
+        raise ValueError("소스 설치는 트레이를 종료한 후 프로젝트를 직접 삭제하세요. 데이터 폴더는 아래에 표시됩니다")
     if len(target.parts) < 3 or target == Path.home().resolve() or (target / ".git").exists():
-        raise ValueError("程序目录不适合自动卸载")
+        raise ValueError("이 프로그램 폴더에서는 자동 제거를 사용할 수 없습니다")
     if root.is_relative_to(target) or target.is_relative_to(root):
-        raise ValueError("程序与数据目录重叠，请手动卸载")
+        raise ValueError("프로그램 폴더와 데이터 폴더가 겹칩니다. 직접 제거하세요")
     directories = [config.directory(key).resolve() for key in settings_file.DIRECTORY_KEYS] if delete_data else []
     if any(path.parent != root or path.is_symlink() or path.is_junction() for path in directories):
-        raise ValueError("数据使用了外部或嵌套目录，请保留数据卸载后按目录清单手动清理")
+        raise ValueError("데이터가 외부 또는 중첩 폴더를 사용합니다. 데이터를 유지한 채 제거한 후 폴더 목록에 따라 직접 정리하세요")
     media = [Path(value).resolve() for group in (config.locations, config.mounts) for rows in group.values() for value in rows]
     for path in [target, *directories]:
         if any(item.is_relative_to(path) or path.is_relative_to(item) for item in media):
-            raise ValueError("卸载目录与媒体目录重叠，请手动检查")
+            raise ValueError("제거할 폴더와 미디어 폴더가 겹칩니다. 직접 확인하세요")
     files: list[Path] = []
     if delete_data:
         generated = [config.path.resolve(), root / "config.previous.toml", root / "config.pending.toml"]
@@ -60,13 +60,13 @@ def plan(config, *, delete_data: bool, program: Path | None = None) -> dict:
 
 
 def snapshot(config) -> dict:
-    result = {"available": False, "message": "这个系统上先退出 Peach，再手动移除程序与数据目录", "data_root": str(config.data_root),
+    result = {"available": False, "message": "이 시스템에서는 Peach를 종료한 후 프로그램과 데이터 폴더를 직접 제거하세요", "data_root": str(config.data_root),
               "directories": [str(config.directory(key)) for key in settings_file.DIRECTORY_KEYS], "full_available": False}
     if sys.platform != "win32":
         return result
     try:
         if not distribution.standalone():
-            raise ValueError("源码安装请先关闭开机自启并退出托盘，再手动移除项目与数据目录")
+            raise ValueError("소스 설치는 자동 시작을 해제하고 트레이를 종료한 후 프로젝트와 데이터 폴더를 직접 제거하세요")
         plan(config, delete_data=False)
         result.update(available=True, message="")
         try:
@@ -83,12 +83,12 @@ def request(config, delete_data: bool) -> dict:
     if not distribution.standalone() or sys.platform != "win32":
         raise ValueError(snapshot(config)["message"])
     if standalone_update.public().get("state") in standalone_update.ACTIVE | {"ready"}:
-        raise ValueError("更新任务尚未结束，请完成后卸载")
+        raise ValueError("업데이트 작업이 아직 끝나지 않았습니다. 완료된 후 제거하세요")
     data = plan(config, delete_data=delete_data)
     path = config.directory("state") / "uninstall-request.json"
     with FileLock(str(path) + ".lock", timeout=0):
         atomic_write_text(path, json.dumps(dict(data, requested_at=time.time())), mode=0o600)
-    return {"accepted": True, "message": "正在卸载，Peach 将退出。完成后可关闭此页。"}
+    return {"accepted": True, "message": "제거 중이며 Peach가 종료됩니다. 완료되면 이 페이지를 닫으세요."}
 
 
 # 系统助手从 stdin 接受数据，路径不拼进脚本文本；只清理计划中的目录。
@@ -135,7 +135,7 @@ function Stop-PeachProgramProcesses {
 try {
   function Test-PeachTree($peachNode) {
     $peachItem = Get-Item -LiteralPath $peachNode -Force
-    if ($peachItem.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ('卸载目标含有链接：' + $peachNode) }
+    if ($peachItem.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ('제거 대상에 링크가 포함되어 있습니다: ' + $peachNode) }
     if ($peachItem.PSIsContainer) {
       foreach ($peachChild in Get-ChildItem -LiteralPath $peachNode -Force) { Test-PeachTree $peachChild.FullName }
     }
@@ -154,11 +154,11 @@ try {
       if (-not (Test-Path -LiteralPath $peachPath)) { break }
       try {
         $peachItem = Get-Item -LiteralPath $peachPath -Force
-        if ($peachItem.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ('卸载目标是链接：' + $peachPath) }
+        if ($peachItem.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ('제거 대상이 링크입니다: ' + $peachPath) }
         Remove-Item -LiteralPath $peachPath -Recurse -Force
         break
       } catch {
-        if ($peachAttempt -le 1) { throw ('删除失败：' + $peachPath + '：' + $_.Exception.Message) }
+        if ($peachAttempt -le 1) { throw ('삭제 실패: ' + $peachPath + '：' + $_.Exception.Message) }
         Stop-PeachProgramProcesses
         Start-Sleep -Seconds 2
       }
@@ -183,14 +183,14 @@ try {
   # 弹窗只说原因；日志另记出错的那一行，「不能对 Null 值表达式调用方法」单看查不出是哪一步。
   $peachWhere = $_.InvocationInfo.PositionMessage
   $peachLog = if ($peachJob.log) { $peachJob.log } else { Join-Path ([IO.Path]::GetTempPath()) 'peach-uninstall.log' }
-  $peachDetail = '原因：' + $peachReason
+  $peachDetail = '원인: ' + $peachReason
   try {
     Add-Content -LiteralPath $peachLog -Value ((Get-Date -Format s) + '  ' + $peachReason + [Environment]::NewLine + $peachWhere) -Encoding UTF8
-    $peachDetail += [Environment]::NewLine + '详情记录在 ' + $peachLog
+    $peachDetail += [Environment]::NewLine + '상세 기록: ' + $peachLog
   } catch { }
   if (-not $peachJob.quiet) {
     [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
-    [System.Windows.Forms.MessageBox]::Show('卸载未完成，请手动检查：' + [Environment]::NewLine + $peachProgram + [Environment]::NewLine + $peachData + [Environment]::NewLine + $peachDetail, 'Peach') | Out-Null
+    [System.Windows.Forms.MessageBox]::Show('제거를 완료하지 못했습니다. 직접 확인하세요: ' + [Environment]::NewLine + $peachProgram + [Environment]::NewLine + $peachData + [Environment]::NewLine + $peachDetail, 'Peach') | Out-Null
   }
   exit 1
 }
@@ -211,7 +211,7 @@ def poll(tray) -> None:
             return
         checked = plan(config, delete_data=data["delete_data"])
         if any(data.get(key) != value for key, value in checked.items()):
-            raise ValueError("配置已变更，请重新确认卸载")
+            raise ValueError("설정이 변경되었습니다. 제거를 다시 확인하세요")
         shell = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32/WindowsPowerShell/v1.0/powershell.exe"
         # 桌面图标和启动项都在数据根之外，`_SCRIPT` 的路径校验只认数据根里的东西，
         # 列进 `files` 会被它 `exit 2`。卸载前先由这一步把两个 `.lnk` 都撤掉。
@@ -229,6 +229,6 @@ def poll(tray) -> None:
         tray.exit(reason="uninstall")
     except Exception as exc:
         path.unlink(missing_ok=True)
-        tray.icon.notify(f"卸载未能启动：{exc}", "Peach")
+        tray.icon.notify(f"제거를 시작하지 못했습니다: {exc}", "Peach")
     finally:
         tray._action_lock.release()

@@ -7,8 +7,8 @@
  */
 export function entitySkeletonHtml(kind: string, head: string, body: string, top = '') {
   const square = kind === 'studio' || kind === 'agency';
-  return `<section data-skeleton="entity/${kind}" role="status" aria-label="正在读取资料">
-    <span class="sr-only">正在读取资料</span><div aria-hidden="true"><div class="peach-react contents">
+  return `<section data-skeleton="entity/${kind}" role="status" aria-label="정보 불러오는 중">
+    <span class="sr-only">정보 불러오는 중</span><div aria-hidden="true"><div class="peach-react contents">
     <section class="entityhero" data-entity-card><div class="entityprofile" data-entity-profile><div data-entity-portrait-wrap><div class="entityportrait ${square ? 'square ' : ''}skeleton" data-entity-portrait="${square ? 'square' : 'round'}"></div></div>
       <div class="ui-entityidentity entityskeletontext" data-entity-identity><div class="entitytitle" data-entity-title><h2 class="skeleton">&nbsp;</h2></div>
       <div class="alias" data-entity-alias><span class="skeleton"></span></div>

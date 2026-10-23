@@ -1,3 +1,4 @@
+import { koreanLabel } from '../../korean-label';
 /* 作品详情（ADR-0031）：舞台里那一整块——播放区、右侧队列、侧栏与下方的「接着看」。
  *
  * 舞台（`<dialog id="stage">`）、它的进出场、小窗与 Video.js 都归舞台岛（`../stage/`），关注详情
@@ -52,7 +53,7 @@ const Glyph = ({ name }: { name: string }) => (
 const Html = ({ html }: { html: string }) => <span className="contents" dangerouslySetInnerHTML={{ __html: html }} />;
 
 /** 文件大小：没记下或记成 0 的写「大小未知」，同卡片上那一格。 */
-const sizeText = (size: unknown) => (Number(size) > 0 ? fmtSize(Number(size)) : '大小未知');
+const sizeText = (size: unknown) => (Number(size) > 0 ? fmtSize(Number(size)) : "크기 알 수 없음");
 
 export function ItemDetailPage(props: ItemDetailProps) {
   const { queue: ref, actions } = props;
@@ -87,7 +88,7 @@ export function ItemDetailPage(props: ItemDetailProps) {
 
 /** 关闭键。`id` 留着：Escape、点浮窗外面与壳的兜底都按 `#closeStage` 找它再点一下。 */
 const CloseStage = ({ onClose }: { onClose(): void }) => (
-  <button type="button" data-stage-close="" id="closeStage" title="关闭" aria-label="关闭" onClick={onClose}
+  <button type="button" data-stage-close="" id="closeStage" title="닫기" aria-label="닫기" onClick={onClose}
     dangerouslySetInnerHTML={{ __html: icon('x') }} />
 );
 
@@ -147,9 +148,9 @@ function MediaFrame({ item, gate, helpers, actions, autoplay, onEnded }: {
     enabled: !!item.is_jav && !!item.code && !item.sample_images?.length });
   const samples = item.sample_images?.length ? item.sample_images.map(sample => ({ index: sample.n, source: false }))
     : Array.from({ length: Math.min(30, Math.max(0, source.data?.preview_count || 0)) }, (_, index) => ({ index: index + 1, source: true }));
-  const media = item.is_jav && item.code ? [...(item.has_cover ? [{ index: -1, label: '封面' }] : []),
-    ...samples.map((sample, index) => ({ ...sample, label: `预览 ${index + 1}` })),
-    { index: -2, label: '正片', video: true }] : [];
+  const media = item.is_jav && item.code ? [...(item.has_cover ? [{ index: -1, label: "표지" }] : []),
+    ...samples.map((sample, index) => ({ ...sample, label: `미리 보기 ${index + 1}` })),
+    { index: -2, label: "본편", video: true }] : [];
   const hasPictures = media.length > 1;
   const selectImage = (index: number) => {
     if (index !== -2) frameRef.current?.querySelector('video')?.pause();
@@ -174,34 +175,34 @@ function MediaFrame({ item, gate, helpers, actions, autoplay, onEnded }: {
       <CloseStage onClose={actions.close} />
       {hasPictures ? <>
         <button type="button" data-jav-preview-toggle="" aria-pressed={image !== -2}
-          onClick={() => selectImage(image === -2 ? media[0]!.index : -2)}><Glyph name={image === -2 ? 'image' : 'play'} />{image === -2 ? '查看图片' : '播放正片'}</button>
+          onClick={() => selectImage(image === -2 ? media[0]!.index : -2)}><Glyph name={image === -2 ? 'image' : 'play'} />{image === -2 ? "이미지 보기" : "본편 재생"}</button>
         {image !== -2 ? <CatalogPicture key={image} item={item} image={image} source={samples.find(sample => sample.index === image)?.source} /> : null}
         <MediaCarousel items={media} position={Math.max(0, media.findIndex(entry => entry.index === image))} onSelect={selectImage}
           below renderThumbnail={entry => <CatalogPicture item={item} image={entry.index === -2 ? media[0]!.index : entry.index}
             source={samples.find(sample => sample.index === (entry.index === -2 ? media[0]!.index : entry.index))?.source} thumbnail />} />
       </> : null}
       {item.is_jav && item.code && !item.sample_images?.length && (source.isPending || source.error || source.data?.state === 'partial') ?
-        <div data-item-samples-state="">{source.isPending ? <span data-skeleton="samples" role="status" aria-label="正在读取样图" className="relative block h-12 w-20 skeleton-sheen" />
+        <div data-item-samples-state="">{source.isPending ? <span data-skeleton="samples" role="status" aria-label="샘플 이미지 불러오는 중" className="relative block h-12 w-20 skeleton-sheen" />
           : <Button variant="secondary" {...busyProps(source.isFetching)} title={source.data?.message || requestErrorMessage(source.error)}
-            onClick={() => { refreshSamples.current = true; void source.refetch() }}>重试样图</Button>}</div> : null}
+            onClick={() => { refreshSamples.current = true; void source.refetch() }}>샘플 이미지 다시 불러오기</Button>}</div> : null}
       {gate === 'offline' ? <OfflineGate item={item} badge={badge} helpers={helpers} actions={actions} />
         : gate === 'disc' ? (
           <div role="status" data-item-gate="disc">
-            <b>ISO 原盘</b>
-            <span>请使用支持原盘的外部播放器打开。</span>
+            <b>ISO 디스크 이미지</b>
+            <span>디스크 이미지를 지원하는 외부 플레이어로 여세요.</span>
             <ExternalPlayback id={item.id} />
           </div>
         ) : gate === 'online' ? (
           <div id="onlineGate" role="status" data-item-gate="online">
             <Html html={badge} />
-            <b>在线资产</b>
-            <span>这条没有对应的关注条目，媒体地址无从解析。</span>
-            <button className="chip" id="openSavedFollow" type="button" onClick={actions.openSavedFollow}>打开已保存关注</button>
+            <b>온라인 미디어</b>
+            <span>연결된 팔로우 항목이 없어 미디어 주소를 확인할 수 없습니다.</span>
+            <button className="chip" id="openSavedFollow" type="button" onClick={actions.openSavedFollow}>저장된 팔로우 항목 열기</button>
           </div>
         ) : gate === 'metered' && !started ? (
           <div id="gate" data-item-gate="metered" onClick={() => setStarted('clicked')}>
             <Html html={badge} />
-            <span>点此开始拉流 · {sizeText(item.size)}</span>
+            <span>눌러서 스트리밍 시작 · {sizeText(item.size)}</span>
           </div>
         ) : null}
     </div>
@@ -223,10 +224,10 @@ function OfflineGate({ item, badge, helpers, actions }: {
   return (
     <div id="offlineGate" role="status" data-item-gate="offline">
       <Html html={badge} />
-      <b>脱盘模式</b>
+      <b>디스크 연결 해제 모드</b>
       <span>{helpers.offlineReason(item.location || '')}</span>
       <button className="chip" id="offlineRetry" type="button" disabled={checking} onClick={() => void retry()}>
-        {still ? '仍无法读取 · 刷新' : '刷新状态'}
+        {still ? "여전히 읽을 수 없음 · 새로고침" : "상태 새로고침"}
       </button>
     </div>
   );
@@ -257,10 +258,10 @@ function Queue({ queue, itemId, helpers, actions }: {
   }, [helpers, queue.kind]);
   const saveMix = useSaveMix(queue, actions);
   const head = queue.kind === 'mix'
-    ? <button type="button" data-save-mix="" title="保存为播放列表" aria-label="保存为播放列表" onClick={saveMix}
+    ? <button type="button" data-save-mix="" title="재생 목록으로 저장" aria-label="재생 목록으로 저장" onClick={saveMix}
       dangerouslySetInnerHTML={{ __html: icon('playlist') }} />
     : queue.kind === 'playlist'
-      ? <button type="button" data-edit-playlist="" title="编辑播放列表" aria-label="编辑播放列表" onClick={actions.editPlaylist}
+      ? <button type="button" data-edit-playlist="" title="재생 목록 편집" aria-label="재생 목록 편집" onClick={actions.editPlaylist}
         dangerouslySetInnerHTML={{ __html: icon('playlist') }} />
       : null;
   const ref = { kind: queue.kind, seedId: queue.seedId, playlistId: queue.playlistId };
@@ -273,7 +274,7 @@ function Queue({ queue, itemId, helpers, actions }: {
         const gone = queue.kind === 'playlist' && isVanished(row);
         return (
           <MixQueueRow key={row.id} current={row.id === itemId} data-queue-item={row.id} row={{ 'data-queue-row': row.id }}
-            disabled={gone} title={gone ? '文件已不在盘上，不能播放' : undefined}
+            disabled={gone} title={gone ? "디스크에 파일이 없어 재생할 수 없습니다" : undefined}
             {...(gone ? { 'data-queue-vanished': '' } : {})}
             onClick={() => { if (!gone) actions.openQueueItem(ref, row.id) }}
             pic={<><Html html={queueThumbHtml(row, helpers.javImage())} /><i className="mono" data-mix-item-duration="">{fmtDur(row.duration)}</i></>}
@@ -281,12 +282,12 @@ function Queue({ queue, itemId, helpers, actions }: {
             after={queue.kind === 'playlist' ? (
               <span data-queue-edit="">
                 <i data-queue-grip="" aria-hidden="true"><Glyph name="grip-vertical" /></i>
-                <button type="button" data-queue-remove={row.id} title="移出播放列表" aria-label="移出播放列表"
+                <button type="button" data-queue-remove={row.id} title="재생 목록에서 제거" aria-label="재생 목록에서 제거"
                   onClick={() => reorder.remove(row.id)}><Glyph name="x" /></button>
               </span>
             ) : null}>
             <span data-queue-head="">{edition}<b data-middle-truncate="">{helpers.displayName(row)}</b></span>
-            <span data-truncate-end="">{gone ? '已消失 · 文件已不在盘上'
+            <span data-truncate-end="">{gone ? "파일 없음 · 디스크에 파일이 없습니다"
               : queue.kind === 'parts' || (queue.kind === 'editions' && row.part_label)
                 ? partLabel(row.part_label) : mixLabel(row, helpers.tagLabel)}</span>
           </MixQueueRow>
@@ -320,7 +321,7 @@ function usePlaylistReorder(queue: DetailQueue, itemId: number, actions: ItemDet
   const reorder = useMutation({
     mutationFn: (ids: number[]) => write({ action: 'reorder', asset_ids: ids }),
     onSuccess: (playlist, _ids) => { apply(playlist) },
-    onError: (error) => actions.failure('调整播放顺序', error),
+    onError: (error) => actions.failure("재생 순서 변경", error),
   });
   const ids = queue.items.map((row) => row.id);
   return {
@@ -330,17 +331,17 @@ function usePlaylistReorder(queue: DetailQueue, itemId: number, actions: ItemDet
       if (sameOrder(next, ids)) return;
       const before = ids;
       await reorder.mutateAsync(next);
-      actions.toast('已调整播放顺序', { undo: async () => { apply(await write({ action: 'reorder', asset_ids: before })) } });
+      actions.toast("재생 순서를 변경했습니다", { undo: async () => { apply(await write({ action: 'reorder', asset_ids: before })) } });
     },
     remove: (assetId: number) => {
       const before = ids;
       void confirmModal({
-        title: '移出播放列表', body: '这个视频将从播放列表移除，视频文件保留。', confirmLabel: '移出播放列表',
+        title: "재생 목록에서 제거", body: "이 동영상을 재생 목록에서 제거합니다. 동영상 파일은 유지됩니다.", confirmLabel: "재생 목록에서 제거",
         onConfirm: async () => {
           const playlist = await write({ action: 'remove', asset_id: assetId });
           /* 撤销要把它放回它那一位：`add` 只会补在末尾，所以补完再按移出之前那份顺序排一次。
              列表被这一下清空时它已经不在页面上，撤销后带回列表页而不是空队列。 */
-          actions.toast('已移出播放列表', {
+          actions.toast("재생 목록에서 제거했습니다", {
             undo: async () => {
               await write({ action: 'add', asset_ids: [assetId] });
               const restored = apply(await write({ action: 'reorder', asset_ids: before }));
@@ -382,9 +383,9 @@ function Side({ item, queue, write, helpers, actions }: {
           {item.release_date ? <span data-spec-item=""><Glyph name="calendar" /><span>{item.release_date}</span></span> : null}
           {item.region_label ? (
             <button type="button" data-spec-item="" data-open-region={item.region || ''}
-              title={item.region_settled ? '已判定的产地；打开同产地的作品' : '按番号或厂牌推断的产地，批量判定后不再变；打开同产地的作品'}
+              title={item.region_settled ? "확정된 제작 지역입니다. 같은 지역의 항목을 엽니다" : "품번이나 레이블로 추정한 제작 지역입니다. 일괄 판정 후에는 변경되지 않습니다. 같은 지역의 항목을 엽니다"}
               onClick={() => actions.openRegion(item.region || '')}>
-              <Glyph name="globe" /><span>{item.region_label}{item.region_settled ? '' : '（推断）'}</span>
+              <Glyph name="globe" /><span>{item.region_label}{item.region_settled ? '' : "（추정）"}</span>
             </button>
           ) : null}
         </div>
@@ -395,28 +396,28 @@ function Side({ item, queue, write, helpers, actions }: {
         <Trace item={item} />
         {item.medium === 'video' && item.location !== 'online' ? <ExternalPlayback key={item.id} id={item.id} /> : null}
         <div data-stage-actions="" data-item-feedback="">
-          <button type="button" id="likeBtn" data-fb="like" aria-label={item.liked ? '取消喜欢' : '喜欢'} title="喜欢 · 记录口味偏好"
+          <button type="button" id="likeBtn" data-fb="like" aria-label={item.liked ? "좋아요 취소" : "좋아요"} title="좋아요 · 취향 기록"
             aria-pressed={!!item.liked} {...busy('like')} onClick={() => write.preference({ liked: !item.liked })}><Glyph name="thumbs-up" /></button>
-          <button type="button" id="preferenceToggle" data-fb="reason" aria-label="喜爱理由" title="喜爱理由" aria-expanded={reasonOpen}
+          <button type="button" id="preferenceToggle" data-fb="reason" aria-label="좋아하는 이유" title="좋아하는 이유" aria-expanded={reasonOpen}
             aria-controls="preferencePanel" data-has-reason={String(!!item.like_reason)}
             onClick={() => setReasonOpen((open) => !open)}><Glyph name="notebook-pen" /></button>
-          <button type="button" data-stage-action="dislike" data-kind="dislike" aria-label="不合口味" title="不合口味 · 降低推荐权重"
+          <button type="button" data-stage-action="dislike" data-kind="dislike" aria-label="취향에 맞지 않음" title="취향에 맞지 않음 · 추천 가중치 낮추기"
             aria-pressed={item.feedback === 'dislike'} {...busy('dislike')} onClick={() => write.feedback('dislike')}><Glyph name="thumbs-down" /></button>
-          <button type="button" data-stage-action="seen" data-kind="seen" aria-label="看过了" title="看过了 · 只降低近期推荐"
+          <button type="button" data-stage-action="seen" data-kind="seen" aria-label="이미 봤어요" title="이미 봤어요 · 당분간 추천 빈도 낮추기"
             aria-pressed={item.feedback === 'seen'} {...busy('seen')} onClick={() => write.feedback('seen')}><Glyph name="eye" /></button>
-          <button type="button" data-stage-action="later" id="stageLater" aria-label="稍后看" title="稍后看 · 加入或移出队列"
+          <button type="button" data-stage-action="later" id="stageLater" aria-label="나중에 보기" title="나중에 보기 · 대기열에 추가 또는 제거"
             aria-pressed={!!item.watch_later} {...busy('later')} onClick={write.later}><Glyph name={item.watch_later ? 'check' : 'bookmark-plus'} /></button>
-          <button type="button" id="addPlaylist" data-fb="playlist" aria-label="加入播放列表" title="加入播放列表"
+          <button type="button" id="addPlaylist" data-fb="playlist" aria-label="재생 목록에 추가" title="재생 목록에 추가"
             onClick={() => actions.addToPlaylist(item)}><Glyph name="playlist" /></button>
-          <button type="button" id="betterVersion" data-fb="quality" aria-label="寻找更好版本"
-            title={item.better_version ? (item.better_version_reason || '已标记寻找更好版本') : '寻找高清、无水印或完整版'}
+          <button type="button" id="betterVersion" data-fb="quality" aria-label="더 나은 버전 찾기"
+            title={item.better_version ? (item.better_version_reason || "더 나은 버전 찾기로 표시했습니다") : "고화질, 워터마크 없는 버전 또는 완전판 찾기"}
             aria-pressed={!!item.better_version} {...busy('quality')} onClick={write.quality}><Glyph name="sparkles" /></button>
-          <button type="button" data-kind="dispose" data-fb="dispose" aria-label="移入回收站" title="移入回收站 · 文件仍保留，可从回收站永久清除"
+          <button type="button" data-kind="dispose" data-fb="dispose" aria-label="휴지통으로 이동" title="휴지통으로 이동 · 파일은 유지되며 휴지통에서 영구 삭제할 수 있습니다"
             aria-pressed={item.disposal === 'trash'} {...busy('dispose')} onClick={() => write.feedback('dispose')}><Glyph name="trash" /></button>
         </div>
         <Preference item={item} open={reasonOpen} write={write} />
         <button type="button" data-kind="o" {...busy('o')} onClick={() => write.feedback('o')}>
-          <Glyph name="sperm" /><span>记一次高潮</span><b className="mono" id="oCount">{item.o_count || 0}</b>
+          <Glyph name="sperm" /><span>오르가슴 1회 기록</span><b className="mono" id="oCount">{item.o_count || 0}</b>
         </button>
       </div>
     </div>
@@ -442,7 +443,7 @@ function DetailTitle({ item, queue, helpers, actions, onStatus }: {
           dangerouslySetInnerHTML={{ __html: html }} />
         <span data-title-tools="">
           <button type="button" data-title-fold="" hidden={!foldable} aria-expanded={expanded}
-            aria-label={expanded ? '收起标题' : '展开标题'} title={expanded ? '收起标题' : '展开完整标题'} onClick={toggle}>
+            aria-label={expanded ? "제목 접기" : "제목 펼치기"} title={expanded ? "제목 접기" : "전체 제목 펼치기"} onClick={toggle}>
             <Glyph name={expanded ? 'chevron-up' : 'chevron-down'} />
           </button>
           {/* 取景框存的是坐标不是图片：存完重取这一条，封面地址没变，变的是接口给的 `poster_box`。
@@ -476,7 +477,7 @@ function SourceTools({ id, actions, onStatus }: { id: number; actions: ItemDetai
   const sync = async () => {
     if (busy) return;
     setBusy('sync');
-    onStatus('正在核对目录…');
+    onStatus("폴더 대조 중…");
     const result = await actions.sync(id);
     onStatus(result.text);
     setBusy('');
@@ -484,10 +485,10 @@ function SourceTools({ id, actions, onStatus }: { id: number; actions: ItemDetai
   };
   return (
     <>
-      <button type="button" data-reveal={id} title="在文件管理器里打开源文件所在目录" aria-label="定位源文件"
+      <button type="button" data-reveal={id} title="파일 탐색기에서 원본 파일이 있는 폴더 열기" aria-label="원본 파일 위치 열기"
         {...(busy === 'reveal' ? { 'aria-busy': true, 'aria-disabled': true } : {})} onClick={() => void reveal()}
-        dangerouslySetInnerHTML={{ __html: busy === 'reveal' ? spinnerHtml('正在定位') : icon('folder-open') }} />
-      <button type="button" data-sync={id} title="核对该目录：磁盘上已删除的移入 Peach 回收站，带个人记录的标为已消失" aria-label="同步删除"
+        dangerouslySetInnerHTML={{ __html: busy === 'reveal' ? spinnerHtml("위치 확인 중") : icon('folder-open') }} />
+      <button type="button" data-sync={id} title="폴더 대조: 디스크에서 삭제된 항목은 Peach 휴지통으로 옮기고 개인 기록이 있는 항목은 파일 없음으로 표시합니다" aria-label="삭제 동기화"
         {...(busy === 'sync' ? { 'aria-busy': true, 'aria-disabled': true } : {})} onClick={() => void sync()}>
         <Glyph name="folder-sync" />
       </button>
@@ -499,12 +500,12 @@ function SourceTools({ id, actions, onStatus }: { id: number; actions: ItemDetai
 function Rating({ item, write }: { item: DetailItem; write: DetailWrite }) {
   const on = ratingStars(item.rating);
   return (
-    <div id="detailRating" role="group" data-item-rating="" aria-label="评分" data-value={clampRating(item.rating)}>
+    <div id="detailRating" role="group" data-item-rating="" aria-label="평점" data-value={clampRating(item.rating)}>
       <div data-rating-stars="">
         {[1, 2, 3, 4, 5].map((star) => (
           <button key={star} type="button" data-rate={star} data-on={String(star <= on)}
-            title={star === on ? '再点一次取消评分' : `${star} 星`}
-            aria-label={star === on ? `取消评分（当前 ${star} 星）` : `评为 ${star} 星`}
+            title={star === on ? "다시 누르면 별점을 취소합니다" : `${star} 점`}
+            aria-label={star === on ? `별점 취소（현재 ${star} 점）` : `별점 주기: ${star} 점`}
             {...write.busyAttrs(`rate:${star}`)} onClick={() => write.rate(star)}><Glyph name="star" /></button>
         ))}
       </div>
@@ -533,21 +534,21 @@ function Identity({ item, actions }: { item: DetailItem; helpers: ItemDetailHelp
   const primary = [
     groups.unowned ? (
       <section key="unowned" data-id-group="unowned">
-        <h5 data-id-label="">归属</h5>
+        <h5 data-id-label="">소속</h5>
         <div data-id-row="">
-          <button type="button" data-id-cell="unowned" data-open-unowned="" title="打开未归属：馆藏里没有署名人的作品"
+          <button type="button" data-id-cell="unowned" data-open-unowned="" title="소속 미지정 열기: 컬렉션에서 크레딧에 이름이 없는 항목"
             onClick={actions.openUnowned}>
-            <span data-id-face=""><Glyph name="user-round" /></span><span data-id-name="">未归属</span>
+            <span data-id-face=""><Glyph name="user-round" /></span><span data-id-name="">소속 없음</span>
           </button>
         </div>
       </section>
     ) : group(performerLabel(item), 'performer', groups.cast, overflow && !castOpen
       ? <Button variant="secondary" size="small" id="castMore" data-cast-more="" trailingIcon={RiArrowDownSLine}
-        aria-expanded={false} onClick={() => setCastOpen(true)}>还有 {overflow} 位</Button> : null),
-    group('厂牌', 'studio', groups.studios),
-    group('片商', 'studio', groups.makers),
-    group('卖家', 'creator', groups.creators.filter(ref => ref.identity_categories?.includes('seller'))),
-    group('创作者', 'creator', groups.creators.filter(ref => !ref.identity_categories?.includes('seller'))),
+        aria-expanded={false} onClick={() => setCastOpen(true)}>추가 {overflow} 명</Button> : null),
+    group("스튜디오", 'studio', groups.studios),
+    group("제작사", 'studio', groups.makers),
+    group("판매자", 'creator', groups.creators.filter(ref => ref.identity_categories?.includes('seller'))),
+    group("크리에이터", 'creator', groups.creators.filter(ref => !ref.identity_categories?.includes('seller'))),
   ].filter(Boolean);
   return (
     <div data-item-identity="">
@@ -568,8 +569,8 @@ function Tags({ item, write, helpers, actions }: {
       {tags.map((tag) => (
         <span key={tag.k} data-detail-tag="">
           <button type="button" data-tag={tag.k} title={helpers.tagLabel(tag.k)} onClick={() => actions.openTag(tag.k)}>{helpers.tagLabel(tag.k)}</button>
-          <button type="button" data-remove-tag={tag.k} title="从此视频隐藏该标签"
-            aria-label={`删除标签 ${helpers.tagLabel(tag.k)}`} {...write.busyAttrs(`tag:${tag.k}`)}
+          <button type="button" data-remove-tag={tag.k} title="이 동영상에서 해당 태그 숨기기"
+            aria-label={`태그 삭제: ${helpers.tagLabel(tag.k)}`} {...write.busyAttrs(`tag:${tag.k}`)}
             onClick={() => write.removeTag(tag)}><Glyph name="x" /></button>
         </span>
       ))}
@@ -644,28 +645,28 @@ function TagPicker({ item, write, helpers }: { item: DetailItem; write: DetailWr
   };
   return (
     <>
-      <button ref={plus} type="button" id="tagPlus" data-tag-plus="" title="添加标签" aria-label="添加标签" aria-expanded={open}
+      <button ref={plus} type="button" id="tagPlus" data-tag-plus="" title="태그 추가" aria-label="태그 추가" aria-expanded={open}
         onClick={() => {
           if (!picker.current) return;
           presentMenu(picker.current);
           setOpen(true); setQuery(''); setTerm(''); setActive(-1);
           requestAnimationFrame(() => search.current?.focus());
         }}><Glyph name="plus" /></button>
-      <div ref={picker} id="tagPicker" data-tag-picker="" role="dialog" aria-label="添加标签" hidden>
+      <div ref={picker} id="tagPicker" data-tag-picker="" role="dialog" aria-label="태그 추가" hidden>
         <label data-tag-search="">
           <Glyph name="search" />
-          <input ref={search} id="tagPickSearch" maxLength={80} placeholder="搜索或输入新标签" autoComplete="off" value={query}
+          <input ref={search} id="tagPickSearch" maxLength={80} placeholder="검색하거나 새 태그 입력" autoComplete="off" value={query}
             onChange={(event) => { setQuery(event.target.value); setActive(-1); if (!composing.current) setTerm(event.target.value) }}
             onCompositionStart={() => { composing.current = true }}
             onCompositionEnd={(event) => { composing.current = false; setTerm(event.currentTarget.value) }} onKeyDown={keydown} />
         </label>
         <div id="tagPickBody" data-tag-body="">
           {open && sections.recent.length ? (
-            <section data-tag-section=""><h4>最近使用</h4><div data-tag-grid="">{sections.recent.map(button)}</div></section>
+            <section data-tag-section=""><h4>최근 사용</h4><div data-tag-grid="">{sections.recent.map(button)}</div></section>
           ) : null}
           {open ? (
             <section data-tag-section="">
-              <h4>{term.trim() ? '搜索结果' : '全部标签'}</h4>
+              <h4>{term.trim() ? "검색 결과" : "모든 태그"}</h4>
               <div data-tag-grid="">
                 {sections.results.map(button)}
                 {sections.create ? (() => {
@@ -674,7 +675,7 @@ function TagPicker({ item, write, helpers }: { item: DetailItem; write: DetailWr
                   return (
                     <button key="create" type="button" data-pick={sections.create} data-active={at === active ? '' : undefined}
                       onClick={() => { close(); write.addTag(sections.create) }}>
-                      <Glyph name="plus" /><span data-pick-name="">新建“{sections.create}”</span>
+                      <Glyph name="plus" /><span data-pick-name="">새로 만들기: “{sections.create}”</span>
                     </button>
                   );
                 })() : null}
@@ -695,11 +696,11 @@ function Trace({ item }: { item: DetailItem }) {
   return (
     <div data-item-trace="">
       <div data-trace-metric="">
-        <div data-trace-label=""><span>离开位置</span><span id="ratioTxt">0%</span></div>
+        <div data-trace-label=""><span>마지막 재생 위치</span><span id="ratioTxt">0%</span></div>
         <div data-trace-bar=""><u id="watched" /><b id="mark" /></div>
       </div>
       <div data-trace-metric="">
-        <div data-trace-label=""><span>真实观看</span><span id="realTxt">{real == null ? '0%' : `${real.toFixed(0)}%`}</span></div>
+        <div data-trace-label=""><span>실제 시청 비율</span><span id="realTxt">{real == null ? '0%' : `${real.toFixed(0)}%`}</span></div>
         {/* oxlint-disable-next-line shadcn/no-inline-styles -- 宽度是这一条看过的比例，之后由壳的遥测随上报改写 */}
         <div data-trace-bar=""><u id="realBar" data-trace-real="" style={real == null ? undefined : { width: `${real.toFixed(1)}%` }} /></div>
       </div>
@@ -716,13 +717,13 @@ function Preference({ item, open, write }: { item: DetailItem; open: boolean; wr
   const saving = write.busy.has('preference');
   return (
     <div id="preferencePanel" data-item-preference="" hidden={!open}>
-      <textarea ref={field} id="likeReason" maxLength={2000} placeholder="为什么喜欢？" value={reason}
+      <textarea ref={field} id="likeReason" maxLength={2000} placeholder="어떤 점이 좋았나요?" value={reason}
         onChange={(event) => setReason(event.target.value)} />
       <div data-preference-foot="">
-        <span id="preferenceState" aria-live="polite">{write.preferenceState}</span>
-        <button type="button" className="geist-button primary" id="savePreference" data-save-preference="" title="提交喜爱理由" aria-label="提交喜爱理由"
+        <span id="preferenceState" aria-live="polite">{koreanLabel(write.preferenceState)}</span>
+        <button type="button" className="geist-button primary" id="savePreference" data-save-preference="" title="좋아하는 이유 제출" aria-label="좋아하는 이유 제출"
           {...write.busyAttrs('preference')} onClick={() => write.preference({ reason })}
-          dangerouslySetInnerHTML={{ __html: saving ? `${spinnerHtml('正在提交喜爱理由')}<span>提交中…</span>` : '<span>提交</span>' }} />
+          dangerouslySetInnerHTML={{ __html: saving ? `${spinnerHtml("좋아하는 이유 제출 중")}<span>제출 중…</span>` : "<span>제출</span>" }} />
       </div>
     </div>
   );
@@ -743,7 +744,7 @@ function Related(props: ItemDetailProps & { item: DetailItem }) {
   const [skeleton] = useState(() => helpers.relatedSkeletonHtml());
   return (
     <RelatedSection wireDrag={helpers.wireDrag} busy={result.isPending} empty={result.data?.length === 0}
-      error={result.isError ? `读取接着看失败：${requestErrorMessage(result.error)}` : undefined}
+      error={result.isError ? `이어 보기 불러오기 실패：${requestErrorMessage(result.error)}` : undefined}
       onRetry={() => { void result.refetch() }}>
         {result.data ? (
           <CatalogGridPage mode="items" variant="next" items={result.data} helpers={grid.helpers} actions={grid.actions}
@@ -806,14 +807,14 @@ function useDetailWrite(item: DetailItem, actions: ItemDetailActions, label: (ta
     busy, sourceState, setSourceState, preferenceState,
     busyAttrs: (name: string) => (busy.has(name) ? { 'aria-busy': true, 'aria-disabled': true } as const : {}),
 
-    rate: (star: number) => start(`rate:${star}`, '评分', async () => {
+    rate: (star: number) => start(`rate:${star}`, "평점", async () => {
       const before = current().rating || 0;
       const value = nextRating(before, star);
       await sendFeedback('rate', value);
-      actions.toast(value ? `已评 ${ratingStars(value)} 星` : '已取消评分', { undo: async () => { await sendFeedback('rate', before) } });
+      actions.toast(value ? `별점 기록 완료: ${ratingStars(value)} 점` : "별점을 취소했습니다", { undo: async () => { await sendFeedback('rate', before) } });
     }),
 
-    feedback: (kind: string) => start(kind, '操作', async () => {
+    feedback: (kind: string) => start(kind, "작업", async () => {
       const before = { feedback: current().feedback || null };
       const result = await sendFeedback(kind);
       actions.toast(feedbackReceipt(kind, result), {
@@ -830,21 +831,21 @@ function useDetailWrite(item: DetailItem, actions: ItemDetailActions, label: (ta
       if (kind === 'dispose') await actions.trashChanged(result.disposal || null, false);
     }),
 
-    later: () => start('later', '更新稍后看', async () => {
+    later: () => start('later', "나중에 보기 업데이트", async () => {
       const result = await post<{ watch_later: boolean }>(WATCH_LATER_URL, {});
       apply({ watch_later: result.watch_later });
-      actions.toast(result.watch_later ? '已加入稍后看' : '已移出稍后看', {
+      actions.toast(result.watch_later ? "나중에 보기에 추가했습니다" : "나중에 보기에서 제거했습니다", {
         undo: async () => { apply({ watch_later: (await post<{ watch_later: boolean }>(WATCH_LATER_URL, {})).watch_later }) },
       });
     }),
 
-    quality: () => start('quality', '更新版本需求', async () => {
+    quality: () => start('quality', "버전 요구 사항 업데이트", async () => {
       const before = { wanted: !!current().better_version, reason: current().better_version_reason || '' };
       type Goal = { better_version: boolean; better_version_reason?: string };
       const paint = (goal: Goal) => apply({ better_version: goal.better_version, better_version_reason: goal.better_version_reason || '' });
       const result = await post<Goal>(QUALITY_GOAL_URL, { wanted: !before.wanted });
       paint(result);
-      actions.toast(result.better_version ? '已标记寻找更好版本' : '已取消寻找更好版本', {
+      actions.toast(result.better_version ? "더 나은 버전 찾기로 표시했습니다" : "더 나은 버전 찾기를 취소했습니다", {
         undo: async () => { paint(await post<Goal>(QUALITY_GOAL_URL, before)) },
       });
     }),
@@ -852,33 +853,33 @@ function useDetailWrite(item: DetailItem, actions: ItemDetailActions, label: (ta
     /* 喜欢与理由是同一条偏好：点喜欢键只改 `liked`，提交理由时有字就算喜欢。 */
     preference: ({ liked, reason }: { liked?: boolean; reason?: string }) => {
       const name = liked === undefined ? 'preference' : 'like';
-      start(name, '保存喜欢偏好', async () => {
+      start(name, "선호도 저장", async () => {
         const before = { liked: !!current().liked, reason: current().like_reason || '' };
         const text = reason ?? before.reason;
         const wanted = liked ?? (before.liked || text.trim().length > 0);
         type Preference = { liked: boolean; like_reason?: string };
         const paint = (result: Preference) => apply({ liked: result.liked, like_reason: result.like_reason || '' });
-        setPreferenceState('保存中…');
+        setPreferenceState("저장 중…");
         try {
           paint(await post<Preference>(PREFERENCE_URL, { liked: wanted, reason: text }));
         } catch (error) {
-          setPreferenceState('保存失败 · 请重试');
+          setPreferenceState("저장 실패 · 다시 시도하세요");
           throw error;
         }
         setPreferenceState('已保存');
         setTimeout(() => setPreferenceState((now) => (now === '已保存' ? '' : now)), 1400);
         const saved = current();
-        actions.toast(saved.liked ? '已保存喜欢偏好' : '已取消喜欢', {
+        actions.toast(saved.liked ? "선호도를 저장했습니다" : "좋아요를 취소했습니다", {
           undo: async () => { paint(await post<Preference>(PREFERENCE_URL, before)) },
         });
       });
     },
 
-    removeTag: (tag: DetailTag) => start(`tag:${tag.k}`, '删除标签', async () => {
+    removeTag: (tag: DetailTag) => start(`tag:${tag.k}`, "태그 삭제", async () => {
       const result = await post<{ ok?: boolean }>(ITEM_TAG_URL, { operation: 'remove', tag: tag.k });
-      if (!result.ok) throw new Error('标签未删除');
+      if (!result.ok) throw new Error("태그를 삭제하지 못했습니다");
       apply((now) => withoutTag(now, tag.k));
-      actions.toast(`已删除标签「${label(tag.k)}」`, {
+      actions.toast(`삭제한 태그: 「${label(tag.k)}」`, {
         undo: async () => {
           await post(ITEM_TAG_URL, { operation: 'add', tag: tag.k });
           apply((now) => withTag(now, tag));
@@ -889,17 +890,17 @@ function useDetailWrite(item: DetailItem, actions: ItemDetailActions, label: (ta
     addTag: (raw: string) => {
       const tag = raw.trim();
       if (!tag) return;
-      start(`add:${tag}`, '添加标签', async () => {
+      start(`add:${tag}`, "태그 추가", async () => {
         const result = await post<{ ok?: boolean; tag?: string }>(ITEM_TAG_URL, { operation: 'add', tag });
         if (!result.ok) return;
         const canonical = result.tag || tag;
         if (hasTag(current(), canonical)) {
-          actions.toast(`标签「${label(canonical)}」已存在`);
+          actions.toast(`태그 「${label(canonical)}」이(가) 이미 있습니다`);
           return;
         }
         apply((now) => withTag(now, { k: canonical, cat: 'general' }));
         rememberTag(canonical);
-        actions.toast(`已添加标签「${label(canonical)}」`, {
+        actions.toast(`추가한 태그: 「${label(canonical)}」`, {
           undo: async () => {
             await post(ITEM_TAG_URL, { operation: 'remove', tag: canonical });
             apply((now) => withoutTag(now, canonical));

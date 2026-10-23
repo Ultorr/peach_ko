@@ -12,7 +12,7 @@ export function DiscoveryFaces({ item }: { item: Discovery }) {
       ? { children: <SourceAvatar code={item.code} person={person} /> }
       : { dangerouslySetInnerHTML: { __html: avatarInner(person.name, person, null) } };
     return person.id
-      ? <a key={person.name} data-media-avatar="" href={entityPath('performer', person.name, person.id)} aria-label={`打开女优页：${person.name}`} {...face} />
+      ? <a key={person.name} data-media-avatar="" href={entityPath('performer', person.name, person.id)} aria-label={`배우 페이지 열기：${person.name}`} {...face} />
       : <span key={person.name} data-media-avatar="" title={person.name} {...face} />;
   });
   return people.length > 1 ? <div data-media-avatars="">{faces}</div> : faces[0] || null;

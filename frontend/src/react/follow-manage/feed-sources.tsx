@@ -58,15 +58,15 @@ const feedTableFeatures = tableFeatures({
 });
 
 const COLUMN_LABELS: Record<string, string> = {
-  select: '选择',
-  name: '名称',
-  kind: '类型',
-  origin: '来源',
-  status: '状态',
-  interval: '频率',
-  fetched: '上次拉取',
-  fresh: '上次新增',
-  actions: '操作',
+  select: "선택",
+  name: "이름",
+  kind: "유형",
+  origin: "소스",
+  status: "상태",
+  interval: "주기",
+  fetched: "마지막 가져오기",
+  fresh: "마지막 추가",
+  actions: "작업",
 };
 
 /** 表头里不占字的列：勾选那一格自己会说「选择 谁」，行尾三个控件也各带自己的名字。 */
@@ -88,9 +88,9 @@ function originHost(url: string): string {
 
 /** 一条源此刻的状态：拉不动最要紧，其次才是开着还是停着。 */
 function StatusChip({ source }: { source: FeedSource }) {
-  if (source.last_error) return <Chip variant="caption" color="rose">拉取失败</Chip>;
-  if (!source.enabled) return <Chip variant="caption" color="neutral">已暂停</Chip>;
-  return <Chip variant="caption" color="lime">正常</Chip>;
+  if (source.last_error) return <Chip variant="caption" color="rose">가져오기 실패</Chip>;
+  if (!source.enabled) return <Chip variant="caption" color="neutral">일시 중지됨</Chip>;
+  return <Chip variant="caption" color="lime">정상</Chip>;
 }
 
 /** 名字前的圆框：和关注列表的创作者圆标同一个尺寸与底色。里面那段由 `card-art` 的 `avatarInner` 拼：
@@ -143,11 +143,11 @@ interface RowHandlers {
 function confirmRemove(sources: FeedSource[], write: () => Promise<unknown>) {
   const one = sources.length === 1 ? sources[0] : null;
   return confirmModal({
-    title: one ? '移除订阅源' : `移除 ${sources.length} 条订阅源`,
+    title: one ? "구독 출처 제거" : `제거: ${sources.length} 개 구독 출처`,
     body: one
-      ? `将移除订阅源「${feedName(one)}」，之后不再拉取它的新作；已经拉到的新作保留。`
-      : '将移除所选订阅源，之后不再拉取它们的新作；已经拉到的新作保留。',
-    confirmLabel: one ? '移除订阅源' : '移除所选订阅源', danger: true,
+      ? `구독 출처 「${feedName(one)}」을(를) 제거하면 새 항목을 더 이상 가져오지 않습니다. 이미 가져온 항목은 유지됩니다.`
+      : "선택한 구독 출처를 제거하면 새 항목을 더 이상 가져오지 않습니다. 이미 가져온 항목은 유지됩니다.",
+    confirmLabel: one ? "구독 출처 제거" : "선택한 구독 출처 제거", danger: true,
     onConfirm: write,
   });
 }
@@ -188,10 +188,10 @@ export function FeedSources({ readOnly, toast }: {
       const done = result.ids.length - failed.length;
       setSelected(new Set());
       void reload();
-      if (result.action === 'remove' && done) toast(`已移除 ${done} 条订阅源`);
+      if (result.action === 'remove' && done) toast(`제거 완료: ${done} 개 구독 출처`);
       if (failed.length) {
         const first = failed[0]!;
-        action.setError(`${failed.length} 条没有写入：${first.ok ? '' : errorMessage(first.error)}`);
+        action.setError(`${failed.length} 개 항목을 저장하지 못했습니다：${first.ok ? '' : errorMessage(first.error)}`);
       }
     },
     onError: (cause) => action.setError(errorMessage(cause)),
@@ -213,7 +213,7 @@ export function FeedSources({ readOnly, toast }: {
       (signal) => checkFeeds(signal, [source.id]), () => void reload()),
     remove: (source) => void confirmRemove([source], async () => {
       await removeFeed(source.id);
-      toast(`已移除订阅源「${feedName(source)}」`);
+      toast(`제거한 구독 출처: 「${feedName(source)}」`);
       void reload();
     }),
   };
@@ -230,7 +230,7 @@ export function FeedSources({ readOnly, toast }: {
         cell: (context) => (
           <Checkbox slot={null} isSelected={context.row.getIsSelected()}
             onChange={(on) => context.row.toggleSelected(on)}
-            aria-label={`选择 ${feedName(context.row.original)}`} />
+            aria-label={`선택: ${feedName(context.row.original)}`} />
         ),
       }),
       column.accessor(feedName, {
@@ -245,7 +245,7 @@ export function FeedSources({ readOnly, toast }: {
               <FeedAvatar source={context.row.original} />
               {context.getValue()}
               {alias ? (
-                <span className="text-body-2-regular text-text-secondary" title={`站上这一页挂在「${alias}」名下`}>
+                <span className="text-body-2-regular text-text-secondary" title={`이 사이트의 페이지는 「${alias}」 명의로 등록되어 있습니다`}>
                   {alias}
                 </span>
               ) : null}
@@ -262,13 +262,13 @@ export function FeedSources({ readOnly, toast }: {
         id: 'origin',
         header: label('origin'),
         cell: (context) => (
-          <a href={context.getValue()} target="_blank" rel="noreferrer noopener" title="打开来源页面"
+          <a href={context.getValue()} target="_blank" rel="noreferrer noopener" title="출처 페이지 열기"
             className="text-text-primary underline-offset-2 hover:underline">
             {originHost(context.getValue())}
           </a>
         ),
       }),
-      column.accessor((source) => source.last_error ? '拉取失败' : source.enabled ? '已启用' : '已暂停', {
+      column.accessor((source) => source.last_error ? "가져오기 실패" : source.enabled ? "활성화됨" : "일시 중지됨", {
         id: 'status',
         header: label('status'),
         cell: (context) => <StatusChip source={context.row.original} />,
@@ -281,12 +281,12 @@ export function FeedSources({ readOnly, toast }: {
       column.accessor((row) => row.last_fetched_at ? Date.parse(row.last_fetched_at) || 0 : 0, {
         id: 'fetched',
         header: label('fetched'),
-        cell: (context) => <span className="whitespace-nowrap tabular-nums">{context.row.original.last_fetched_at ? localTime(context.row.original.last_fetched_at) : '还没拉过'}</span>,
+        cell: (context) => <span className="whitespace-nowrap tabular-nums">{context.row.original.last_fetched_at ? localTime(context.row.original.last_fetched_at) : "아직 가져온 적 없음"}</span>,
       }),
       column.accessor((row) => row.last_new_count, {
         id: 'fresh',
         header: label('fresh'),
-        cell: (context) => <span className="whitespace-nowrap tabular-nums">{`${context.getValue()} 条`}</span>,
+        cell: (context) => <span className="whitespace-nowrap tabular-nums">{`${context.getValue()} 개`}</span>,
       }),
       column.display({
         id: 'actions',
@@ -295,16 +295,16 @@ export function FeedSources({ readOnly, toast }: {
            刷新与垃圾桶字形，xs 那一档和开关一样高。 */
         cell: (context) => (
           <span className="flex items-center gap-1">
-            <Switch aria-label={`启用 ${feedName(context.row.original)}`}
+            <Switch aria-label={`활성화: ${feedName(context.row.original)}`}
               isSelected={context.row.original.enabled} isDisabled={handlers.current.readOnly}
               onChange={(enabled) => handlers.current.toggle(context.row.original, enabled)} />
             <Button variant="secondary" size="xs" iconOnly leadingIcon={RiRefreshLine}
-              aria-label={`拉取 ${feedName(context.row.original)}`}
+              aria-label={`가져오기: ${feedName(context.row.original)}`}
               disabled={handlers.current.readOnly}
               {...busyProps(handlers.current.busy === `check-${context.row.original.id}`)}
               onClick={() => handlers.current.fetch(context.row.original)} />
             <Button variant="secondary" size="xs" iconOnly leadingIcon={RiDeleteBinLine}
-              aria-label={`移除 ${feedName(context.row.original)}`}
+              aria-label={`제거: ${feedName(context.row.original)}`}
               disabled={handlers.current.readOnly}
               onClick={() => handlers.current.remove(context.row.original)} />
           </span>
@@ -331,8 +331,8 @@ export function FeedSources({ readOnly, toast }: {
 
   if (!data) {
     return feeds.error
-      ? <Note tone="error" title="打不开订阅源">{errorMessage(feeds.error)}</Note>
-      : <Help>正在读订阅源。</Help>;
+      ? <Note tone="error" title="구독 출처를 열 수 없습니다">{errorMessage(feeds.error)}</Note>
+      : <Help>구독 출처를 읽는 중입니다.</Help>;
   }
 
   const check = () => void action.run('check', (signal) => checkFeeds(signal), () => void reload());
@@ -347,13 +347,13 @@ export function FeedSources({ readOnly, toast }: {
   return (
     <div className="flex flex-col gap-3">
       <AddFeed readOnly={readOnly} toast={toast} onAdded={() => void reload()} />
-      <section aria-label="JAV 订阅列表"
+      <section aria-label="JAV 구독 목록"
         className={cardClass({ padding: 'none', className: 'flex flex-col gap-4 px-6 py-5 max-sm:px-4' })}>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="mr-auto text-title-2-medium text-text-primary">JAV 订阅源</h3>
-        <span className="text-body-2-regular text-text-secondary">{`${sources.length.toLocaleString()} 个订阅源 · ${(Number(data.unread) || 0).toLocaleString()} 条未看`}</span>
-        <Button onClick={check} disabled={readOnly} {...busyProps(action.busy === 'check')}>立即拉取</Button>
-        <DataTableSort label="JAV 订阅源" sorting={sorting} onChange={(next) => { setSorting(next); setPage(1); }}
+        <h3 className="mr-auto text-title-2-medium text-text-primary">JAV 구독 소스</h3>
+        <span className="text-body-2-regular text-text-secondary">{`${sources.length.toLocaleString()} 개 구독 출처 · ${(Number(data.unread) || 0).toLocaleString()} 개 안 본 항목`}</span>
+        <Button onClick={check} disabled={readOnly} {...busyProps(action.busy === 'check')}>지금 가져오기</Button>
+        <DataTableSort label="JAV 구독 소스" sorting={sorting} onChange={(next) => { setSorting(next); setPage(1); }}
           options={['name', 'kind', 'origin', 'status', 'interval', 'fetched', 'fresh'].map((id) => ({ id, label: COLUMN_LABELS[id]! }))} />
       </div>
 
@@ -362,35 +362,35 @@ export function FeedSources({ readOnly, toast }: {
           {/* 拉不动的源并成一条：每条源一行「源名：报错首行」，几条源同时坏也不把表格推出首屏；
               表格里那一行的状态徽章同时标着「拉取失败」。 */}
           {failing.length ? (
-            <Note tone="error" title={`${failing.length.toLocaleString()} 条订阅源拉取失败`}
+            <Note tone="error" title={`${failing.length.toLocaleString()} 개 구독 출처 가져오기 실패`}
               extra={<ul className="flex flex-col gap-0.5 text-body-2-regular">
                 {failing.map((source) => (
                   <li key={source.id} className="min-w-0 truncate" title={source.last_error || ''}>
-                    {`${feedName(source)}：${errorHeadline(source.last_error || '') || '未说明原因'}`}
+                    {`${feedName(source)}：${errorHeadline(source.last_error || '') || "원인이 제공되지 않았습니다"}`}
                   </li>
                 ))}
               </ul>}>
-              这些订阅源这一轮没有取到新条目。
+              이번에는 이 구독 출처에서 새 항목을 가져오지 못했습니다.
             </Note>
           ) : null}
           {action.error ? <ErrorText>{action.error}</ErrorText> : null}
         </div>
       ) : null}
 
-        <SelectionDock visible={chosen.length > 0} label="订阅源批量操作" count={`已选 ${chosen.length} 条订阅源`}>
+        <SelectionDock visible={chosen.length > 0} label="구독 출처 일괄 작업" count={`선택됨 ${chosen.length} 개 구독 출처`}>
           <Button variant="secondary" size="small" disabled={readOnly} {...busyProps(bulk.isPending)}
-            onClick={() => bulk.mutate({ ids: chosen.map((row) => row.id), action: 'enabled' })}>启用</Button>
+            onClick={() => bulk.mutate({ ids: chosen.map((row) => row.id), action: 'enabled' })}>활성화</Button>
           <Button variant="secondary" size="small" disabled={readOnly} {...busyProps(bulk.isPending)}
-            onClick={() => bulk.mutate({ ids: chosen.map((row) => row.id), action: 'paused' })}>暂停</Button>
+            onClick={() => bulk.mutate({ ids: chosen.map((row) => row.id), action: 'paused' })}>일시 정지</Button>
           <Button variant="danger" size="small" disabled={readOnly} {...busyProps(bulk.isPending)}
             onClick={() => void confirmRemove(chosen,
-              () => bulk.mutateAsync({ ids: chosen.map((row) => row.id), action: 'remove' }))}>移除</Button>
-          <Button variant="ghost" size="small" onClick={() => setSelected(new Set())}>取消选择</Button>
+              () => bulk.mutateAsync({ ids: chosen.map((row) => row.id), action: 'remove' }))}>제거</Button>
+          <Button variant="ghost" size="small" onClick={() => setSelected(new Set())}>선택 해제</Button>
         </SelectionDock>
 
       {sources.length ? (
         <DataTableFrame follow onRowClick={(key) => toggleRow(Number(key))}>
-          <Table aria-label="JAV 订阅源" size="sm"
+          <Table aria-label="JAV 구독 소스" size="sm"
             sortDescriptor={sorting[0] ? { column: sorting[0].id, direction: sorting[0].desc ? 'descending' : 'ascending' } : undefined}
             onSortChange={(sort) => table.getColumn(String(sort.column))?.toggleSorting(sort.direction === 'descending')}>
             <TableHeader>
@@ -420,18 +420,18 @@ export function FeedSources({ readOnly, toast }: {
           </Table>
         </DataTableFrame>
       ) : (
-        <EmptyState icon={RiRssLine} title="还没有订阅源" shell="plain">
-          在上面按女优名添加，或在人物页点「订阅新作」。
+        <EmptyState icon={RiRssLine} title="아직 구독 출처가 없습니다" shell="plain">
+          위에서 배우 이름으로 추가하거나 인물 페이지에서 「새 항목 구독」을 누르세요.
         </EmptyState>
       )}
       {sources.length ? (
-        <DataTableFooter label="JAV 订阅" total={win.total} unit="个订阅源"
+        <DataTableFooter label="JAV 구독" total={win.total} unit="개 구독 출처"
           pagination={{ pageIndex: win.page - 1, pageSize }}
           onChange={(next) => { setPageSize(next.pageSize); setPage(next.pageIndex + 1); }} />
       ) : null}
       <footer className="-mx-6 -mb-5 flex flex-wrap items-center gap-2 border-t border-separator-border rounded-b-2xl bg-card-footer px-6 py-4 max-sm:-mx-4 max-sm:px-4">
         <span role="status" className="mr-auto text-body-2-regular text-text-secondary">
-          {`未看 ${(Number(data.unread) || 0).toLocaleString()} · 已启用 ${sources.filter((source) => source.enabled).length.toLocaleString()} / ${sources.length.toLocaleString()}`}
+          {`안 봄 ${(Number(data.unread) || 0).toLocaleString()} · 활성화됨 ${sources.filter((source) => source.enabled).length.toLocaleString()} / ${sources.length.toLocaleString()}`}
         </span>
       </footer>
       </section>
