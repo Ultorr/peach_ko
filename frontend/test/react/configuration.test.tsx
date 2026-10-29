@@ -26,7 +26,7 @@ const full = () => data({ downloads, startup: {
 }, peach_proxy: { mode: 'environment', proxy_saved: false, needs_selection: false },
   entry_links: { sites: [{ key: 'javdb', label: 'JavDB', host: '', default_host: 'javdb.com' }] },
 });
-const names = ['媒体库与入库', '来源与订阅', '下载渠道', '网络与访问', '应用与维护', '系统诊断'];
+const names = ['미디어 라이브러리 및 가져오기', '소스 및 구독', '다운로드 서비스', '네트워크 및 접속', '앱 및 유지 관리', '시스템 진단'];
 function serve(config: ConfigurationData, credentials: CredentialData = { root: '', providers: [] }) {
   const fetcher = vi.fn(async (url: string) => ({ ok: true, status: 200, json: async () => {
     if (url === CONFIGURATION_URL) return config;
@@ -72,25 +72,25 @@ it('方向键首尾循环，Home 与 End 选择两端并同步焦点', async () 
   const host = await open();
   chosen(host).focus();
   await press(chosen(host), 'ArrowUp');
-  expect(chosen(host).textContent).toBe('系统诊断');
+  expect(chosen(host).textContent).toBe('시스템 진단');
   expect(document.activeElement).toBe(chosen(host));
   await press(chosen(host), 'ArrowDown');
-  expect(chosen(host).textContent).toBe('媒体库与入库');
+  expect(chosen(host).textContent).toBe('미디어 라이브러리 및 가져오기');
   await press(chosen(host), 'End');
-  expect(chosen(host).textContent).toBe('系统诊断');
+  expect(chosen(host).textContent).toBe('시스템 진단');
   await press(chosen(host), 'Home');
-  expect(chosen(host).textContent).toBe('媒体库与入库');
+  expect(chosen(host).textContent).toBe('미디어 라이브러리 및 가져오기');
   expect(tabs(host).map(tab => tab.tabIndex)).toEqual([0, -1, -1, -1, -1, -1]);
 });
 it('分区深链打开来源与订阅，切换分类保留未保存字段', async () => {
   const host = await open(full(), '来源与订阅');
-  expect(chosen(host).textContent).toBe('来源与订阅');
+  expect(chosen(host).textContent).toBe('소스 및 구독');
   await type(host.querySelector<HTMLInputElement>('#entry-link-javdb'), 'example.invalid');
   await click(tabs(host)[0]);
   await click(tabs(host)[1]);
   expect(host.querySelector<HTMLInputElement>('#entry-link-javdb')?.value).toBe('example.invalid');
   await act(async () => { queryClient.setQueryData(CONFIGURATION_KEY, { ...full(), revision: 'rev-2' }) });
-  expect(chosen(host).textContent).toBe('来源与订阅');
+  expect(chosen(host).textContent).toBe('소스 및 구독');
 });
 it.each([false, true])('来源凭据依据账本只读状态 %s 控制写入', async (readOnly) => {
   const host = await open(data({ ledger_read_only: readOnly }), '来源与订阅', { root: '', providers: [{
@@ -99,12 +99,12 @@ it.each([false, true])('来源凭据依据账本只读状态 %s 控制写入', a
   }] });
   await settle();
   expect(host.querySelector<HTMLInputElement>('input[type="password"]')?.disabled).toBe(readOnly);
-  expect(buttonNamed('保存配置', host.querySelector('[aria-label="可配置凭据"]')!)?.disabled).toBe(readOnly);
+  expect(buttonNamed('설정 저장', host.querySelector('[aria-label="인증 정보 설정 가능"]')!)?.disabled).toBe(readOnly);
 });
 it('未知分区回到媒体库，未提供下载渠道时省略对应分类', async () => {
   const host = await open(data({ editable: false }), '不存在');
-  expect(tabs(host).map(tab => tab.textContent)).toEqual(['媒体库与入库', '来源与订阅', '应用与维护', '系统诊断']);
-  expect(chosen(host).textContent).toBe('媒体库与入库');
+  expect(tabs(host).map(tab => tab.textContent)).toEqual(['미디어 라이브러리 및 가져오기', '소스 및 구독', '앱 및 유지 관리', '시스템 진단']);
+  expect(chosen(host).textContent).toBe('미디어 라이브러리 및 가져오기');
 });
 it('配置读取失败显示服务端原因', async () => {
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 503, json: async () => ({ message: '账本正在迁移' }) })));
@@ -118,16 +118,16 @@ it('配置读取失败显示服务端原因', async () => {
 it('挂载状态只跟随已保存路径，修改文件夹时撤下读数', async () => {
   const host = await open(data({ windows: true, media_sources: [{ location: '115', path: 'B:/', root: 'B:/', online: false }] }));
   const row = host.querySelector('[data-folder-row]')!;
-  expect(row.querySelector('[data-mount="offline"]')?.textContent).toBe('离线');
-  await type(row.querySelector<HTMLInputElement>('input[aria-label^="媒体文件夹 "]'), 'B:/Movies');
+  expect(row.querySelector('[data-mount="offline"]')?.textContent).toBe('오프라인');
+  await type(row.querySelector<HTMLInputElement>('input[aria-label^="미디어 폴더 "]'), 'B:/Movies');
   expect(row.querySelector('[data-mount]')).toBeNull();
 });
 it('只读媒体配置可刷新挂载状态，更新共用配置快照', async () => {
   const offline = { location: '115', path: 'B:/', root: 'B:/', online: false };
   const host = await open(data({ editable: false, notice: '只在本机可改', media_sources: [offline] }));
   serve(data({ editable: false, notice: '只在本机可改', media_sources: [{ ...offline, online: true }], revision: 'rev-2' }));
-  await click(buttonNamed('刷新挂载状态', host));
+  await click(buttonNamed('마운트 상태 새로 고침', host));
   await settle();
-  expect(section(host, '挂载状态')?.textContent).toContain('在线');
+  expect(section(host, '마운트 상태')?.textContent).toContain('온라인');
   expect(queryClient.getQueryData<ConfigurationData>(CONFIGURATION_KEY)?.revision).toBe('rev-2');
 });

@@ -348,8 +348,8 @@ class SubtitleApiTests(unittest.TestCase):
         self.assertEqual(tracks[0]["label"], "简体中文")
         self.assertEqual(tracks[0]["src"], "/api/assets/1/subtitles/0")
         self.assertTrue(tracks[0]["playable"])
-        self.assertEqual(tracks[1]["note"], "不在正片所在目录")
-        self.assertEqual(tracks[2]["note"], "编码未识别")
+        self.assertEqual(tracks[1]["note"], "본편과 같은 폴더에 있지 않습니다")
+        self.assertEqual(tracks[2]["note"], "인코딩을 인식할 수 없습니다")
         self.assertFalse(tracks[1]["playable"] or tracks[2]["playable"])
 
     def test_a_track_comes_back_as_webvtt(self):
@@ -368,7 +368,7 @@ class SubtitleApiTests(unittest.TestCase):
         with self._client() as client:
             response = client.get("/api/assets/1/subtitles/2")
         self.assertEqual(response.status_code, 415)
-        self.assertEqual(response.json()["error"], "编码未识别")
+        self.assertEqual(response.json()["error"], "인코딩을 인식할 수 없습니다")
 
     def test_an_index_past_the_end_and_a_missing_asset_both_404(self):
         with self._client() as client:

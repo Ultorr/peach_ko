@@ -70,17 +70,17 @@ it('带着番号与标题打开：标题行写番号与片名，搜索框与番�
   const posts = serve(snapshot(), { ok: true, outcome: 'submitted', task: task() });
   const { close, receipt, page } = await open({ code: 'ABC-123', title: '一部作品', origin: 'asset:12', searchReason: '中字' });
   expect(page.querySelector('[role=dialog]')?.textContent).toContain('ABC-123 · 一部作品');
-  expect(page.textContent).toContain('版本目标：中字');
-  expect(field(page, '按番号查找资源')?.value).toBe('ABC-123');
-  expect(field(page, '番号')).toBeNull();
-  expect(field(page, '目标目录')?.value).toBe('/115/云下载');
-  await type(field(page, '磁力链接'), MAGNET);
-  await submit(section(page, '提交下载'));
+  expect(page.textContent).toContain('목표 버전: 中字');
+  expect(field(page, '품번으로 리소스 찾기')?.value).toBe('ABC-123');
+  expect(field(page, '품번')).toBeNull();
+  expect(field(page, '대상 폴더')?.value).toBe('/115/云下载');
+  await type(field(page, '마그넷 링크'), MAGNET);
+  await submit(section(page, '다운로드 요청'));
   await settle();
   expect(posts).toEqual([{
     magnet: MAGNET, provider: '115', target: '/115/云下载', code: 'ABC-123', title: '一部作品', origin: 'asset:12',
   }]);
-  expect(receipt).toHaveBeenCalledWith('已提交离线下载，进度在任务中心');
+  expect(receipt).toHaveBeenCalledWith('오프라인 다운로드를 요청했습니다. 작업 센터에서 진행 상황을 확인하세요');
   expect(close).toHaveBeenCalled();
 });
 
@@ -88,10 +88,10 @@ it('提交没成功时弹层不关，原因留在表单里', async () => {
   serve(snapshot(), { ok: false, outcome: 'failed',
     task: task({ state: 'failed', failure_label: '没有可用的资源', failure_detail: '远端拒收' }) });
   const { close, receipt, page } = await open({});
-  await type(field(page, '磁力链接'), MAGNET);
-  await submit(section(page, '提交下载'));
+  await type(field(page, '마그넷 링크'), MAGNET);
+  await submit(section(page, '다운로드 요청'));
   await settle();
-  expect(page.textContent).toContain('提交没有成功：没有可用的资源：远端拒收');
+  expect(page.textContent).toContain('요청 실패: 没有可用的资源：远端拒收');
   expect([close.mock.calls.length, receipt.mock.calls.length]).toEqual([0, 0]);
 });
 
@@ -106,27 +106,27 @@ it('查找另一番号时清空先前的磁力和作品资料，资料未取得�
       : snapshot() };
   }));
   const { page } = await open({ code: 'ABC-123', title: '原作品', origin: 'asset:12', performers: '甲', duration: 600 });
-  await type(field(page, '磁力链接'), MAGNET);
-  await type(field(page, '按番号查找资源'), 'ABC-999');
-  await act(async () => field(page, '按番号查找资源')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+  await type(field(page, '마그넷 링크'), MAGNET);
+  await type(field(page, '품번으로 리소스 찾기'), 'ABC-999');
+  await act(async () => field(page, '품번으로 리소스 찾기')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
   await settle();
-  expect(page.querySelector('[data-resource-work]')?.textContent).toContain('作品资料未取得');
+  expect(page.querySelector('[data-resource-work]')?.textContent).toContain('항목 정보를 가져오지 못했습니다');
   expect(page.querySelector('[data-resource-work]')?.textContent).not.toContain('原作品');
-  expect(field(page, '磁力链接')?.value).toBe('');
-  await type(field(page, '磁力链接'), MAGNET);
-  await submit(section(page, '提交下载'));
+  expect(field(page, '마그넷 링크')?.value).toBe('');
+  await type(field(page, '마그넷 링크'), MAGNET);
+  await submit(section(page, '다운로드 요청'));
   expect(posts).toEqual([{ magnet: MAGNET, provider: '115', target: '/115/云下载', code: 'ABC-999' }]);
 });
 
 it('入库页交进来的下载方式先选中；换渠道时目标目录跟着换，115 才提配额', async () => {
   serve(snapshot());
   const { page } = await open({}, 'pikpak');
-  expect(field(page, '目标目录')?.value).toBe('/云下载');
+  expect(field(page, '대상 폴더')?.value).toBe('/云下载');
   expect(page.textContent).not.toContain('扣一条离线配额');
-  expect(buttonNamed('提交下载', page)?.className).toContain('bg-button-primary');
-  await choose(page.querySelector('[role=dialog] [aria-label="下载到"]'), '115');
-  expect(field(page, '目标目录')?.value).toBe('/115/云下载');
-  expect(page.textContent).toContain('每提交一次扣一条离线配额');
+  expect(buttonNamed('다운로드 요청', page)?.className).toContain('bg-button-primary');
+  await choose(page.querySelector('[role=dialog] [aria-label="다운로드 위치"]'), '115');
+  expect(field(page, '대상 폴더')?.value).toBe('/115/云下载');
+  expect(page.textContent).toContain('요청할 때마다 오프라인 다운로드 할당량 1회를 사용합니다. 재요청도 포함됩니다.');
 });
 
 it('没有下载渠道时可以查找资源，提交下载禁用', async () => {
@@ -135,9 +135,9 @@ it('没有下载渠道时可以查找资源，提交下载禁用', async () => {
     { key: 'pikpak', label: 'PikPak', configured: false, target: '' },
   ] }));
   const { page } = await open({});
-  expect(section(page, '查找资源')).not.toBeNull();
-  expect(buttonNamed('提交下载', page)?.disabled).toBe(true);
-  expect(page.textContent).toContain('下载渠道设置');
+  expect(section(page, '리소스 찾기')).not.toBeNull();
+  expect(buttonNamed('다운로드 요청', page)?.disabled).toBe(true);
+  expect(page.textContent).toContain('다운로드 서비스 설정');
   expect(page.querySelector('[data-resource-work]')).toBeNull();
 });
 
@@ -153,21 +153,21 @@ it.each(['abf-258', 'ABF258', 'ABF-258'])('查询同番号 %s 保留已知作品
   }));
   const { page } = await open({ code: 'ABF-258', title: '同一作品', origin: 'wishlist:12', cover: '/cover?code=ABF-258', performers: '甲' });
   const details = page.querySelector('[data-resource-work]')!;
-  expect(details.compareDocumentPosition(section(page, '查找资源')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  await type(field(page, '按番号查找资源'), requested);
-  await act(async () => field(page, '按番号查找资源')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+  expect(details.compareDocumentPosition(section(page, '리소스 찾기')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  await type(field(page, '품번으로 리소스 찾기'), requested);
+  await act(async () => field(page, '품번으로 리소스 찾기')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
   await settle();
   expect(details.textContent).toContain('同一作品');
   expect(details.querySelector('img')?.getAttribute('src')).toBe('/cover?code=ABF-258');
-  await type(field(page, '磁力链接'), MAGNET);
-  await submit(section(page, '提交下载'));
+  await type(field(page, '마그넷 링크'), MAGNET);
+  await submit(section(page, '다운로드 요청'));
   expect(posts).toEqual([{ magnet: MAGNET, provider: '115', target: '/115/云下载', code: requested, title: '同一作品', origin: 'wishlist:12' }]);
 });
 
 it('只读端可查找资源，提交下载禁用', async () => {
   serve(snapshot({ available: false }));
   const { page } = await open({});
-  expect(page.textContent).toContain('云下载只在账本写入端可用');
-  expect(section(page, '查找资源')).not.toBeNull();
-  expect(buttonNamed('提交下载', page)?.disabled).toBe(true);
+  expect(page.textContent).toContain('클라우드 다운로드는 원장을 기록하는 기기에서만 사용할 수 있습니다.');
+  expect(section(page, '리소스 찾기')).not.toBeNull();
+  expect(buttonNamed('다운로드 요청', page)?.disabled).toBe(true);
 });

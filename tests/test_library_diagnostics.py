@@ -124,10 +124,10 @@ class LibraryDiagnosticsTests(unittest.TestCase):
             'ok': True, 'kind': 'ok', 'reason': 'parsed', 'checked_at': 1_700_000_000})
         rows = {row['source']: row for row in diagnostics.sources(self.settings, self.config, now=1_700_172_800)}
         self.assertEqual(rows['airav']['status'], 'stale')
-        self.assertIn('解析成功', rows['airav']['reason'])
+        self.assertIn('분석에 성공', rows['airav']['reason'])
         self.assertIsNotNone(rows['airav']['last_success_at'])
         self.assertEqual(rows['avsox']['status'], 'unchecked')
-        self.assertIn('尚无', rows['avsox']['reason'])
+        self.assertIn('기록이 없습니다', rows['avsox']['reason'])
         self.assertNotIn('fc2club', rows)
         self.assertFalse({'makers', 'prestige', 'faleno', 'dahlia'} & rows.keys())
         self.assertTrue({'mgstage', 'dmm', 'fc2'} <= rows.keys())
@@ -141,7 +141,7 @@ class LibraryDiagnosticsTests(unittest.TestCase):
             'ok': True, 'kind': 'ok', 'reason': 'parsed', 'checked_at': 1_700_000_000, 'elapsed_s': 2.1})
         rows = {row['source']: row for row in diagnostics.sources(self.settings, self.config, now=1_700_000_100)}
         self.assertEqual(rows['airav']['status'], 'unknown')
-        self.assertIn('解析状态未取得', rows['airav']['reason'])
+        self.assertIn('분석 상태는 확인하지 못했습니다', rows['airav']['reason'])
         self.assertEqual(rows['fc2club']['status'], 'ok')
         self.assertIsNotNone(rows['fc2club']['last_success_at'])
         self.assertEqual(rows['airav']['elapsed_s'], 1.2)
@@ -149,7 +149,7 @@ class LibraryDiagnosticsTests(unittest.TestCase):
             'ok': False, 'kind': 'auth', 'reason': 'geo_restricted', 'checked_at': 1_700_000_100})
         rows = {row['source']: row for row in diagnostics.sources(self.settings, self.config, now=1_700_000_101)}
         self.assertEqual(rows['fc2club']['status'], 'warning')
-        self.assertIn('地区', rows['fc2club']['reason'])
+        self.assertIn('지역', rows['fc2club']['reason'])
         self.assertIsNotNone(rows['fc2club']['last_success_at'])
 
     def test_source_times_are_normalized_and_corrupt_fields_are_ignored(self):

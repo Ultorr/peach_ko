@@ -76,9 +76,9 @@ describe('两组球', () => {
   it('上面一组是光晕预设，下面一组是十二档强调色，各自按下当前那一档', async () => {
     const { root } = await setup({ preset: 'ash' }, 'teal');
     const grids = [...root.querySelectorAll('[role="group"]')].map((grid) => grid.getAttribute('aria-label'));
-    expect(grids).toEqual(['光晕', '强调色']);
-    expect([...root.querySelectorAll('[data-glow-head]')].map((head) => head.textContent)).toEqual(['光晕重置', '强调色']);
-    expect(pressed(root, '[data-glow-preset]')).toEqual(['灰雾']);
+    expect(grids).toEqual(['빛 번짐', '강조색']);
+    expect([...root.querySelectorAll('[data-glow-head]')].map((head) => head.textContent)).toEqual(['빛 번짐초기화', '강조색']);
+    expect(pressed(root, '[data-glow-preset]')).toEqual(['회색 안개']);
     expect([...root.querySelectorAll('[data-accent]')].map((chip) => chip.getAttribute('data-accent')))
       .toEqual(ACCENTS.map(([key]) => key));
     expect(root.querySelector('[data-accent="teal"] [data-accent-ball="teal"]')).not.toBeNull();
@@ -108,7 +108,7 @@ describe('点下去写什么', () => {
     expect(JSON.parse(localStorage.getItem(SETTINGS_KEY)!).homeGlow.preset).toBe('amber');
     expect(document.documentElement.dataset.accent).toBe(glowAccent('amber'));
     expect(document.querySelector<HTMLElement>('.glowlayer')!.style.getPropertyValue('--glow-strength')).not.toBe('');
-    expect(pressed(root, '[data-glow-preset]')).toEqual(['钨丝暖阁']);
+    expect(pressed(root, '[data-glow-preset]')).toEqual(['따뜻한 호박빛']);
   });
 
   it('单点强调色只改强调色，不动光晕', async () => {
@@ -142,7 +142,7 @@ describe('与别处同步', () => {
     const { root, store } = await setup({ preset: 'ash' });
     const amber = root.querySelector('[data-glow-preset="amber"]');
     act(() => chooseGlowPreset('amber', store));
-    expect(pressed(root, '[data-glow-preset]')).toEqual(['钨丝暖阁']);
+    expect(pressed(root, '[data-glow-preset]')).toEqual(['따뜻한 호박빛']);
     expect(root.querySelector('[data-glow-preset="amber"]')).toBe(amber);
   });
 

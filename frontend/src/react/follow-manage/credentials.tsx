@@ -11,6 +11,7 @@ import { Chip } from '@/components/base/badges/chip';
 import { Input } from '@/components/base/input/input';
 
 import { errorMessage } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import { cardClass } from '../components/card';
 import { EmptyState } from '../components/empty-state';
 import { Note } from '../components/note';
@@ -72,14 +73,14 @@ function CredentialForm({ row, readOnly, toast }:
   return (
     <div className="flex flex-col gap-3">
       <Help>
-        {row.why}
+        {koreanLabel(row.why || '')}
         {/* 「去取」跳到那个站自己的页面，会离开 Peach，所以带外链标。 */}
         {row.where ? <> <ExternalLink href={row.where}>인증 정보 가져오기</ExternalLink></> : null}
       </Help>
-      {row.howto ? <Help>{row.howto}</Help> : null}
+      {row.howto ? <Help>{koreanLabel(row.howto)}</Help> : null}
       <div className="flex w-full flex-col gap-3">
         {(row.needs || []).map((name) => (
-          <Input key={name} type="password" label={name} placeholder={fieldHint(row, name)}
+          <Input key={name} type="password" label={koreanLabel(name)} placeholder={fieldHint(row, name)}
             autoComplete="off" spellCheck="false" isDisabled={readOnly}
             value={values[name] || ''} onChange={(value) => setValues({ ...values, [name]: value })}
             className="w-full min-w-0" />
@@ -98,7 +99,7 @@ function CredentialForm({ row, readOnly, toast }:
       </div>
       {problem ? <ErrorText>{problem}</ErrorText> : null}
       {(row.shared_fields || []).length
-        ? <Help>{`${row.shared_fields!.join('、')} 항목은 공유 사본에서 가져왔으며 이 기기에 별도로 저장되어 있지 않습니다. 지우면 양쪽에서 모두 삭제됩니다.`}</Help>
+        ? <Help>{`${(row.shared_fields || []).map(koreanLabel).join(', ')} 항목은 공유 사본에서 가져왔으며 이 기기에 별도로 저장되어 있지 않습니다. 지우면 양쪽에서 모두 삭제됩니다.`}</Help>
         : null}
       {row.path
         ? <Disclosure summary="인증 정보 파일"><PathLine path={row.path} className="font-mono text-caption-1-regular text-text-tertiary" onRevealed={toast} /></Disclosure>
@@ -117,7 +118,7 @@ function CredentialSection({ row, readOnly, toast }:
       <b className="min-w-0 text-body-medium wrap-anywhere text-text-primary">{row.provider_label}</b>
       <StateChip row={row} />
       {row.missing.length
-        ? <Chip variant="caption" color="rose">{`누락: ${row.missing.join('、')}`}</Chip>
+        ? <Chip variant="caption" color="rose">{`누락: ${row.missing.map(koreanLabel).join(', ')}`}</Chip>
         : null}
     </span>
   );
@@ -125,7 +126,7 @@ function CredentialSection({ row, readOnly, toast }:
     return (
       <div className="flex flex-wrap items-center gap-3 border-b border-separator-border px-6 py-5 last:border-b-0 max-sm:px-4">
         {head}
-        {row.requirement === 'blocked' ? <Help>{row.why}</Help> : null}
+        {row.requirement === 'blocked' ? <Help>{koreanLabel(row.why || '')}</Help> : null}
       </div>
     );
   }

@@ -312,6 +312,8 @@ body[data-surface="/trash"] .peach-react button[data-media-title] {
   -webkit-backdrop-filter: saturate(1.8) blur(12px);
 }
 .peach-react :is([data-select-mode] [data-media-check], [data-media-card][data-selected] [data-media-check]) { display: grid; }
+.peach-react [data-media-card]:is(:hover,:focus-within) button[data-media-check] { display:grid;cursor:pointer;padding:0; }
+.peach-react button[data-media-check]:focus-visible { outline:2px solid var(--tungsten);outline-offset:2px; }
 .peach-react [data-media-card][data-selected] [data-media-check] {
   border-color: var(--on-media);
   background: var(--on-media);

@@ -10,6 +10,7 @@ import { Button } from '@/components/base/buttons/button';
 import { Select, SelectItem } from '@/components/base/select/select';
 
 import { apiSend } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import { REPAIR_CARD_TEXT } from '../../management';
 import { JOB_RUNNING_POLL_MS } from '../background-job';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
@@ -96,7 +97,7 @@ export function MediaRepairCard() {
         {complete && state.missing_tool
           ? <Note tone="warning" title="untrunc 없음">{missingToolText(state)}</Note>
           : null}
-        {problem ? <Note tone="error">{problem}</Note> : null}
+        {problem ? <Note tone="error">{koreanLabel(problem)}</Note> : null}
       </div>
     </div>
   );

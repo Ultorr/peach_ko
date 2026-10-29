@@ -22,9 +22,9 @@ describe('设计决定：配置控件', () => {
           return { width: shape.width, height: shape.height, text: symbol?.textContent, name: icon.closest('button')!.textContent };
         }));
         for (const mark of marks) assert.ok(mark.width > 0 && mark.height > 0, `${mark.name} 字形为空`);
-        assert.ok(marks.find((mark) => mark.name === 'JAV 与新作')?.text?.includes('番'));
-        await page.locator(PANEL).getByRole('tab', { name: '搜索与推荐' }).click();
-        const link = page.locator(PANEL).getByRole('link', { name: '打开口味与记录' });
+        assert.ok(marks.find((mark) => mark.name === 'JAV 및 신작')?.text?.includes('番'));
+        await page.locator(PANEL).getByRole('tab', { name: '검색 및 추천' }).click();
+        const link = page.locator(PANEL).getByRole('link', { name: '취향 및 기록 열기' });
         const style = await link.evaluate((node) => ({ display: getComputedStyle(node).display,
           height: node.getBoundingClientRect().height, decoration: getComputedStyle(node).textDecorationLine }));
         assert.ok(['flex', 'inline-flex'].includes(style.display));
@@ -59,14 +59,14 @@ describe('设计决定：配置控件', () => {
         }));
         assert.equal(centers.length, 3);
         for (const delta of centers) assert.ok(delta <= 1, `状态偏离输入框中线 ${delta}px`);
-        const media = page.getByRole('form', { name: '媒体文件夹', exact: true });
-        assert.notEqual(await media.getByRole('button', { name: '添加文件夹', exact: true }).evaluate((node) => getComputedStyle(node).backgroundImage),
-          await media.getByRole('button', { name: '保存配置', exact: true }).evaluate((node) => getComputedStyle(node).backgroundImage));
-        await page.getByRole('tab', { name: '应用与维护', exact: true }).click();
-        const tutorial = page.getByRole('region', { name: '安装教程', exact: true });
+        const media = page.getByRole('form', { name: '미디어 폴더', exact: true });
+        assert.notEqual(await media.getByRole('button', { name: '폴더 추가', exact: true }).evaluate((node) => getComputedStyle(node).backgroundImage),
+          await media.getByRole('button', { name: '설정 저장', exact: true }).evaluate((node) => getComputedStyle(node).backgroundImage));
+        await page.getByRole('tab', { name: '앱 및 유지 관리', exact: true }).click();
+        const tutorial = page.getByRole('region', { name: '설치 안내', exact: true });
         await tutorial.waitFor();
         const aligned = await tutorial.evaluate((node) => {
-          const label = [...node.querySelectorAll('p')].find((item) => item.textContent === '安装教程')!.getBoundingClientRect();
+          const label = [...node.querySelectorAll('p')].find((item) => item.textContent === '설치 안내')!.getBoundingClientRect();
           const button = node.querySelector('button')!.getBoundingClientRect();
           return { delta: Math.abs(label.top + label.height / 2 - button.top - button.height / 2), gap: button.left - label.right };
         });
@@ -112,14 +112,14 @@ describe('设计决定：配置控件', () => {
     const opened = await openActivity(browser, [parent, ...children]);
     try {
       const page = opened.page;
-      const summary = page.locator('summary').filter({ hasText: '任务明细 · 20 项' });
+      const summary = page.locator('summary').filter({ hasText: '작업 상세 · 20 개' });
       assert.equal(await page.locator('[data-followup-key]:visible').count(), 0);
       await summary.focus();
       await page.keyboard.press('Enter');
       await settle(page);
       assert.equal(await page.locator('[data-followup-key]:visible').count(), 20);
       await page.keyboard.press('Enter');
-      await page.waitForFunction(() => ![...document.querySelectorAll('details')].find((node) => node.textContent?.includes('任务明细 · 20 项'))?.open);
+      await page.waitForFunction(() => ![...document.querySelectorAll('details')].find((node) => node.textContent?.includes('작업 상세 · 20 개'))?.open);
       assert.equal(await page.locator('[data-followup-key]:visible').count(), 0);
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close(); }

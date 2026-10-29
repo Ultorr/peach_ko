@@ -20,7 +20,7 @@ describe('卖家署名与头像', () => {
         const avatar = page.locator('#grid [data-media-avatar] img').first();
         assert.equal(await avatar.count(), 1, '卡片需独立于顶部代表作表取得卖家头像');
         assert.equal(await avatar.getAttribute('src'), '/avatar?id=18');
-        assert.equal(await avatar.getAttribute('title'), '代表作画面，非本人');
+        assert.equal(await avatar.getAttribute('title'), '대표 항목의 장면이며 본인 사진이 아닙니다');
         await page.locator('#grid [data-media-title]').first().click();
         await page.locator('#stage [data-item-side]').waitFor();
         const result = await page.evaluate(() => {
@@ -31,7 +31,7 @@ describe('卖家署名与头像', () => {
             note: image?.getAttribute('title'), sameRow: Math.abs(seller.getBoundingClientRect().top - studio.getBoundingClientRect().top) < 1,
             performers: document.querySelectorAll('#stage [data-id-cell="performer"]').length };
         });
-        assert.deepEqual(result, { label: '卖家', src: '/avatar?id=18', note: '代表作画面，非本人', sameRow: true, performers: 0 });
+        assert.deepEqual(result, { label: '판매자', src: '/avatar?id=18', note: '대표 항목의 장면이며 본인 사진이 아닙니다', sameRow: true, performers: 0 });
         const bounds = await layout(page);
         assert.deepEqual(bounds.offenders, []);
         assert.ok(bounds.scrollWidth <= bounds.viewportWidth + 1);
@@ -57,7 +57,7 @@ describe('卖家署名与头像', () => {
       await page.locator('#stage [data-id-cell="creator"] img').waitFor();
       await settle(page);
       const group = page.locator('#stage [data-id-group="creator"]');
-      assert.equal(await group.locator('h5').textContent(), '创作者');
+      assert.equal(await group.locator('h5').textContent(), '크리에이터');
       const img = group.locator('img');
       assert.equal(await img.getAttribute('src'), '/entity-image?kind=creator&id=81&v=portrait-v1');
       assert.equal(await img.getAttribute('title'), null);

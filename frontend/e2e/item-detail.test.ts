@@ -22,7 +22,7 @@ const withoutPlayer = (problems: string[]) => problems.filter((line) => !line.in
 const pathIs = (page: Page, path: string) => page.waitForFunction(
   (wanted) => (wanted.includes('?') ? location.pathname + location.search : location.pathname) === wanted, path, { timeout: 10_000 });
 /** 回执栈在 body 下，舞台是模态 dialog，外面整页惰性，鼠标点不到撤销键；这里量的是撤销本身。 */
-const undo = (page: Page) => page.locator('#toasts').getByRole('button', { name: '撤销' }).last().dispatchEvent('click');
+const undo = (page: Page) => page.locator('#toasts').getByRole('button', { name: '실행 취소' }).last().dispatchEvent('click');
 const current = (page: Page) => page.locator('#stage [data-queue-item][aria-current="true"]').getAttribute('data-queue-item');
 const ids = (page: Page, selector: string, attribute: string) => page.locator(selector).evaluateAll(
   (nodes, name) => nodes.map((node) => Number(node.getAttribute(name))), attribute);
@@ -361,10 +361,10 @@ describe('作品详情岛', () => {
     try {
       const page = opened.page;
       const gate = page.locator('#stage [data-item-gate="offline"]');
-      assert.match(await gate.innerText(), /脱盘模式/);
+      assert.match(await gate.innerText(), /디스크 연결 해제 모드/);
       assert.equal(await page.locator('#stage .vjs-tech').count(), 0, '脱盘的条目挂了播放器');
       await page.locator('#offlineRetry').click();
-      await page.locator('#offlineRetry', { hasText: '仍无法读取 · 刷新' }).waitFor();
+      await page.locator('#offlineRetry', { hasText: '여전히 읽을 수 없음 · 새로고침' }).waitFor();
       assert.deepEqual(opened.problems, []);
     } finally {
       await opened.close();
@@ -404,8 +404,8 @@ describe('作品详情岛', () => {
       const page = opened.page;
       const shown = () => page.locator('#stage [data-item-identity] [data-entity-kind="performer"]:visible').count();
       assert.equal(await shown(), 8);
-      assert.equal((await page.locator('#castMore').innerText()).trim(), `还有 ${NAMES.length - 8} 位`);
-      const button = page.getByRole('button', { name: `还有 ${NAMES.length - 8} 位` });
+      assert.equal((await page.locator('#castMore').innerText()).trim(), `추가 ${NAMES.length - 8} 명`);
+      const button = page.getByRole('button', { name: `추가 ${NAMES.length - 8} 명` });
       const appearance = await button.evaluate((node) => {
         const style = getComputedStyle(node);
         return { border: style.borderTopStyle, width: parseFloat(style.borderTopWidth),
@@ -452,10 +452,10 @@ describe('作品详情岛', () => {
       assert.equal(await fold.isVisible(), true);
       assert.equal(await lines(), 2);
       await fold.click();
-      assert.equal(await fold.getAttribute('aria-label'), '收起标题');
+      assert.equal(await fold.getAttribute('aria-label'), '제목 접기');
       assert.ok(await lines() > 2, '展开之后整段标题都在');
       await title.click();
-      assert.equal(await fold.getAttribute('aria-label'), '展开标题');
+      assert.equal(await fold.getAttribute('aria-label'), '제목 펼치기');
       assert.equal(await lines(), 2);
       assert.deepEqual(withoutPlayer(opened.problems), []);
     } finally {
@@ -468,12 +468,12 @@ describe('作品详情岛', () => {
     try {
       const page = opened.page;
       const value = page.locator('#detailRating [data-rating-value]');
-      assert.equal((await value.innerText()).trim(), '3 星');
+      assert.equal((await value.innerText()).trim(), '3 점');
       await page.locator('#detailRating [data-rate="3"]').click();
-      await page.locator('#detailRating [data-rating-value]', { hasText: '未评分' }).waitFor();
+      await page.locator('#detailRating [data-rating-value]', { hasText: '별점 없음' }).waitFor();
       assert.equal(await page.locator('#detailRating [data-on="true"]').count(), 0);
       await undo(page);
-      await page.locator('#detailRating [data-rating-value]', { hasText: '3 星' }).waitFor();
+      await page.locator('#detailRating [data-rating-value]', { hasText: '3 점' }).waitFor();
       assert.deepEqual(opened.stub.writes.filter((write) => write.url === '/api/feedback').map((write) => write.body), [
         { id: ITEM.plain, kind: 'rate', value: 0 },
         { id: ITEM.plain, kind: 'rate', value: 60 },
@@ -496,7 +496,7 @@ describe('作品详情岛', () => {
       await page.locator('#tagPlus').click();
       await page.locator('#tagPicker:not([hidden])').waitFor();
       await page.locator('#tagPickSearch').fill('新建的标签');
-      await page.locator('#tagPicker [data-pick="新建的标签"]', { hasText: '新建“新建的标签”' }).waitFor();
+      await page.locator('#tagPicker [data-pick="新建的标签"]', { hasText: '새로 만들기: “新建的标签”' }).waitFor();
       await page.locator('#tagPickSearch').press('Enter');
       await tag('新建的标签').waitFor();
       assert.equal(await page.locator('#tagPicker').isHidden(), true, '加完标签选择器没有收起');
@@ -586,12 +586,12 @@ describe('作品详情岛', () => {
         const card = page.locator('#grid [data-media-card][data-variant="grid"]');
         await card.first().waitFor();
         assert.equal(await card.count(), 1);
-        assert.deepEqual(await card.locator('[data-media-group]').allTextContents(), ['2 个版本']);
+        assert.deepEqual(await card.locator('[data-media-group]').allTextContents(), ['2 개 버전']);
         await card.locator('[data-media-title]').click();
         await pathIs(page, '/assets/33?editions=31');
         await page.locator('#stage [data-queue-item="33"][aria-current="true"]').waitFor();
         assert.equal(await page.locator('#stage [data-queue-item]').count(), 3);
-        assert.equal(await page.locator('#stage').getByText('2 个版本', { exact: true }).count(), 1);
+        assert.equal(await page.locator('#stage').getByText('2 개 버전', { exact: true }).count(), 1);
         await page.locator('#stage [data-queue-item="32"]').click();
         await page.locator('#stage [data-queue-item="32"][aria-current="true"]').waitFor();
         await page.locator('#stage video.vjs-tech').dispatchEvent('ended');
@@ -626,7 +626,7 @@ describe('作品详情岛', () => {
         await page.locator(`#stage [data-queue-item="${next}"][aria-current="true"]`).waitFor();
         await page.locator(DETAIL_READY).waitFor();
         assert.deepEqual(await stageKept(page), { same: true, skeleton: false, focused: true }, `${kind}队列换一条重开了浮窗`);
-        if (kind === '分卷') assert.match(await page.locator('#stage [data-detail-title]').innerText(), /第 3 卷/);
+        if (kind === '分卷') assert.match(await page.locator('#stage [data-detail-title]').innerText(), /제 3 편/);
         for (const url of ['/api/parts', '/api/editions', '/api/related']) {
           assert.equal(opened.stub.reads.get(url) || 0, reads.get(url) || 0, `同一个${kind}队列里换一条又取了 ${url}`);
         }

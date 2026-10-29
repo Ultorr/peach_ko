@@ -86,14 +86,14 @@ describe('库外 JAV 作品详情', () => {
           await page.getByText('已保存的评论正文').waitFor();
           await page.locator('[data-jav-resources] summary').click();
           await page.locator('[data-want-magnets]').scrollIntoViewIfNeeded();
-          await page.getByText('暂未找到资源链接').waitFor();
+          await page.getByText('리소스 링크를 아직 찾지 못했습니다.').waitFor();
           await settle(page, '#stage');
           assert.deepEqual({ reviews, resources }, { reviews: 1, resources: 1 });
           assert.ok((await layout(page)).scrollWidth <= viewport.width + 1);
           if (visit === 0) await page.reload();
         }
         const refreshed = page.waitForResponse(response => response.url().includes('/api/jav/reviews?') && response.url().includes('refresh=1'));
-        await page.getByRole('button', { name: '刷新评论', exact: true }).click();
+        await page.getByRole('button', { name: '리뷰 새로고침', exact: true }).click();
         await refreshed;
         await settle(page, '#stage');
         assert.deepEqual({ reviews, resources }, { reviews: 2, resources: 1 });
@@ -101,7 +101,7 @@ describe('库外 JAV 作品详情', () => {
           reviews++;
           return route.fulfill({ json: { ok: false, page: 1, items: [], more: false, message: '来源暂时不可用' } });
         });
-        await page.getByRole('button', { name: '刷新评论', exact: true }).click();
+        await page.getByRole('button', { name: '리뷰 새로고침', exact: true }).click();
         await page.getByText('来源暂时不可用').waitFor();
         assert.ok(await page.getByText('已保存的评论正文').isVisible());
         assert.equal(reviews, 3);
@@ -167,12 +167,12 @@ describe('库外 JAV 作品详情', () => {
         await page.goto(requiredEnv('PEACH_E2E_ORIGIN') + '/');
         const card = page.locator('#feedNew [data-feed-id="1"]');
         await card.waitFor({ state: 'visible' });
-        await card.getByRole('link', { name: '打开 EXM-001 的作品详情' }).click();
+        await card.getByRole('link', { name: 'EXM-001 항목 상세 열기' }).click();
         await page.waitForURL('**/works/EXM-001');
         await page.locator('#stage [data-jav-detail] h1').waitFor({ state: 'visible' });
         assert.ok(await page.locator('#stage').evaluate(el => (el as HTMLDialogElement).open));
         assert.equal(await card.count(), 1, '原列表留在详情底下');
-        await page.getByRole('img', { name: 'EXM-001 封面', exact: true }).waitFor({ state: 'visible' });
+        await page.getByRole('img', { name: 'EXM-001 표지', exact: true }).waitFor({ state: 'visible' });
         const shared = await page.locator('[data-jav-info]').evaluate(el => {
           const faces = [...el.querySelectorAll('[data-identity-primary] [data-id-face]')].map(face => {
             const box = face.getBoundingClientRect(); return { width: box.width, height: box.height, y: box.y };
@@ -190,7 +190,7 @@ describe('库外 JAV 作品详情', () => {
         });
         assert.equal(shared.faces.length, 3, '女优、未知出演者与厂牌各有独立身份格');
         assert.equal(await page.locator('[data-id-gender="male"]').count(), 0);
-        for (const [gender, label] of [['female', '女优'], ['unknown', '出演者']]) {
+        for (const [gender, label] of [['female', '배우'], ['unknown', '출연자']]) {
           assert.equal(await page.locator(`[data-id-gender="${gender}"] [data-id-label]`).textContent(), label);
           assert.equal(await page.locator(`[data-id-gender="${gender}"] [data-id-face]`).count(), 1);
         }
@@ -211,7 +211,7 @@ describe('库外 JAV 作品详情', () => {
         assert.ok(starLayers.every(error => error < .5), JSON.stringify(starLayers));
         assert.equal(shared.icons, 2);
         assert.ok(Math.abs(shared.codeY - shared.titleY) < 2, '番号与标题在同一行开始');
-        assert.equal(shared.tag, '痴女'); assert.equal(shared.tagCat, 'role');
+        assert.equal(shared.tag, '적극적인 여성'); assert.equal(shared.tagCat, 'role');
         await page.locator('[data-id-gender="female"] [data-id-face] img').waitFor({ state: 'visible' });
         assert.equal(await page.locator('[data-id-cell="studio"]').evaluate(node => node.tagName), 'SPAN', '未登记厂牌只显示名称');
         assert.equal(await page.locator('[data-follow-image-dots] button').count(), 13);
@@ -238,14 +238,14 @@ describe('库外 JAV 作品详情', () => {
             if (frames.length < 120) requestAnimationFrame(sample);
           }; sample();
         });
-        const imageDot = page.getByRole('button', { name: '预览 2', exact: true });
+        const imageDot = page.getByRole('button', { name: '미리 보기 2', exact: true });
         await page.keyboard.press('Tab');
         await imageDot.focus();
         assert.equal(await page.locator('[data-media-preview-tip]').count(), 0);
         assert.equal(await page.locator('[data-follow-image-item][aria-current="true"]').getAttribute('data-follow-image-item'), '-1', '聚焦预览保持当前图片');
         await imageDot.click();
-        await page.getByRole('img', { name: 'EXM-001 预览 2', exact: true }).waitFor();
-        await page.getByRole('button', { name: '封面', exact: true }).click();
+        await page.getByRole('img', { name: 'EXM-001 미리 보기 2', exact: true }).waitFor();
+        await page.getByRole('button', { name: '표지', exact: true }).click();
         if (viewport.mobile) {
           await page.setViewportSize({ width: 350, height: viewport.height });
           assert.equal(await page.locator('[data-follow-image-dots] button').count(), 13);
@@ -253,10 +253,10 @@ describe('库外 JAV 作品详情', () => {
           await page.setViewportSize({ width: viewport.width, height: viewport.height });
           await page.locator('[data-follow-image-dots]').waitFor({ state: 'visible' });
         }
-        await page.getByRole('button', { name: '下一项媒体', exact: true }).click();
-        await page.getByRole('img', { name: 'EXM-001 预览 1', exact: true }).waitFor({ state: 'visible' });
-        await page.getByRole('button', { name: '上一项媒体', exact: true }).click();
-        await page.getByRole('button', { name: '视频预览', exact: true }).first().click();
+        await page.getByRole('button', { name: '다음 미디어', exact: true }).click();
+        await page.getByRole('img', { name: 'EXM-001 미리 보기 1', exact: true }).waitFor({ state: 'visible' });
+        await page.getByRole('button', { name: '이전 미디어', exact: true }).click();
+        await page.getByRole('button', { name: '동영상 미리보기', exact: true }).first().click();
         await page.waitForFunction(() => { const video = document.querySelector<HTMLVideoElement>('[data-jav-video] video'); return video && video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0 });
         assert.ok(await page.locator('[data-jav-video] video.vjs-tech').evaluate(video => (video as HTMLVideoElement).paused), '预览等待用户播放');
         const preview = page.locator('[data-jav-video]');
@@ -264,17 +264,17 @@ describe('库外 JAV 作品详情', () => {
         assert.ok(playerBox && Math.abs(playerBox.width / playerBox.height - 16 / 9) < 0.02, JSON.stringify(playerBox));
         const indicatorBox = await page.locator('[data-follow-image-dots]').boundingBox();
         assert.ok(playerBox && indicatorBox && indicatorBox.y >= playerBox.y + playerBox.height, '视频 indicator 位于播放器下方');
-        await preview.getByRole('button', { name: '播放', exact: true }).waitFor({ state: 'visible' });
+        await preview.getByRole('button', { name: '재생', exact: true }).waitFor({ state: 'visible' });
         assert.equal(await preview.locator('.vjs-control-bar').evaluate(el => getComputedStyle(el).visibility), 'visible');
         await preview.locator('video.vjs-tech').evaluate(node => { (node as HTMLVideoElement).muted = true });
-        await preview.getByRole('button', { name: '播放', exact: true }).click();
+        await preview.getByRole('button', { name: '재생', exact: true }).click();
         await page.waitForFunction(() => (document.querySelector<HTMLVideoElement>('[data-jav-video] video')?.currentTime || 0) > 0);
-        await preview.getByRole('button', { name: '暂停', exact: true }).click();
+        await preview.getByRole('button', { name: '일시 정지', exact: true }).click();
         assert.ok(await preview.locator('video.vjs-tech').evaluate(node => (node as HTMLVideoElement).paused));
-        await preview.getByRole('button', { name: '设置', exact: true }).click();
-        await preview.getByRole('menuitem', { name: /播放速度/ }).waitFor({ state: 'visible' });
-        await preview.getByRole('button', { name: '设置', exact: true }).click();
-        await page.getByRole('button', { name: '查看图片', exact: true }).click();
+        await preview.getByRole('button', { name: '설정', exact: true }).click();
+        await preview.getByRole('menuitem', { name: /재생 속도/ }).waitFor({ state: 'visible' });
+        await preview.getByRole('button', { name: '설정', exact: true }).click();
+        await page.getByRole('button', { name: '이미지 보기', exact: true }).click();
         assert.equal(await page.locator('[data-jav-video] video.vjs-tech').count(), 0, '切回图片卸下预览播放器');
         const frames = await page.evaluate(() => (window as unknown as { detailHeightFrames: { width: number; height: number }[] }).detailHeightFrames);
         assert.ok(frames.length > 3);
@@ -288,8 +288,8 @@ describe('库外 JAV 作品详情', () => {
           assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
           assert.equal(await toggle.locator('svg').count(), 2, '对象图标和展开箭头齐备');
         }
-        const sourceButton = page.getByRole('button', { name: '作品来源', exact: true });
-        assert.deepEqual(await page.locator('[data-jav-actions] button').allTextContents(), ['查找资源', '想要', '作品来源']);
+        const sourceButton = page.getByRole('button', { name: '항목 출처', exact: true });
+        assert.deepEqual(await page.locator('[data-jav-actions] button').allTextContents(), ['리소스 찾기', '위시리스트', '항목 출처']);
         assert.ok(await sourceButton.evaluate(el => parseFloat(getComputedStyle(el).borderWidth) > 0));
         const side = page.locator('[data-jav-info]');
         const before = await page.locator('#stage').boundingBox();
@@ -323,9 +323,9 @@ describe('库外 JAV 作品详情', () => {
           const after = await page.locator('#stage').boundingBox();
           assert.ok(before && after && Math.abs(before.height - after.height) < 1 && Math.abs(before.y - after.y) < 1, '评论展开保持详情框几何');
         }
-        await page.getByRole('button', { name: '更多评论', exact: true }).click();
+        await page.getByRole('button', { name: '리뷰 더 보기', exact: true }).click();
         await page.waitForFunction(() => document.querySelectorAll('[data-jav-review]').length === 12);
-        assert.equal(await page.getByRole('button', { name: '更多评论', exact: true }).count(), 0);
+        assert.equal(await page.getByRole('button', { name: '리뷰 더 보기', exact: true }).count(), 0);
         await reviewsToggle.click();
         await page.locator('[data-jav-review]').first().waitFor({ state: 'hidden' });
         assert.equal(await reviewsToggle.getAttribute('aria-expanded'), 'false');
@@ -343,7 +343,7 @@ describe('库外 JAV 作品详情', () => {
         await resourcesToggle.click();
         await page.getByText('EXM-001 示例资源 1', { exact: false }).waitFor({ state: 'visible' });
         assert.equal(await page.locator('[data-jav-resources] [data-resource-protocol]:visible').count(), 3);
-        await page.getByText('更多资源（3 条）', { exact: true }).click();
+        await page.getByText('리소스 더 보기（3 개）', { exact: true }).click();
         await page.getByText('EXM-001 示例资源 6', { exact: true }).waitFor({ state: 'visible' });
         assert.equal(await page.locator('[data-jav-resources] [data-resource-protocol]:visible').count(), 6);
         const resources = await page.locator('[data-jav-resources] [data-resource-protocol]:visible').evaluateAll(rows => rows.map(row => {
@@ -358,9 +358,9 @@ describe('库外 JAV 作品详情', () => {
             expected: getComputedStyle(row.closest('[data-want-magnets]')!).borderTopColor };
         }));
         assert.ok(lines.every(line => line.width === '1px' && line.color === line.expected), JSON.stringify(lines));
-        assert.ok(await page.locator('[data-jav-resources]').getByRole('button', { name: '添加下载', exact: true }).first().isDisabled());
-        assert.deepEqual(await page.locator('[data-resource-actions]').first().locator('button, a').allTextContents(), ['添加下载', '复制链接', '链接来源']);
-        assert.equal(await page.locator('[data-resource-facts]').first().getByText('高清', { exact: true }).count(), 0);
+        assert.ok(await page.locator('[data-jav-resources]').getByRole('button', { name: '다운로드 추가', exact: true }).first().isDisabled());
+        assert.deepEqual(await page.locator('[data-resource-actions]').first().locator('button, a').allTextContents(), ['다운로드 추가', '링크 복사', '링크 출처']);
+        assert.equal(await page.locator('[data-resource-facts]').first().getByText('고화질', { exact: true }).count(), 0);
         const facts = await page.locator('[data-resource-facts]').first().evaluate(node => {
           const boxes = [...node.children].map(child => child.getBoundingClientRect());
           return boxes.map(box => box.y);
@@ -370,10 +370,10 @@ describe('库外 JAV 作品详情', () => {
         await page.locator('[data-jav-resources] [data-resource-protocol]').first().waitFor({ state: 'hidden' });
         await resourcesToggle.click();
         await page.locator('[data-jav-resources] [data-resource-protocol]').first().waitFor({ state: 'visible' });
-        await page.getByRole('button', { name: '想要', exact: true }).click();
-        await page.getByRole('button', { name: '取消想要', exact: true }).waitFor({ state: 'visible' });
-        await page.getByRole('button', { name: '取消想要', exact: true }).click();
-        await page.getByRole('button', { name: '想要', exact: true }).waitFor({ state: 'visible' });
+        await page.getByRole('button', { name: '위시리스트', exact: true }).click();
+        await page.getByRole('button', { name: '위시리스트에서 제거', exact: true }).waitFor({ state: 'visible' });
+        await page.getByRole('button', { name: '위시리스트에서 제거', exact: true }).click();
+        await page.getByRole('button', { name: '위시리스트', exact: true }).waitFor({ state: 'visible' });
         await settle(page, '#stage[open]');
         const geometry = await layout(page);
         assert.ok(geometry.scrollWidth <= geometry.viewportWidth + 1);
@@ -387,7 +387,7 @@ describe('库外 JAV 作品详情', () => {
         await page.locator('#stage [data-jav-detail] h1').waitFor({ state: 'visible' });
         await page.keyboard.press('Escape');
         await page.waitForURL(requiredEnv('PEACH_E2E_ORIGIN') + '/');
-        await card.getByRole('link', { name: '打开 EXM-001 的作品详情' }).click();
+        await card.getByRole('link', { name: 'EXM-001 항목 상세 열기' }).click();
         const detailUrl = page.url();
         await page.locator('[data-id-cell="studio"]').click();
         assert.equal(page.url(), detailUrl);
@@ -456,15 +456,15 @@ describe('库外 JAV 作品详情', () => {
           return route.fulfill({ json: { available: true, providers: [{ key: '115', label: '115', configured: true, target: '/fixture' }], tasks: [] } });
         });
         await page.goto(requiredEnv('PEACH_E2E_ORIGIN') + '/works/EXM-001');
-        assert.equal(await page.getByRole('button', { name: '想要', exact: true }).isDisabled(), readOnly);
+        assert.equal(await page.getByRole('button', { name: '위시리스트', exact: true }).isDisabled(), readOnly);
         await page.locator('[data-jav-resources] > details > summary').click();
-        const add = page.locator('[data-jav-resources]').getByRole('button', { name: '添加下载', exact: true }).first();
+        const add = page.locator('[data-jav-resources]').getByRole('button', { name: '다운로드 추가', exact: true }).first();
         await add.waitFor({ state: 'visible' });
         if (readOnly) assert.ok(await add.isDisabled());
         else {
           await page.waitForFunction(() => !document.querySelector<HTMLButtonElement>('[data-jav-resources] [data-resource-actions] button:last-child')?.disabled);
           await add.click();
-          await page.getByRole('button', { name: '已添加', exact: true }).first().waitFor();
+          await page.getByRole('button', { name: '추가됨', exact: true }).first().waitFor();
           assert.equal(submitted?.provider, '115');
           assert.equal(submitted?.code, 'EXM-001');
         }

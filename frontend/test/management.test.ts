@@ -12,7 +12,7 @@ describe('数据管理首屏', () => {
     expect([...stats].map(card => card.querySelector('.ui-board-stat-tile use')?.getAttribute('href')))
       .toEqual(['#i-square-check-big', '#i-sparkles', '#i-file-stack', '#i-file-archive', '#i-trash']);
     expect([...stats].map(card => card.querySelector('.ui-board-plain-stat-head')?.textContent))
-      .toEqual(['人工复核', '高清版', '重复文件', '垃圾文件', '回收站']);
+      .toEqual(['수동 검토', '고화질 버전', '중복 파일', '불필요한 파일', '휴지통']);
     for (const card of stats) {
       expect(card.querySelector('strong > .skeleton-text')).not.toBeNull();
       expect(card.querySelector('.cleanupmeta > .skeleton-text')).not.toBeNull();
@@ -39,15 +39,15 @@ describe('数据管理首屏', () => {
       .toEqual([true, true]);
     expect(split.querySelector('button use')?.getAttribute('href')).toBe('#i-database');
     const repair = root.querySelector('.cleanupmediarepair footer > button')!;
-    expect(repair.textContent).toBe('开始修复');
+    expect(repair.textContent).toBe('복구 시작');
     expect(repair.classList.contains('bg-button-primary')).toBe(true);
     expect(repair.hasAttribute('data-skeleton-action')).toBe(true);
     const legacy = root.querySelectorAll('.cleanupfieldset footer > button, .resourcesyncfooter > button');
-    expect([...legacy].map(button => button.textContent)).toEqual(['预览', '检查死链', '检查文件']);
+    expect([...legacy].map(button => button.textContent)).toEqual(['미리보기', '끊어진 링크 확인', '파일 확인']);
     for (const button of legacy) expect(button.classList.contains('primary')).toBe(true);
     const actions = root.querySelectorAll('button:not(.board-plain-stat, [aria-haspopup="listbox"])');
     expect([...actions].map(button => button.textContent || button.getAttribute('aria-label')))
-      .toEqual(['同步媒体库', '更多同步方式', '开始修复', '预览', '检查死链', '检查文件']);
+      .toEqual(['미디어 라이브러리 동기화', '다른 동기화 방식', '복구 시작', '미리보기', '끊어진 링크 확인', '파일 확인']);
     for (const button of actions) {
       expect(button.hasAttribute('disabled')).toBe(true);
       expect(button.hasAttribute('data-skeleton-action')).toBe(true);
@@ -55,9 +55,9 @@ describe('数据管理首屏', () => {
   });
   it('链接管理与资源同步的标题、正文立即呈现，不预留同步面板', () => {
     const root = skeleton();
-    expect(Array.from(root.querySelectorAll('.ui-resourcesync > h2'), title => title.textContent)).toEqual(['链接管理', '资源同步']);
+    expect(Array.from(root.querySelectorAll('.ui-resourcesync > h2'), title => title.textContent)).toEqual(['링크 관리', '리소스 동기화']);
     expect([...root.querySelectorAll('.ui-linkstats > div > span')].map(term => term.textContent))
-      .toEqual(['链接总数', '官网/事务所', '社交账号', '作品资料站']);
+      .toEqual(['전체 링크 수', '공식 사이트/소속사', '소셜 계정', '항목 정보 사이트']);
     expect(root.querySelector('#resource-sync')).toBeNull();
   });
 });

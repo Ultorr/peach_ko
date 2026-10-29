@@ -16,14 +16,14 @@ describe('版本统计与错误诊断', () => {
     const receipt = vi.fn();
     const host = await mount(<RemoteReportingSettings initial={initial} receipt={receipt} />);
     expect(switches(host).map((node) => node.checked)).toEqual([false]);
-    expect(host.textContent).toContain('上传服务未配置。');
-    expect(host.textContent).toContain('上传版本、系统信息、故障类型、代码位置与发生次数。');
+    expect(host.textContent).toContain('업로드 서비스가 설정되지 않았습니다.');
+    expect(host.textContent).toContain('버전, 시스템 정보, 오류 유형, 코드 위치 및 발생 횟수를 업로드합니다.');
     await click(switches(host)[0]!);
     await settle();
     const [url, init] = fetcher.mock.calls[0]! as unknown as [string, RequestInit];
     expect(url).toBe('/api/configuration/remote-reporting');
     expect(JSON.parse(String(init.body))).toEqual({ usage: true, errors: true });
-    expect(receipt).toHaveBeenCalledWith('已保存诊断选项');
+    expect(receipt).toHaveBeenCalledWith('진단 옵션을 저장했습니다');
     expect(switches(host).map((node) => node.checked)).toEqual([true]);
   });
 

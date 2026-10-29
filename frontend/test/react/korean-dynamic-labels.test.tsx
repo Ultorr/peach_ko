@@ -14,13 +14,17 @@ const { sidebarFacets } = await import(/* @vite-ignore */ PREFERENCES_MODULE) as
   sidebarFacets(facets: Record<string, unknown>, context: { type: string }): SidebarFacets;
 };
 
-it('지역과 화면 방향은 한국어로 표시하고 필터 값과 사용자 이름은 보존한다', () => {
-  const facets = sidebarFacets({
+it('분류는 한국어로 표시하고 필터 값과 사용자 이름은 보존한다', () => {
+  const input = {
     regions: [{ k: 'none', label: '未判定', n: 7 }, { k: 'west', label: '欧美', n: 3 },
       { k: 'future', label: 'Future region', n: 2 }],
     orientations: [{ k: '横屏', n: 3 }, { k: '竖屏', n: 2 }],
-    creators: [{ k: '欧美', n: 1 }],
-  }, { type: 'catalog' });
+    creators: [{ k: '欧美', n: 1 }, { k: '制服', n: 2 }],
+    tags: [{ k: '制服', n: 4 }, { k: '骑乘', label: '骑乘位', n: 3 },
+      { k: 'custom', label: '나의 태그', n: 2 }],
+  };
+  const original = structuredClone(input);
+  const facets = sidebarFacets(input, { type: 'catalog' });
   expect(facets.regions).toEqual([
     { value: 'none', label: '미분류', n: 7 }, { value: 'west', label: '서양', n: 3 },
     { value: 'future', label: 'Future region', n: 2 },
@@ -28,7 +32,12 @@ it('지역과 화면 방향은 한국어로 표시하고 필터 값과 사용자
   expect(facets.orientations).toEqual([
     { value: '横屏', label: '가로', n: 3 }, { value: '竖屏', label: '세로', n: 2 },
   ]);
-  expect(facets.creators).toEqual([{ value: '欧美', label: '欧美', n: 1 }]);
+  expect(facets.creators).toEqual([{ value: '欧美', label: '欧美', n: 1 }, { value: '制服', label: '制服', n: 2 }]);
+  expect(facets.tags).toEqual([
+    { value: '制服', label: '제복', n: 4 }, { value: '骑乘', label: '기승위', n: 3 },
+    { value: 'custom', label: '나의 태그', n: 2 },
+  ]);
+  expect(input).toEqual(original);
 });
 
 it('서버의 중국어 단계와 예상 시간 범위를 한국어로 표시하고 원본 상태는 유지한다', async () => {

@@ -1,4 +1,4 @@
-import { useContext, useDeferredValue, useEffect, useLayoutEffect, useState } from 'react';
+import { useContext, useDeferredValue, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useInRouterContext, useLocation } from 'react-router';
 import { useQueries, useQuery } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import { Input } from '@/components/base/input/input';
 import { Checkbox } from '@/components/base/checkbox/checkbox';
 import { isCatalogPath } from '@peach/legacy/core';
 import { errorMessage } from '../../api';
+import { folderVideoIds } from '../../bulk-rating';
 import { ModalFrame } from '../components/modal-frame';
 import { SettingsDialogClose } from '../components/settings-dialog-close';
 import { Note } from '../components/note';
@@ -49,6 +50,26 @@ export function CatalogFolders() {
   const query = useQuery({ ...folderQuery(scope, key), enabled: active });
   const [drawer, setDrawer] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [selectionError, setSelectionError] = useState('');
+  const selectionRequest = useRef<AbortController | null>(null);
+  useEffect(() => {
+    setSelecting(false); setSelectionError('');
+    return () => { selectionRequest.current?.abort() };
+  }, [address.key, address.search]);
+  const selectFolder = async () => {
+    if (selecting) return;
+    const controller = new AbortController(); selectionRequest.current = controller;
+    setSelecting(true); setSelectionError('');
+    try {
+      const ids = await folderVideoIds(key, params.get('folder_recursive') !== '0', controller.signal);
+      if (controller.signal.aborted) return;
+      actions?.catalog?.selectItems?.(ids);
+      if (!ids.length) setSelectionError('이 폴더에 선택할 영상이 없습니다.');
+    } catch (error) {
+      if (!controller.signal.aborted) setSelectionError(errorMessage(error));
+    } finally { if (!controller.signal.aborted) setSelecting(false) }
+  };
   const treeHost = document.getElementById('catalogFoldersTree');
   const headerHost = document.getElementById('catalogFolderHeader');
   useLayoutEffect(() => {
@@ -88,8 +109,12 @@ export function CatalogFolders() {
       {data?.selected ? <div className="folder-scope-row">
         <Checkbox size="sm" isSelected={params.get('folder_recursive') !== '0'}
           onChange={on => actions.navigate(folderHref(address, { folder_recursive: on ? null : '0' }))}>하위 폴더 포함</Checkbox>
+        {actions.catalog?.selectItems ? <Button variant="secondary" size="small" data-folder-select=""
+          disabled={query.isFetching} aria-busy={selecting || undefined} aria-disabled={selecting || undefined}
+          onClick={() => { void selectFolder() }}>{selecting ? '영상 목록 읽는 중…' : '폴더 영상 전체 선택'}</Button> : null}
         <span className="text-caption-1-regular text-text-tertiary">{data.rule ? `${PURPOSES[data.rule.purpose]}${data.rule.name ? ` · ${data.rule.name}` : ''}` : "개인 분류"}</span>
       </div> : null}
+      {selectionError ? <Note tone="warning">{selectionError}</Note> : null}
       {query.isPending ? <div data-skeleton="" aria-busy="true" aria-label="폴더를 읽는 중" className="h-8 w-full rounded-md skeleton-sheen" /> : null}
       {data?.children.length ? <div className="folder-children" aria-label="하위 폴더">{data.children.map(node =>
         <Button key={node.id} variant="secondary" size="small" leadingIcon={RiFolder3Line}

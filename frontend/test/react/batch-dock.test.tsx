@@ -112,11 +112,11 @@ describe('每种语境的键', () => {
   it('从左到右的顺序，「取消」总在最后，危险操作只有移出与彻底删除', () => {
     const shape = (context: Parameters<typeof batchActions>[0], dismissed = false) =>
       batchActions(context, dismissed).map((action) => `${action.label}${action.danger ? '!' : ''}`);
-    expect(shape('catalog')).toEqual(['喜欢', '看过', '稍后看', '判定产地', '移入回收站!', '取消']);
-    expect(shape('trash')).toEqual(['还原', '彻底删除!', '取消']);
-    expect(shape('junk')).toEqual(['不是垃圾', '移入回收站!', '取消']);
-    expect(shape('junk', true)).toEqual(['重新判断', '移入回收站!', '取消']);
-    expect(shape('follow')).toEqual(['保存到账本', '标记已看', '忽略', '取消']);
+    expect(shape('catalog')).toEqual(['별점 지정', '좋아요', '시청함', '나중에 보기', '제작 국가 판별', '휴지통으로 이동!', '취소']);
+    expect(shape('trash')).toEqual(['복원', '영구 삭제!', '취소']);
+    expect(shape('junk')).toEqual(['정크 아님', '휴지통으로 이동!', '취소']);
+    expect(shape('junk', true)).toEqual(['다시 판별', '휴지통으로 이동!', '취소']);
+    expect(shape('follow')).toEqual(['원장에 저장', '시청 완료로 표시', '무시', '취소']);
   });
 
   it('「忽略」用划掉的眼睛，不借「取消」那枚叉', () => {
@@ -131,19 +131,19 @@ describe('浮条', () => {
     expect(root.querySelector('[data-selection-dock]')).toBeNull();
     await render({ count: 2, context: 'trash', junkDismissed: false });
     const shown = root.querySelector('[data-selection-dock]')!;
-    expect(shown.getAttribute('aria-label')).toBe('所选项目操作');
-    expect(shown.querySelector('[role="status"]')!.textContent).toBe('已选 2 项');
-    expect(labels(root)).toEqual(['还原', '彻底删除', '取消']);
+    expect(shown.getAttribute('aria-label')).toBe('선택 항목 작업');
+    expect(shown.querySelector('[role="status"]')!.textContent).toBe('선택됨 2 개');
+    expect(labels(root)).toEqual(['복원', '영구 삭제', '취소']);
     await render({ count: 3, context: 'junk', junkDismissed: true });
-    expect(root.querySelector('[data-selection-dock] [role="status"]')!.textContent).toBe('已选 3 项');
-    expect(labels(root)).toEqual(['重新判断', '移入回收站', '取消']);
+    expect(root.querySelector('[data-selection-dock] [role="status"]')!.textContent).toBe('선택됨 3 개');
+    expect(labels(root)).toEqual(['다시 판별', '휴지통으로 이동', '취소']);
     expect(root.querySelector('[data-batch-scope]')!.getAttribute('data-context')).toBe('junk');
   });
 
   it('上千项的计数带千分位', async () => {
     const { root, render } = await setup();
     await render({ count: 12345, context: 'catalog', junkDismissed: false });
-    expect(root.querySelector('[data-selection-dock] [role="status"]')!.textContent).toBe('已选 12,345 项');
+    expect(root.querySelector('[data-selection-dock] [role="status"]')!.textContent).toBe('선택됨 12,345 개');
   });
 
   it('危险键挂 data-danger 读全站那份红，每颗键带自己的 sprite 字形', async () => {
@@ -152,12 +152,15 @@ describe('浮条', () => {
     const keys = [...root.querySelectorAll<HTMLButtonElement>('[data-selection-dock] button')];
     expect(keys.filter((key) => key.hasAttribute('data-danger')).map((key) => key.dataset.batchAction)).toEqual(['dispose']);
     expect(keys.map((key) => key.querySelector('use')?.getAttribute('href')))
-      .toEqual(['#i-thumbs-up', '#i-eye', '#i-bookmark-plus', '#i-globe', '#i-trash', '#i-x']);
+      .toEqual(['#i-star', '#i-thumbs-up', '#i-eye', '#i-bookmark-plus', '#i-globe', '#i-trash', '#i-x']);
   });
 
   it('点一颗键把分组、操作与这颗键交回壳', async () => {
     const { root, host, render } = await setup();
     await render({ count: 1, context: 'catalog', junkDismissed: false });
+    const rating = root.querySelector<HTMLButtonElement>('[data-batch-action="rating"]')!;
+    await click(rating);
+    expect(host.run).toHaveBeenCalledWith('rating', 'rating', rating);
     const region = root.querySelector<HTMLButtonElement>('[data-batch-action="region"]')!;
     await click(region);
     expect(host.run).toHaveBeenCalledWith('region', 'region', region);
@@ -182,7 +185,7 @@ describe('常驻面', () => {
     api.render({ count: 4, context: 'follow', junkDismissed: false });
     const status = root.querySelector('[data-selection-dock] [role="status"]')?.textContent;
     const context = root.querySelector('[data-batch-scope]')?.getAttribute('data-context');
-    expect([status, context]).toEqual(['已选 4 项', 'follow']);
+    expect([status, context]).toEqual(['선택됨 4 개', 'follow']);
   });
 
   it('壳的 loadBatchDock 在这一面画上之后才交出句柄', async () => {
@@ -196,7 +199,7 @@ describe('常驻面', () => {
     expect(r.managedEntry(host.root)?.path).toBe('batch-dock');
     expect(host.root.querySelector(':scope > [data-batch-scope]')).not.toBeNull();
     await act(async () => { api!.render({ count: 1, context: 'catalog', junkDismissed: false }) });
-    expect(host.root.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('已选 1 项');
+    expect(host.root.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('선택됨 1 개');
   });
 
   it('收起只卸组件，宿主留在文档里', async () => {

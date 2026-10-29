@@ -11,12 +11,12 @@ const buttons = readdirSync(dir)
     .map(([, tag = '']) => ({ name, tag, label: tag.slice(tag.lastIndexOf('>') + 1).trim() })));
 
 it('保存键一律叫「保存配置」', () => {
-  const saves = buttons.filter((button) => button.label.startsWith('保存'));
+  const saves = buttons.filter((button) => button.label.endsWith('저장'));
   expect(saves.length).toBeGreaterThan(0);
-  expect(saves.filter((button) => button.label !== '保存配置').map((button) => `${button.name}: ${button.label}`)).toEqual([]);
+  expect(saves.filter((button) => button.label !== '설정 저장').map((button) => `${button.name}: ${button.label}`)).toEqual([]);
 });
 
 it('保存配置使用主按钮', () => {
-  const saves = buttons.filter((button) => button.label === '保存配置');
+  const saves = buttons.filter((button) => button.label === '설정 저장');
   expect(saves.filter((button) => /\bvariant=/.test(button.tag)).map((button) => button.name)).toEqual([]);
 });

@@ -20,7 +20,7 @@ describe('我的收藏弹层', () => {
       await page.route('**/test-avatar/*', route => route.request().url().endsWith('/archive')
         ? route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="18" fill="gray"/></svg>' })
         : route.fulfill({ status: 404, body: '' }));
-      await page.getByRole('button', { name: '我的收藏', exact: true }).click();
+      await page.getByRole('button', { name: '내 즐겨찾기', exact: true }).click();
       const avatar = page.getByRole('link', { name: 'InitialA', exact: true }).locator('[data-shortcuts-avatar] img');
       await page.waitForFunction(() => document.querySelector<HTMLImageElement>('img[src="/test-avatar/archive"]')?.naturalWidth);
       assert.equal(await avatar.getAttribute('src'), '/test-avatar/archive');
@@ -61,8 +61,8 @@ describe('我的收藏弹层', () => {
         }, viewport.mobile);
         await page.locator('#settingsClose').click();
         await page.locator('#settingsPanel').waitFor({ state: 'hidden' });
-        await page.getByRole('button', { name: '我的收藏', exact: true }).click();
-        const dialog = page.getByRole('dialog', { name: '我的收藏', exact: true });
+        await page.getByRole('button', { name: '내 즐겨찾기', exact: true }).click();
+        const dialog = page.getByRole('dialog', { name: '내 즐겨찾기', exact: true });
         await page.waitForFunction(() => {
           const pane = document.querySelector<HTMLElement>('[data-shortcuts-glide]');
           return pane && !pane.hidden && pane.getBoundingClientRect().width > 0
@@ -92,10 +92,10 @@ describe('我的收藏弹层', () => {
           });
           assert.ok(clipping.every(edge => Math.abs(edge) < 1), JSON.stringify(clipping));
         }
-        assert.equal(await dialog.getByRole('link', { name: '已标记', exact: true }).getAttribute('href'), '/flagged');
-        assert.equal(await dialog.getByRole('link', { name: '稍后看', exact: true }).getAttribute('href'), '/watch-later');
-        assert.equal(await dialog.getByRole('textbox', { name: '筛选名称' }).count(), 0);
-        await dialog.getByRole('tab', { name: '片商与厂牌', exact: true }).click();
+        assert.equal(await dialog.getByRole('link', { name: '표시한 항목', exact: true }).getAttribute('href'), '/flagged');
+        assert.equal(await dialog.getByRole('link', { name: '나중에 보기', exact: true }).getAttribute('href'), '/watch-later');
+        assert.equal(await dialog.getByRole('textbox', { name: '필터 이름' }).count(), 0);
+        await dialog.getByRole('tab', { name: '제작사 및 레이블', exact: true }).click();
         await page.waitForFunction(() => {
           const pane = document.querySelector('[data-shortcuts-glide]')!.getBoundingClientRect();
           const tab = document.querySelector('[data-shortcuts-categories] [aria-selected="true"]')!.getBoundingClientRect();
@@ -109,14 +109,14 @@ describe('我的收藏弹层', () => {
         assert(size.scrollWidth <= size.viewportWidth + 1, JSON.stringify(size));
         assert.deepEqual(size.offenders, []);
         await page.screenshot({ path: resolve('../build', `shortcuts-${viewport.name}.png`) });
-        await dialog.getByRole('tab', { name: '保存的筛选', exact: true }).click();
-        await dialog.getByRole('tab', { name: '保存的筛选', exact: true }).press('Home');
-        assert.equal(await dialog.getByRole('tab', { name: '全部', exact: true }).getAttribute('aria-selected'), 'true');
-        await dialog.getByRole('tab', { name: '全部', exact: true }).press('End');
-        assert.equal(await dialog.getByRole('tab', { name: '保存的筛选', exact: true }).getAttribute('aria-selected'), 'true');
-        assert.equal(await dialog.getByRole('textbox', { name: '搜索收藏' }).count(), 0);
-        await dialog.getByRole('textbox', { name: '筛选名称' }).fill('VR 待看');
-        await dialog.getByRole('button', { name: '保存当前筛选', exact: true }).click();
+        await dialog.getByRole('tab', { name: '저장한 필터', exact: true }).click();
+        await dialog.getByRole('tab', { name: '저장한 필터', exact: true }).press('Home');
+        assert.equal(await dialog.getByRole('tab', { name: '전체', exact: true }).getAttribute('aria-selected'), 'true');
+        await dialog.getByRole('tab', { name: '전체', exact: true }).press('End');
+        assert.equal(await dialog.getByRole('tab', { name: '저장한 필터', exact: true }).getAttribute('aria-selected'), 'true');
+        assert.equal(await dialog.getByRole('textbox', { name: '즐겨찾기 검색' }).count(), 0);
+        await dialog.getByRole('textbox', { name: '필터 이름' }).fill('VR 待看');
+        await dialog.getByRole('button', { name: '현재 필터 저장', exact: true }).click();
         const link = dialog.getByRole('link', { name: 'VR 待看', exact: true });
         await link.waitFor();
         const href = await link.getAttribute('href');
@@ -128,23 +128,23 @@ describe('我的收藏弹层', () => {
         await link.click();
         await page.waitForURL(url => url.pathname === '/watch-later' && url.searchParams.get('tag') === 'VR');
         await settle(page, '[data-catalog-frame]');
-        await page.getByRole('button', { name: '我的收藏', exact: true }).click();
-        await dialog.getByRole('tab', { name: '保存的筛选', exact: true }).click();
-        await dialog.getByRole('button', { name: '删除筛选VR 待看', exact: true }).click();
+        await page.getByRole('button', { name: '내 즐겨찾기', exact: true }).click();
+        await dialog.getByRole('tab', { name: '저장한 필터', exact: true }).click();
+        await dialog.getByRole('button', { name: '필터 삭제:VR 待看', exact: true }).click();
         await link.waitFor({ state: 'detached' });
-        await dialog.getByRole('tab', { name: '全部', exact: true }).click();
-        await dialog.getByRole('button', { name: /^取消收藏/ }).click();
-        await dialog.getByRole('heading', { name: '还没有收藏', exact: true }).waitFor();
-        const close = dialog.getByRole('button', { name: '关闭我的收藏', exact: true });
+        await dialog.getByRole('tab', { name: '전체', exact: true }).click();
+        await dialog.getByRole('button', { name: /^즐겨찾기 해제/ }).click();
+        await dialog.getByRole('heading', { name: '즐겨찾기가 아직 없습니다', exact: true }).waitFor();
+        const close = dialog.getByRole('button', { name: '내 즐겨찾기 닫기', exact: true });
         assert.equal(await close.locator('use').getAttribute('href'), '#i-x');
         assert.deepEqual(await close.evaluate(node => {
           const box = node.getBoundingClientRect(); return [box.width, box.height];
         }), [24, 24]);
         await close.click();
         await dialog.waitFor({ state: 'hidden' });
-        for (const [label, path] of [['已标记', '/flagged'], ['稍后看', '/watch-later']]) {
+        for (const [label, path] of [['표시한 항목', '/flagged'], ['나중에 보기', '/watch-later']]) {
           await settle(page, '[data-catalog-frame]');
-          await page.getByRole('button', { name: '我的收藏', exact: true }).click();
+          await page.getByRole('button', { name: '내 즐겨찾기', exact: true }).click();
           await dialog.getByRole('link', { name: label, exact: true }).click();
           await page.waitForURL(url => url.pathname === path);
           await dialog.waitFor({ state: 'hidden' });

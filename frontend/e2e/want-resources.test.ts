@@ -39,15 +39,15 @@ describe('JAV 入库作品卡', () => {
         } }); });
         await page.route('**/api/downloads?*', route => route.fulfill({ json: { available: true,
           providers: [{ key: '115', label: '115', configured: true, target: '/下载' }], tasks: [] } }));
-        await page.getByRole('tab', { name: '想要', exact: true }).click();
+        await page.getByRole('tab', { name: '위시리스트', exact: true }).click();
         await page.locator('[data-want-magnets]').scrollIntoViewIfNeeded();
-        await page.getByRole('heading', { name: '资源链接 · 8' }).waitFor();
+        await page.getByRole('heading', { name: '리소스 링크 · 8' }).waitFor();
         await settle(page);
         const card = page.locator('[data-want-id="9001"]');
-        assert.equal(await page.locator('#stats').getByRole('button', { name: '查找资源', exact: true }).count(), 2, '通用入口与作品入口分别保留一处');
-        assert.equal(await page.getByRole('combobox', { name: '下载到', exact: true }).count(), 0, '下载目标在资源下载面板中选择');
-        const source = card.getByRole('link', { name: '来源页', exact: true });
-        assert.deepEqual(await source.evaluate(node => [...node.parentElement!.querySelectorAll('button, a')].map(action => action.textContent)), ['查找资源', '移除', '来源页']);
+        assert.equal(await page.locator('#stats').getByRole('button', { name: '리소스 찾기', exact: true }).count(), 2, '通用入口与作品入口分别保留一处');
+        assert.equal(await page.getByRole('combobox', { name: '다운로드 위치', exact: true }).count(), 0, '下载目标在资源下载面板中选择');
+        const source = card.getByRole('link', { name: '소스 페이지', exact: true });
+        assert.deepEqual(await source.evaluate(node => [...node.parentElement!.querySelectorAll('button, a')].map(action => action.textContent)), ['리소스 찾기', '제거', '소스 페이지']);
         const style = await card.evaluate(el => ({ radius: getComputedStyle(el).borderRadius,
           border: getComputedStyle(el).borderTopWidth }));
         assert.notEqual(style.radius, '0px');
@@ -64,8 +64,8 @@ describe('JAV 入库作品卡', () => {
         const magnetStyle = await card.locator('[data-resource-protocol="magnet"]').first().locator('span').first().evaluate(el => getComputedStyle(el).backgroundColor);
         const ed2kStyle = await card.locator('[data-resource-protocol="ed2k"] span').first().evaluate(el => getComputedStyle(el).backgroundColor);
         assert.notEqual(magnetStyle, ed2kStyle);
-        const add = card.getByRole('button', { name: '添加下载', exact: true }).first();
-        const copy = card.getByRole('button', { name: '复制链接', exact: true }).first();
+        const add = card.getByRole('button', { name: '다운로드 추가', exact: true }).first();
+        const copy = card.getByRole('button', { name: '링크 복사', exact: true }).first();
         assert.notEqual(await add.evaluate(el => getComputedStyle(el).backgroundColor), await copy.evaluate(el => getComputedStyle(el).backgroundColor));
         assert.equal(await add.locator('img').count(), 1, '下载渠道使用对应的网盘图标');
         if (viewport.name === 'desktop') {
@@ -90,16 +90,16 @@ describe('JAV 入库作品卡', () => {
         await phase.locator('label:has(input[value="missing"])').click();
         assert.equal(await phase.locator('[data-want-id]').count(), 0);
         await phase.locator('label:has(input[value="available"])').click();
-        await phase.getByRole('heading', { name: '资源链接 · 8' }).waitFor();
+        await phase.getByRole('heading', { name: '리소스 링크 · 8' }).waitFor();
         assert.equal(resourceRequests, 1, '切换磁链筛选重复查询已有资源');
         await phase.screenshot({ path: `../build/want-filter-${viewport.name}.png` });
-        await page.getByRole('tab', { name: '馆藏', exact: true }).click();
-        await page.getByRole('tab', { name: '想要', exact: true }).click();
-        await page.getByRole('heading', { name: '资源链接 · 8' }).waitFor();
+        await page.getByRole('tab', { name: '컬렉션', exact: true }).click();
+        await page.getByRole('tab', { name: '위시리스트', exact: true }).click();
+        await page.getByRole('heading', { name: '리소스 링크 · 8' }).waitFor();
         assert.equal(resourceRequests, 1, '返回页面重复查询资源');
         await page.reload();
-        await page.getByRole('tab', { name: '想要', exact: true }).click();
-        await page.getByRole('heading', { name: '资源链接 · 8' }).waitFor();
+        await page.getByRole('tab', { name: '위시리스트', exact: true }).click();
+        await page.getByRole('heading', { name: '리소스 링크 · 8' }).waitFor();
         assert.equal(resourceRequests, 1, '刷新页面未复用持久缓存');
         assert.deepEqual(opened.problems, []);
       } finally { await opened.close(); }

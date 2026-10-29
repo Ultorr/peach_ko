@@ -84,7 +84,7 @@ it('首屏用 prefetch 落进缓存的那一份画出来，挂载时不再请求
 
 it('汇总说的是服务端的总数，不是这一页截到的条数', async () => {
   const { host } = await open(payload([goal(), goal({ id: 2, name: 'two.mp4' })], 37));
-  expect(host.querySelector('[data-collection-summary] strong')?.textContent).toBe('37 部作品');
+  expect(host.querySelector('[data-collection-summary] strong')?.textContent).toBe('37 개 항목');
   expect(host.querySelectorAll('li[data-goal-id]')).toHaveLength(2);
 });
 
@@ -108,7 +108,7 @@ it('每条目标一张卡片，读数走遗留层同一套格式化口径', asyn
 it('探测失败的时长显示占位，不显示 0 也不显示负数', async () => {
   const { host } = await open(payload([goal({ duration: -1, size: 0 })]));
   expect([...host.querySelectorAll('h3 ~ p > span')].map((node) => node.textContent))
-    .toEqual(['', '本地', '—', '大小未知']);
+    .toEqual(['', '로컬', '—', '크기 알 수 없음']);
 });
 
 it('有番号封面就用番号封面，否则退回海报', async () => {
@@ -125,22 +125,22 @@ it('封面取不到就把图摘掉，兜底文字还在，卡片其余部分照�
   const { host } = await open(payload([goal()]));
   host.querySelector('img')!.dispatchEvent(new Event('error'));
   expect(host.querySelector('img')).toBeNull();
-  expect(host.querySelector('li[data-goal-id] button')?.textContent).toBe('暂无预览');
+  expect(host.querySelector('li[data-goal-id] button')?.textContent).toBe('미리보기 없음');
 });
 
 it('封面、标题和页脚三处都打开同一部作品，无障碍名称用纯文本形态', async () => {
   const { host, props } = await open(payload([goal({ id: 42 })]));
   const cover = host.querySelector<HTMLButtonElement>('li[data-goal-id] button')!;
-  expect(cover.getAttribute('aria-label')).toBe('打开 名称 one.mp4');
+  expect(cover.getAttribute('aria-label')).toBe('열기: 名称 one.mp4');
   await click(cover);
   await click(host.querySelector('h3 button'));
-  await click([...host.querySelectorAll('button')].find((node) => node.textContent === '查看版本'));
+  await click([...host.querySelectorAll('button')].find((node) => node.textContent === '버전 보기'));
   expect(props.openItem.mock.calls).toEqual([[42], [42], [42]]);
 });
 
 it('搜索资源原地打开云下载弹层，带入番号与原版本目标；无番号只提供查看版本', async () => {
   const { host } = await open(payload([goal({ id: 42, code: 'ABC-123', reason: '中字' }), goal({ id: 43 })]));
-  const buttons = [...host.querySelectorAll('button')].filter((node) => node.textContent === '查找资源');
+  const buttons = [...host.querySelectorAll('button')].filter((node) => node.textContent === '리소스 찾기');
   expect(buttons).toHaveLength(1);
   await click(buttons[0]);
   await settle();
@@ -150,7 +150,7 @@ it('搜索资源原地打开云下载弹层，带入番号与原版本目标；�
 
 it('一条目标都没有时给空态，不是一片白', async () => {
   const { host } = await open(payload([]));
-  expect(host.querySelector('h3')?.textContent).toBe('没有标记中的高清版目标');
+  expect(host.querySelector('h3')?.textContent).toBe('표시된 고화질 버전 목표가 없습니다');
   expect(host.querySelector('li[data-goal-id]')).toBeNull();
 });
 
@@ -158,7 +158,7 @@ it('首屏取数就失败时只剩一条错误，不画空列表', async () => {
   const { host } = await open(null);
   const alert = host.querySelector('[role=alert]');
   // 文案走遗留层的 `requestErrorMessage`：服务端给了中文原因就用它，页面不另说一遍。
-  expect(alert?.textContent).toContain('读取失败');
+  expect(alert?.textContent).toContain('고화질 버전 목표를 불러오지 못했습니다');
   expect(alert?.textContent).toContain('账本当前只能浏览');
   expect(host.querySelector('ul')).toBeNull();
 });

@@ -10,7 +10,7 @@
  * 浮条上的键是透明 `<button>`：尺寸、描边、字号与 17px 字形照 ADR-0031 的迁移前基线，全部写在
  * `batch-dock.css`；BoardUI `Button` 的 medium 档是 20px 字形、8px 内边距，对不上。危险键挂
  * `data-danger`，红色读 `../styles.css` 里全站那一份危险键规则。 */
-import { useSyncExternalStore } from 'react';
+import { useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { flushSync } from 'react-dom';
 
 import { SelectionDock } from '../components/selection-dock';
@@ -48,9 +48,28 @@ export function BatchDockSurface() {
 }
 
 function BatchDock({ host: at, props: view }: { host: BatchDockHost; props: BatchDockProps }) {
+  const scope = useRef<HTMLDivElement>(null);
+  const visible = view.count > 0;
+  useLayoutEffect(() => {
+    const dock = scope.current?.querySelector<HTMLElement>('[data-selection-dock]');
+    if (!visible || !dock) return;
+    const reserveSpace = () => {
+      const bottom = Number.parseFloat(getComputedStyle(dock).bottom) || 0;
+      document.body.style.setProperty('--batch-dock-space', `${dock.offsetHeight + bottom + 12}px`);
+    };
+    reserveSpace();
+    const observer = new ResizeObserver(reserveSpace);
+    observer.observe(dock);
+    window.addEventListener('resize', reserveSpace);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', reserveSpace);
+    };
+  }, [visible, view.context]);
+  useLayoutEffect(() => () => { document.body.style.removeProperty('--batch-dock-space') }, []);
   return (
-    <div className="peach-react" data-batch-scope="" data-context={view.context}>
-      <SelectionDock label="선택 항목 작업" visible={view.count > 0} count={`선택됨 ${view.count.toLocaleString()} 개`}>
+    <div ref={scope} className="peach-react" data-batch-scope="" data-context={view.context}>
+      <SelectionDock label="선택 항목 작업" visible={visible} count={`선택됨 ${view.count.toLocaleString()} 개`}>
         {batchActions(view.context, view.junkDismissed).map((action) => (
           <button key={`${action.group}:${action.operation}`} type="button" data-batch-group={action.group}
             data-batch-action={action.operation} data-danger={action.danger ? '' : undefined}

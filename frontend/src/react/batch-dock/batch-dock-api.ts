@@ -9,7 +9,7 @@ export type BatchContext = 'catalog' | 'trash' | 'junk' | 'follow';
 
 /** 一颗键回到壳的哪条流程：`batch` 走 `/api/batch`，`region` 是判定产地的弹层，`follow` 写关注条目，
  *  `junk` 是垃圾文件的判定，`clear` 退出多选。 */
-export type BatchGroup = 'batch' | 'region' | 'follow' | 'junk' | 'clear';
+export type BatchGroup = 'batch' | 'rating' | 'region' | 'follow' | 'junk' | 'clear';
 
 export interface BatchAction {
   group: BatchGroup;
@@ -65,6 +65,7 @@ export function batchActions(context: BatchContext, junkDismissed = false): Batc
       ];
     default:
       return [
+        { group: 'rating', operation: 'rating', label: "별점 지정", glyph: 'star' },
         { group: 'batch', operation: 'like', label: "좋아요", glyph: 'thumbs-up' },
         { group: 'batch', operation: 'seen', label: "시청함", glyph: 'eye' },
         { group: 'batch', operation: 'later', label: "나중에 보기", glyph: 'bookmark-plus' },

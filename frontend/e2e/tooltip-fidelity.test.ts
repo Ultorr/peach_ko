@@ -16,7 +16,7 @@ describe('共享提示的文字与锚点', () => {
           favorites: [], filters: [{ id: 'clear', name: '高清馆藏', href: '/?quality=hd' }],
         } }));
         await opened.page.locator('[data-shortcuts-trigger]').click();
-        await opened.page.getByRole('tab', { name: '保存的筛选', exact: true }).click();
+        await opened.page.getByRole('tab', { name: '저장한 필터', exact: true }).click();
         const saved = opened.page.getByRole('link', { name: '高清馆藏', exact: true });
         await saved.hover();
         await opened.page.waitForTimeout(500);

@@ -40,7 +40,7 @@ it('首屏一次取回任务快照和媒体库，卡片挂上去不再补取', a
   await prefetchMediaRepair(new AbortController().signal);
   const host = await card();
   expect(fetcher.mock.calls.map((call) => call[0]).sort()).toEqual(['/api/libraries', '/api/media-repair']);
-  expect(host.querySelector('section[aria-label="媒体修复"] h3')?.textContent).toBe('媒体修复');
+  expect(host.querySelector('section[aria-label="미디어 복구"] h3')?.textContent).toBe('미디어 복구');
   expect(host.querySelector('[aria-haspopup="listbox"]')?.textContent).toBe('网盘');
 });
 
@@ -78,28 +78,28 @@ it('开始修复先确认，确认后把选中的库发过去，随后按服务�
   vi.stubGlobal('fetch', fetcher);
   const host = await open();
   await choose(host.querySelector('[aria-haspopup="listbox"]'), 'PikPak');
-  await click(buttonNamed('开始修复', host));
+  await click(buttonNamed('복구 시작', host));
   await settle();
-  expect(seen[0]?.title).toBe('修复媒体库「PikPak」');
-  expect(seen[0]?.confirmLabel).toBe('修复媒体库');
-  expect(seen[0]?.body).toContain('每修一部都要把片子完整拉一遍');
+  expect(seen[0]?.title).toBe('미디어 라이브러리 복구 「PikPak」');
+  expect(seen[0]?.confirmLabel).toBe('미디어 라이브러리 복구');
+  expect(seen[0]?.body).toContain('영상 하나를 복구할 때마다 전체 파일을 한 번 다운로드합니다');
   expect(fetcher.mock.calls[0]?.[0]).toBe('/api/media-repair');
   expect(sentBody(fetcher)).toEqual({ library: 'PikPak', restart: true });
   const bar = host.querySelector('[role="progressbar"]');
   expect([bar?.getAttribute('aria-valuenow'), bar?.getAttribute('aria-valuemax')]).toEqual(['3', '12']);
-  expect(host.querySelector('p[role="status"]')?.textContent).toBe('扫描 3 / 12');
-  expect(buttonNamed('停止', host)).not.toBeNull();
+  expect(host.querySelector('p[role="status"]')?.textContent).toBe('스캔 3 / 12');
+  expect(buttonNamed('중지', host)).not.toBeNull();
 });
 
 it('不在计费来源上的库，确认正文不提流量', async () => {
   const seen = confirmEverything();
   vi.stubGlobal('fetch', fetchMock(200, idle));
   const host = await open();
-  await click(buttonNamed('开始修复', host));
+  await click(buttonNamed('복구 시작', host));
   await settle();
-  expect(seen[0]?.title).toBe('修复媒体库「网盘」');
-  expect(seen[0]?.body).toContain('坏原件改名成同目录的隐藏文件');
-  expect(seen[0]?.body).not.toContain('拉一遍');
+  expect(seen[0]?.title).toBe('미디어 라이브러리 복구 「网盘」');
+  expect(seen[0]?.body).toContain('손상된 원본은 같은 폴더의 숨김 파일(.파일명.peach-original)로 이름을 바꾸어 보관합니다');
+  expect(seen[0]?.body).not.toContain('전체 파일을 한 번 다운로드');
 });
 
 it('修复阶段点名当前这部片，停止之后回到可以再开始的样子', async () => {
@@ -109,18 +109,18 @@ it('修复阶段点名当前这部片，停止之后回到可以再开始的样�
   const host = await open({
     ...idle, status: 'running', library: '网盘', stage: '修复', checked: 1, total: 2, found: 2, message: 'FC2-PPV-1.mp4',
   });
-  expect(host.querySelector('p[role="status"]')?.textContent).toBe('修复 1 / 2 · FC2-PPV-1.mp4');
-  await click(buttonNamed('停止', host));
+  expect(host.querySelector('p[role="status"]')?.textContent).toBe('복구 1 / 2 · FC2-PPV-1.mp4');
+  await click(buttonNamed('중지', host));
   await settle();
   expect(sentBody(fetcher)).toEqual({ stop: true });
-  expect(host.querySelector('p[role="status"]')?.textContent).toBe('修好 2 部');
-  expect(buttonNamed('开始修复', host)).not.toBeNull();
+  expect(host.querySelector('p[role="status"]')?.textContent).toBe('복구 완료 2 개');
+  expect(buttonNamed('복구 시작', host)).not.toBeNull();
 });
 
-it('一部都没找到时说清楚这个库里的片子都能直接播', async () => {
+it('一部都没找到时说清楚이 라이브러리의 모든 영상을 바로 재생할 수 있습니다', async () => {
   vi.useFakeTimers();
   const host = await open({ ...idle, status: 'complete', library: '网盘', stage: '完成' });
-  expect(host.textContent).toContain('这个库里的片子都能直接播');
+  expect(host.textContent).toContain('이 라이브러리의 모든 영상을 바로 재생할 수 있습니다');
 });
 
 it('缺索引的片子卡在没装 untrunc 上时，指明去配置页的运行信息里下载', async () => {
@@ -128,11 +128,11 @@ it('缺索引的片子卡在没装 untrunc 上时，指明去配置页的运行�
   const host = await open({
     ...idle, status: 'complete', library: '网盘', stage: '完成', found: 2, failed: 2, missing_tool: 2,
   });
-  expect(host.querySelector('p[role="status"]')?.textContent).toBe('修好 0 部，2 部修不了');
-  expect(host.textContent).toContain('2 部缺索引的片子要装上 untrunc 才修得了，下载入口在配置页的「运行信息」里');
+  expect(host.querySelector('p[role="status"]')?.textContent).toBe('복구 완료 0 개,2 개 복구 불가');
+  expect(host.textContent).toContain('2 개의 인덱스가 없는 영상을 복구하려면 untrunc를 설치해야 합니다. 설정 페이지의 「실행 정보」에서 다운로드할 수 있습니다.');
 });
 
 it('进度读数按总数封顶：服务端报出的已查数超过总数时不写成 1,500 / 1,000', () => {
   expect(statusLine({ ...IDLE_REPAIR, status: 'running', stage: '修复', checked: 1500, total: 1000 }))
-    .toBe('修复 1,000 / 1,000');
+    .toBe('복구 1,000 / 1,000');
 });

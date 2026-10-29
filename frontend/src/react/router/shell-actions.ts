@@ -129,6 +129,7 @@ export interface FollowFeedShell {
 
 /** 目录元素回到壳的那几步。筛选由元素按地址写进 `@peach/shell` 的 `state`，之后的事归壳。 */
 export interface CatalogShell {
+  selectItems?(ids: readonly number[]): void;
   /** 地址没写 `loc` 时的来源：缺省那几个里摘掉此刻脱盘的（壳在启动与重新检测时记下的那一份）。 */
   defaultLoc(): string;
   /** 按刚写好的 `state` 打开这一页：从别处回到首页（`entering`）先作废顶部三层的缓存；回收站清空搜索框并铺开首页

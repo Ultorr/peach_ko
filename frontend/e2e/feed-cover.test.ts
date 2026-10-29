@@ -68,7 +68,7 @@ describe('新作封面显示时机',()=>{
     await page.evaluate(()=>{history.pushState({},'','/');window.dispatchEvent(new PopStateEvent('popstate'))});
     const card=page.locator('#feedNew [data-feed-id="1"]');
     await card.waitFor({state:'visible'});
-    const avatar=card.getByRole('link',{name:'打开女优页：'+name,exact:true});
+    const avatar=card.getByRole('link',{name:'배우 페이지 열기: '+name,exact:true});
     await avatar.locator('img').waitFor({state:'visible'});
     assert.equal(await card.locator('.mav').count(),3);
     assert.equal(await card.locator('.mav img').count(),1);
@@ -156,7 +156,7 @@ describe('新作封面显示时机',()=>{
     await page.locator('#grid [data-media-card]').first().waitFor({state:'visible'});
     if(viewport.name==='mobile')await page.locator('#filterBtn').click();
     await page.locator('#settingsBtn').click();
-    await page.locator('#settingsPanel').getByRole('tab',{name:'浏览与播放',exact:true}).click();
+    await page.locator('#settingsPanel').getByRole('tab',{name:'탐색 및 재생',exact:true}).click();
     await page.locator('#javSizeSetting label:has(input[value="small"])').click();
     const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('peach.settings.v1')||'{}'));
     assert.equal(saved.homeLayout,'small');assert.equal(saved.javLayout,'small');

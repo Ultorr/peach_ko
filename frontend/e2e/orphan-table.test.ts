@@ -27,7 +27,7 @@ describe('孤儿记录数据表', () => {
       });
       await page.reload({ waitUntil: 'load' });
       const section = page.locator('#orphan-records');
-      const table = page.getByRole('grid', { name: '文件已消失的作品', exact: true });
+      const table = page.getByRole('grid', { name: '파일이 사라진 항목', exact: true });
       await table.waitFor();
       await settle(page);
       const faces = await page.evaluate(() => {
@@ -59,29 +59,29 @@ describe('孤儿记录数据表', () => {
       }
       assert.equal(await section.locator('[data-data-table-panel] #orphan-records-title').count(), 1);
       assert.equal(await table.locator('tbody tr').count(), 20);
-      assert.equal(await section.getByRole('button', { name: '彻底删除所选（0）', exact: true }).count(), 0);
+      assert.equal(await section.getByRole('button', { name: '선택한 기록 영구 삭제(0）', exact: true }).count(), 0);
       const pagination = section.locator('[data-table-pagination]');
-      assert.ok((await pagination.textContent())?.includes('1–20 / 23 条作品'));
-      await pagination.getByRole('button', { name: /每页显示数量/ }).waitFor();
-      await section.getByRole('button', { name: /文件已消失的作品排序/ }).waitFor();
+      assert.ok((await pagination.textContent())?.includes('1–20 / 23 개 항목'));
+      await pagination.getByRole('button', { name: /페이지당 표시 개수/ }).waitFor();
+      await section.getByRole('button', { name: /파일이 사라진 항목정렬$/ }).waitFor();
       await page.setViewportSize({ width: viewport.width, height: 2400 });
       await section.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 100));
       await section.screenshot({ path: `../build/table-evidence/orphan-${viewport.name}.png` });
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await table.locator('tbody tr').first().locator('label:has(input[type="checkbox"])').click();
       await section.locator('[data-selection-dock]').waitFor();
-      await section.getByRole('button', { name: '下一页', exact: true }).click();
+      await section.getByRole('button', { name: '다음 페이지', exact: true }).click();
       await table.locator('tbody tr').first().locator('label:has(input[type="checkbox"])').click();
-      await table.getByRole('columnheader', { name: '作品', exact: true }).click();
+      await table.getByRole('columnheader', { name: '항목', exact: true }).click();
       assert.ok((await table.locator('tbody tr').first().textContent())?.includes('作品 1・'));
       await pagination.scrollIntoViewIfNeeded();
       await page.screenshot({ path: `../build/table-evidence/orphan-selected-${viewport.name}.png` });
-      await section.getByRole('button', { name: '彻底删除所选（2）', exact: true }).click();
-      await page.getByRole('dialog').getByRole('button', { name: '取消', exact: true }).click();
+      await section.getByRole('button', { name: '선택한 기록 영구 삭제(2）', exact: true }).click();
+      await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
       await table.locator('thead label:has(input[type="checkbox"])').click();
-      await section.getByRole('button', { name: '彻底删除所选（23）', exact: true }).click();
+      await section.getByRole('button', { name: '선택한 기록 영구 삭제(23）', exact: true }).click();
       const dialog = page.getByRole('dialog');
-      const list = dialog.getByRole('list', { name: '所选记录', exact: true });
+      const list = dialog.getByRole('list', { name: '선택한 기록', exact: true });
       await list.waitFor();
       assert.equal(await list.locator(':scope > li').count(), items.length);
       assert.equal(await list.getAttribute('data-overlay-scrollbar'), 'true');
@@ -97,7 +97,7 @@ describe('孤儿记录数据表', () => {
       const box = await dialog.boundingBox();
       assert.ok(box && box.y >= 0 && box.y + box.height <= viewport.height);
       await dialog.screenshot({ path: `../build/table-evidence/orphan-confirm-${viewport.name}.png` });
-      await dialog.getByRole('button', { name: '取消', exact: true }).click();
+      await dialog.getByRole('button', { name: '취소', exact: true }).click();
       assert.deepEqual(writes, []);
       const geometry = await layout(page);
       assert.ok(geometry.scrollWidth <= geometry.viewportWidth + 1, JSON.stringify(geometry));

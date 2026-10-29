@@ -17,5 +17,5 @@ export function identityFilterSkeletonHtml(category: string): string {
   const buttons = IDENTITY_CATEGORIES.map(([key, label]) => islandButton({
     variant: key === known ? 'primary' : 'secondary', size: 'small', label, attrs: `aria-pressed="${key === known}"`,
   })).join('');
-  return `<div class="peach-react"><div aria-label="인물 유형" class="${IDENTITY_ROW_CLASS}">${buttons}</div></div>`;
+  return `<div class="peach-react"><div aria-label="인물 분류" class="${IDENTITY_ROW_CLASS}">${buttons}</div></div>`;
 }

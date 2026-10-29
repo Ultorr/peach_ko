@@ -33,44 +33,44 @@ describe('发现资料与排序', () => {
             failed: 0, requests: completed ? 4 : 0, bytes: 1000, message: status === 'stopped' ? '作品资料读取已停止' : '' }, poll_after_ms: 1000 } });
       });
       await page.goto(new URL('/jav?tab=discover', page.url()).href);
-      await page.getByRole('button', { name: '停止读取', exact: true }).waitFor({ state: 'visible' });
-      assert.equal(await page.locator('[data-jav-filter]').getByRole('button', { name: '我的收藏', exact: true }).count(), 1);
+      await page.getByRole('button', { name: '읽기 중지', exact: true }).waitFor({ state: 'visible' });
+      assert.equal(await page.locator('[data-jav-filter]').getByRole('button', { name: '내 즐겨찾기', exact: true }).count(), 1);
       await page.locator('[data-catalog-tag="恋足"]').waitFor({ state: 'visible' });
       assert.equal(details, 0);
       assert.ok(requests.some(params => params.get('metadata_job_id') === 'fixed-batch'));
       const cards = page.locator('[data-jav-card]');
-      assert.equal(await cards.first().locator('[data-jav-taste-score]').textContent(), '探索');
-      const score = cards.first().getByRole('button', { name: '推荐分 0，探索', exact: true });
+      assert.equal(await cards.first().locator('[data-jav-taste-score]').textContent(), '둘러보기');
+      const score = cards.first().getByRole('button', { name: '추천 점수 0，둘러보기', exact: true });
       await score.scrollIntoViewIfNeeded();
       await score.focus();
-      await page.getByRole('tooltip').filter({ hasText: '口味 0.004 · 排序 0.003 · 来源评分 4.2 / 5' }).waitFor({ state: 'visible' });
-      const otherScore = cards.last().getByRole('button', { name: '推荐分 0，探索', exact: true });
+      await page.getByRole('tooltip').filter({ hasText: '취향 0.004 · 정렬 0.003 · 출처 평점 4.2 / 5' }).waitFor({ state: 'visible' });
+      const otherScore = cards.last().getByRole('button', { name: '추천 점수 0，둘러보기', exact: true });
       await otherScore.scrollIntoViewIfNeeded();
       await otherScore.focus();
-      await page.getByRole('tooltip').filter({ hasText: '口味 0.000 · 排序 -0.020' }).waitFor({ state: 'visible' });
-      await page.getByRole('button', { name: '按口味匹配排序', exact: true }).focus();
+      await page.getByRole('tooltip').filter({ hasText: '취향 0.000 · 정렬 -0.020' }).waitFor({ state: 'visible' });
+      await page.getByRole('button', { name: '취향 일치도순 정렬', exact: true }).focus();
       assert.equal(await cards.first().getByRole('button', { name: '恋足', exact: true }).count(), 1);
       for (const [sort, name, direction] of [
-        ['source_score', '按来源评分排序', 'desc'], ['duration', '按时长排序', 'desc'],
-        ['code', '按番号排序', 'asc'], ['release_date', '按发行日期排序', 'desc'], ['taste', '按口味匹配排序', 'desc'],
+        ['source_score', '출처 평점순 정렬', 'desc'], ['duration', '재생 시간순 정렬', 'desc'],
+        ['code', '품번순 정렬', 'asc'], ['release_date', '출시일순 정렬', 'desc'], ['taste', '취향 일치도순 정렬', 'desc'],
       ]) {
         await Promise.all([page.getByRole('button', { name, exact: true }).click(),
           page.waitForResponse(response => { const params = new URL(response.url()).searchParams;
             return response.url().includes('/api/jav/discoveries?') && params.get('sort') === sort && params.get('direction') === direction })]);
         assert.equal(await page.getByRole('button', { name, exact: true }).getAttribute('aria-pressed'), 'true');
       }
-      await page.getByRole('button', { name: '按口味匹配排序', exact: true }).click();
+      await page.getByRole('button', { name: '취향 일치도순 정렬', exact: true }).click();
       await page.waitForFunction(() => document.querySelector('[data-jav-card] h3')?.textContent?.startsWith('DEMO-778'));
       completed = false; status = 'running';
-      await page.getByRole('button', { name: '更新资料', exact: true }).click();
-      await page.getByRole('button', { name: '停止读取', exact: true }).click();
+      await page.getByRole('button', { name: '정보 업데이트', exact: true }).click();
+      await page.getByRole('button', { name: '읽기 중지', exact: true }).click();
       await page.getByText('作品资料读取已停止', { exact: true }).waitFor({ state: 'visible' });
       const count = requests.length;
       await page.waitForTimeout(2200);
       assert.equal(requests.length, count, '停止后没有自动重启或轮询');
       completed = true;
-      await page.getByRole('button', { name: '重新读取资料', exact: true }).click();
-      await page.getByRole('button', { name: '更新资料', exact: true }).waitFor({ state: 'visible' });
+      await page.getByRole('button', { name: '정보 다시 불러오기', exact: true }).click();
+      await page.getByRole('button', { name: '정보 업데이트', exact: true }).waitFor({ state: 'visible' });
       await settle(page);
       assert.equal(details, 0);
       const geometry = await layout(page);

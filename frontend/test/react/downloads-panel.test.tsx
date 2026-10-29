@@ -61,8 +61,8 @@ it('远端在跑的任务给进度与取消键，取消发到取消接口', asyn
   const card = host.querySelector('[data-download-state=remote_running]')!;
   expect(card.querySelector('[role=progressbar]')?.getAttribute('aria-valuenow')).toBe('42');
   expect(card.textContent).toContain('远端下载中');
-  expect(buttonNamed('重新提交', card)).toBeNull();
-  await click(buttonNamed('取消', card));
+  expect(buttonNamed('다시 요청', card)).toBeNull();
+  await click(buttonNamed('취소', card));
   await settle();
   expect(posts()).toEqual([['/api/downloads/cancel', { id: 1 }]]);
 });
@@ -78,9 +78,9 @@ it('失败的任务写中文原因，可以重新提交；被判违规的只剩�
   const [first, second] = [...host.querySelectorAll('[data-download-state=failed]')];
   expect(first?.textContent).toContain('没有可用的资源：远端任务列表里找不到它');
   expect(second?.textContent).toContain('被判违规');
-  expect([buttonNamed('取消', second!), buttonNamed('重新提交', second!)]).toEqual([null, null]);
-  expect(buttonNamed('复制磁力', second!)).not.toBeNull();
-  await click(buttonNamed('重新提交', first!));
+  expect([buttonNamed('취소', second!), buttonNamed('다시 요청', second!)]).toEqual([null, null]);
+  expect(buttonNamed('마그넷 링크 복사', second!)).not.toBeNull();
+  await click(buttonNamed('다시 요청', first!));
   await settle();
   expect(posts()).toEqual([['/api/downloads', {
     magnet: failed.source_uri, provider: '115', target: '/115/云下载', code: 'ABC-123', title: null, origin: 'paste',
@@ -91,7 +91,7 @@ it('只读端任务照常列出，但没有取消键', async () => {
   serve(snapshot({ available: false, tasks: [task()] }));
   const host = await show();
   expect(host.querySelector('[data-download-state=remote_running]')).not.toBeNull();
-  expect(buttonNamed('取消', host)).toBeNull();
+  expect(buttonNamed('취소', host)).toBeNull();
 });
 
 it('后处理失败可以单独重试，不会重新提交磁力', async () => {
@@ -105,7 +105,7 @@ it('后处理失败可以单独重试，不会重新提交磁力', async () => {
   });
   const host = await show();
   expect(host.textContent).toContain('资料采集失败');
-  await click(buttonNamed('重试后处理', host));
+  await click(buttonNamed('후처리 재시도', host));
   await settle();
   expect(posts()).toEqual([['/api/downloads/postprocess', { id: 1 }]]);
 });

@@ -138,7 +138,7 @@ export function WantMagnets({ want, readOnly, downloads, provider, toast, onSour
               <div data-resource-facts="" className="flex flex-wrap gap-x-2 gap-y-1 text-caption-1-regular text-text-secondary">
                 <ResourceFact icon={RiLink}>{candidate.source}</ResourceFact>
                 <ResourceFact icon={RiHardDrive2Line} title={`소스에 표시된 크기:${candidate.size}`}>{resourceSize(candidate.size)}</ResourceFact>
-                {candidate.files ? <ResourceFact icon={RiFileList2Line}>{candidate.files.replaceAll('個', "개")}</ResourceFact> : null}
+                {candidate.files ? <ResourceFact icon={RiFileList2Line}>{candidate.files.replace(/[個个]\s*文件/g, "개 파일").replaceAll('個', "개")}</ResourceFact> : null}
                 <ResourceFact icon={RiCalendarLine} title={candidate.source === 'JavDB 评论' ? "댓글 날짜" : "등록 날짜"}>{candidate.date ? candidate.date.slice(0, 10) : "날짜 알 수 없음"}</ResourceFact>
                 {candidate.attributes.filter(value => value !== '高清').map((value) => <ResourceFact key={value} icon={RiPriceTag3Line}>{value}</ResourceFact>)}
               </div>

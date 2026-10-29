@@ -11,20 +11,20 @@ describe('只读代码块', () => {
     expect(host.querySelector('pre')?.textContent).toBe(code.slice(0, 12));
     expect(host.querySelector('script')).toBeNull();
     expect(host.querySelector('pre')?.tabIndex).toBe(0);
-    await click(buttonNamed('复制完整内容', host));
+    await click(buttonNamed('전체 내용 복사', host));
     await settle();
     expect(writeText).toHaveBeenCalledWith(code);
-    expect(host.querySelector('[role="status"]')?.textContent).toBe('已复制');
+    expect(host.querySelector('[role="status"]')?.textContent).toBe('복사했습니다');
   });
 
   it('剪贴板被拒绝时保留可选中的原文和可重试按钮', async () => {
     const writeText = vi.fn(async () => { throw new Error('blocked') });
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     const host = await mount(<CodeBlock code={'a = "b"'} language="toml" label="配置代码" />);
-    await click(buttonNamed('复制代码', host));
+    await click(buttonNamed('코드 복사', host));
     await settle();
-    expect(host.querySelector('[role="alert"]')?.textContent).toContain('复制失败');
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('복사하지 못했습니다. 텍스트를 선택해 복사하세요.');
     expect(host.querySelector('code')?.textContent).toBe('a = "b"');
-    expect(buttonNamed('复制代码', host)).not.toBeNull();
+    expect(buttonNamed('코드 복사', host)).not.toBeNull();
   });
 });

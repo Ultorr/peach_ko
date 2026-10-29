@@ -64,9 +64,9 @@ describe('排版用的纯函数', () => {
       },
     } }));
     const facts = host.querySelector('[data-entity-facts]')!;
-    expect(facts.textContent).toContain('公司成立2002-05');
-    expect(facts.textContent).toContain('品牌启动2003');
-    expect(facts.textContent).toContain('运营公司Brand株式会社');
+    expect(facts.textContent).toContain('회사 설립일2002-05');
+    expect(facts.textContent).toContain('브랜드 출범일2003');
+    expect(facts.textContent).toContain('운영 회사Brand株式会社');
     expect(facts.querySelector('[title]')).toBeNull();
   });
   it('真人账号与女优共用资料、别名和图标行', async () => {
@@ -76,13 +76,13 @@ describe('排版用的纯函数', () => {
     }) }));
     expect(host.querySelector('[data-entity-facts]')?.textContent).toContain('T149');
     expect(host.querySelector('[data-alias-names]')?.textContent).toContain('百田くるみ');
-    expect(host.querySelector('[data-meta-item][title="视频"] use')?.getAttribute('href')).toBe('#i-film');
+    expect(host.querySelector('[data-meta-item][title="동영상"] use')?.getAttribute('href')).toBe('#i-film');
   });
   it('厂牌视频数与别名各自带图标，资料不填人物字段', async () => {
     const host = await open(props({ kind: 'studio', name: 'MOODYZ', entity: performer({
       canonical_name: 'MOODYZ', display_aliases: ['ムーディーズ'], agency: undefined,
     }) }));
-    expect(host.querySelector('[data-meta-item][title="视频"] use')?.getAttribute('href')).toBe('#i-film');
+    expect(host.querySelector('[data-meta-item][title="동영상"] use')?.getAttribute('href')).toBe('#i-film');
     expect(host.querySelector('[data-company-names] use')?.getAttribute('href')).toBe('#i-id-card');
     expect(host.querySelector('[data-company-names]')?.textContent).toBe('ムーディーズ');
     expect(host.querySelector('[data-entity-facts]')).toBeNull();
@@ -118,13 +118,13 @@ describe('排版用的纯函数', () => {
       birth_date: '1990-08-14', age: 36, height: 163, bust: 88, cup: 'E',
       debut_date: '2012-03-01', debut_title: '很长的出道片名', active: { from: '2012', ongoing: true }, tags: ['巨乳'],
     });
-    expect(rows.map((row) => row.label)).toEqual(['生日', '身材', '出道', '生涯', '标签']);
+    expect(rows.map((row) => row.label)).toEqual(['생일', '신체 치수', '데뷔', '활동 기간', '태그']);
     // 一枚字形只代表一个意思：标签那一项与标签页同一枚。
     expect(rows.map((row) => row.glyph)).toEqual(['cake', 'ruler', 'flag', 'calendar-range', 'tags']);
-    expect(rows[1]?.parts.map((part) => part.text)).toEqual(['T163 · B88', '· E 罩杯']);
+    expect(rows[1]?.parts.map((part) => part.text)).toEqual(['T163 · B88', '· E 컵']);
     expect(rows[2]?.clip).toBe('很长的出道片名');
-    expect(rows[3]?.parts[0]?.text).toBe('2012 – 至今');
-    expect(factRows({ cup: 'C' })[0]?.parts).toEqual([{ text: 'C 罩杯', tone: 'sub' }]);
+    expect(rows[3]?.parts[0]?.text).toBe('2012 – 현재');
+    expect(factRows({ cup: 'C' })[0]?.parts).toEqual([{ text: 'C 컵', tone: 'sub' }]);
     expect(factRows(null)).toEqual([]);
   });
 
@@ -143,9 +143,9 @@ describe('排版用的纯函数', () => {
     }), 'performer');
     expect(links).toEqual([
       { type: 'icon', url: 'https://www.minnano-av.com/x', title: 'minnano-av', mark: { brand: 'minnano' } },
-      { type: 'icon', url: 'https://www.nax.co.jp/talent/aoi', title: 'New Actor eXperience 官方资料', mark: { site: '/link-mark?id=3' } },
+      { type: 'icon', url: 'https://www.nax.co.jp/talent/aoi', title: 'New Actor eXperience 공식 정보', mark: { site: '/link-mark?id=3' } },
       { type: 'icon', url: 'https://x.com/aoi', title: 'X', mark: { brand: 'brand-x' } },
-      { type: 'gone', title: '旧博客 · 已于 2024 年隐退' },
+      { type: 'gone', title: '旧博客 · 은퇴 시기: 2024 년' },
       { type: 'private', label: '私人记录' },
     ]);
   });
@@ -163,7 +163,7 @@ describe('排版用的纯函数', () => {
       { link_id: 4, clickable: false, label: '群聊截图' },
     ] }), 'performer');
     expect(links.map((link) => link.type)).toEqual(['icon', 'private']);
-    expect(links[1]).toEqual({ type: 'private', label: '3 个不公开来源', sources: ['私人记录', '论坛帖', '群聊截图'] });
+    expect(links[1]).toEqual({ type: 'private', label: '3 개의 비공개 출처', sources: ['私人记录', '论坛帖', '群聊截图'] });
     expect(heroLinks(performer({ links: [{ link_id: 1, clickable: false, label: '私人记录' }] }), 'performer'))
       .toEqual([{ type: 'private', label: '私人记录' }]);
   });
@@ -173,7 +173,7 @@ describe('排版用的纯函数', () => {
       id: 1, canonical_name: 'S1 NO.1 STYLE', asset_count: 1,
       links: [{ link_id: 9, link_kind: 'official', clickable: true, label: 'S1', url: 'https://www.s1s1s1.com/' }],
     }, 'studio');
-    expect(site).toEqual({ type: 'url', url: 'https://www.s1s1s1.com/', title: 'S1', text: '官方网站', mark: { site: '/link-mark?id=9' } });
+    expect(site).toEqual({ type: 'url', url: 'https://www.s1s1s1.com/', title: 'S1', text: '공식 웹사이트', mark: { site: '/link-mark?id=9' } });
   });
 
   it('换统称的候选取完整的 aliases（罗马字也是她用过的写法），统称排第一，去重去空', () => {
@@ -193,10 +193,10 @@ describe('画出什么', () => {
     const agency = await open(props({ kind: 'agency', name: 'NAX', entity: {
       id: 4, canonical_name: 'NAX', asset_count: 30, member_count: 12, related_performers: [{ id: 1, k: '三上悠亜' }],
     } }));
-    expect(agency.querySelector('[data-entity-alias]')?.textContent).toContain('12 位艺人');
+    expect(agency.querySelector('[data-entity-alias]')?.textContent).toContain('12 명의 배우');
     expect(agency.querySelector('[data-entity-foot]')).toBeNull();
     const performerLine = (await open(props())).querySelector('[data-entity-alias]')?.textContent ?? '';
-    expect(performerLine).not.toContain('事务所');
+    expect(performerLine).not.toContain('소속사');
   });
 
   it('公司别名先列三个，余下的收进「+N」，浮层里一个名字一行', async () => {
@@ -217,7 +217,7 @@ describe('画出什么', () => {
       { link_id: 3, clickable: false, label: '论坛帖' },
     ] }) }));
     const chip = host.querySelector('[data-link="private"]');
-    expect(chip?.textContent).toContain('2 个不公开来源');
+    expect(chip?.textContent).toContain('2 개의 비공개 출처');
     expect(chip?.getAttribute('title')).toBe('私人记录\n论坛帖');
   });
 
@@ -235,7 +235,7 @@ describe('画出什么', () => {
       id: 3, canonical_name: 'S1 NO.1 STYLE', asset_count: 9,
       links: [{ link_id: 9, link_kind: 'official', clickable: true, label: 'S1', url: 'https://www.s1s1s1.com/' }],
     } }));
-    expect(studio.querySelector('a[data-link="url"] [data-link-label]')?.textContent).toBe('官方网站');
+    expect(studio.querySelector('a[data-link="url"] [data-link-label]')?.textContent).toBe('공식 웹사이트');
   });
 
   it('看片那一行照服务端下发的地址与序号排；MISSAV 没有图形标识，排字', async () => {
@@ -328,7 +328,7 @@ describe('关注里的来源', () => {
     const host = await open(props({ kind: 'creator', name: 'Auxtasy', actions: acts, entity: creator({
       key: 'entity:51', n: 12, providers: ['Kemono'], avatar: '', avatar_fallback: '', held: [] }) }));
     const link = host.querySelector<HTMLAnchorElement>('[data-entity-follow] a')!;
-    expect(link.textContent).toBe('12 项更新');
+    expect(link.textContent).toBe('12 개 업데이트');
     await click(link);
     expect(acts.openFollowAuthor).toHaveBeenCalledWith('entity:51');
     expect(host.querySelector('[data-entity-held]')).toBeNull();
@@ -341,8 +341,8 @@ describe('关注里的来源', () => {
       key: '', n: 0, providers: [], avatar: '', avatar_fallback: '', held: [held] }) }));
     expect(host.querySelector('[data-entity-follow]')).toBeNull();
     const note = host.querySelector('[data-entity-held]')!;
-    expect(note.textContent).toContain('关注里有同名作者 Auxtasy');
-    expect(note.textContent).toContain('Kemono · Patreon · 37 项更新');
+    expect(note.textContent).toContain('팔로우에 동명의 크리에이터가 있습니다: Auxtasy');
+    expect(note.textContent).toContain('Kemono · Patreon · 37 개 업데이트');
     const button = note.querySelector('button')!;
     await click(button);
     expect(acts.confirmFollowAuthor).toHaveBeenCalledWith('name:auxtasy', 'Auxtasy');
@@ -365,7 +365,7 @@ describe('订阅新作', () => {
     expect(toggle(host).checked).toBe(true);
     expect(acts.refreshFeedAfterCheck).toHaveBeenCalledTimes(1);
     const [message, options] = vi.mocked(help.receipt).mock.calls[0]!;
-    expect(message).toBe('已订阅新作');
+    expect(message).toBe('새 항목 구독 중');
     await act(async () => { await options?.undo?.() });
     expect(acts.follow).toHaveBeenLastCalledWith(false);
     expect(toggle(host).checked).toBe(false);
@@ -432,11 +432,11 @@ describe('新作那一行', () => {
     await click(key());
     await settle();
     expect(acts.feedAction).toHaveBeenLastCalledWith(13, 'want');
-    expect([key().dataset.feedAction, key().getAttribute('aria-pressed'), key().title]).toEqual(['unwant', 'true', '取消想要']);
+    expect([key().dataset.feedAction, key().getAttribute('aria-pressed'), key().title]).toEqual(['unwant', 'true', '위시리스트에서 제거']);
     await click(key());
     await settle();
     expect(acts.feedAction).toHaveBeenLastCalledWith(13, 'unwant');
-    expect([key().dataset.feedAction, key().getAttribute('aria-pressed'), key().title]).toEqual(['want', 'false', '想要']);
+    expect([key().dataset.feedAction, key().getAttribute('aria-pressed'), key().title]).toEqual(['want', 'false', '위시리스트']);
     expect(feedHost.querySelector('[data-feed-id="13"]')?.classList.contains('isread')).toBe(false);
     expect(feedHost.hidden).toBe(false);
   });
@@ -465,9 +465,9 @@ describe('「+N」浮层', () => {
     }) }));
     const more = host.querySelector<HTMLButtonElement>('[data-hero-more="alias"]')!;
     expect(more.textContent).toBe('+3');
-    expect(more.getAttribute('aria-label')).toBe('另外 3 个别名');
+    expect(more.getAttribute('aria-label')).toBe('추가 3 개 별칭');
     const pop = document.getElementById('entityAliasPop')!;
-    expect(pop.querySelector('[data-hero-pop-head]')?.textContent).toBe('4 个别名');
+    expect(pop.querySelector('[data-hero-pop-head]')?.textContent).toBe('4 개 별칭');
     await click(more);
     expect(more.getAttribute('aria-expanded')).toBe('true');
     await click(more);

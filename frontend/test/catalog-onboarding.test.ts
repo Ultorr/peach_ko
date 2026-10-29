@@ -28,14 +28,14 @@ describe('馆藏与资料空状态', () => {
     expect(catalogEmptyHtml({ configurable: true }).match(/class="geist-button primary"/g)).toHaveLength(1);
   });
   it('JAV 与筛选无结果可查看未筛选内容', () => {
-    expect(catalogEmptyHtml({ jav: true })).toContain('尚未补充发行资料');
+    expect(catalogEmptyHtml({ jav: true })).toContain('스캔했지만 출시 정보가 없는 동영상은 전체 콘텐츠에서 볼 수 있습니다.');
     expect(catalogEmptyHtml({ filtered: true })).toContain('href="/?loc=&thumb=0"');
   });
   it('标签和各类实体没有资料时显示说明', () => {
     for (const kind of ['tags', 'performers', 'creators', 'studios', 'agencies', 'series']) {
       expect(catalogEmptyHtml({ kind })).toContain('data-geist-empty-state');
     }
-    expect(catalogEmptyHtml({ kind: 'tags', online: true })).toContain('关注来源');
-    expect(catalogEmptyHtml({ kind: 'creators' })).toContain('还没有卖家');
+    expect(catalogEmptyHtml({ kind: 'tags', online: true })).toContain('팔로우 소스');
+    expect(catalogEmptyHtml({ kind: 'creators' })).toContain('아직 없음: 판매자');
   });
 });

@@ -279,7 +279,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
       const landed = await measure();
       assert.ok(waiting.lede, '回收站骨架期间没有计数栏，读数到了才冒出来把网格往下推');
       assert.deepEqual([waiting.cells, waiting.text], [['text', 'action'], null], `骨架期间说明行不是两格占位：${JSON.stringify(waiting)}`);
-      assert.match(landed.text ?? '', /个符合 · 显示 \d+/, `读数没有落进说明行：${JSON.stringify(landed)}`);
+      assert.match(landed.text ?? '', /개 일치 · 표시 \d+/, `读数没有落进说明行：${JSON.stringify(landed)}`);
       assert.deepEqual(landed.cells, [], '读数落地后占位还在');
       const [textMiddle, buttonMiddle] = landed.row;
       assert.ok(textMiddle != null && buttonMiddle != null && Math.abs(textMiddle - buttonMiddle) <= 1,
@@ -596,6 +596,8 @@ describe('设计决定：作品卡、管理页与复核', () => {
         await opened.page.locator('#toasts [data-sonner-toast]').first().waitFor();
         await opened.page.waitForFunction(() => [...document.querySelectorAll('#toasts [data-sonner-toast]')]
           .every((node) => node.getAttribute('data-mounted') === 'true' && node.getAnimations().length === 0));
+        /* Toast 挂载后 CSS 才压缩教程；ResizeObserver 在布局之后更新通知偏移，跨两帧再量。 */
+        await opened.page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const stack = await opened.page.evaluate(() => {
           const card = document.querySelector('#postSetupTutorial .post-setup-notification')!.getBoundingClientRect();
           const boxes = [...document.querySelectorAll('#toasts [data-sonner-toast]')].map((node) => node.getBoundingClientRect());
@@ -692,7 +694,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
       await opened.page.waitForFunction(() => !document.querySelector('[data-review-key] .ui-can-scroll-bottom'));
       await scroller.locator('[data-scroll-test]').evaluate((node) => node.remove());
       await opened.page.waitForFunction(() => !document.querySelector('[data-review-key] [data-scroll-edges]'));
-      const spacing = await card.getByRole('region', { name: '当前信息' }).evaluate((node) => {
+      const spacing = await card.getByRole('region', { name: '현재 정보' }).evaluate((node) => {
         const style = getComputedStyle(node);
         const footer = node.closest('section')!.querySelector('footer')!.getBoundingClientRect();
         return { top: parseFloat(style.paddingTop), bottom: parseFloat(style.paddingBottom), gap: footer.top - node.getBoundingClientRect().bottom };
@@ -860,7 +862,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
       await page.waitForFunction(() => document.querySelectorAll('#grid [data-junk-card]').length === 2, null,
         { timeout: 10_000 });
       assert.deepEqual(opened.state.batches, [{ ids: [9101], operation: 'dispose', disposal_reason: 'junk' }]);
-      await page.getByText('已移入回收站', { exact: true }).first().waitFor({ timeout: 5_000 });
+      await page.getByText('휴지통으로 옮겼습니다', { exact: true }).first().waitFor({ timeout: 5_000 });
 
       // 分类是 `<a href>`，普通左键由壳改地址重读：整页重载的话，页面上记的这个标记会丢。
       await page.evaluate(() => { (window as { junkStay?: boolean }).junkStay = true });
@@ -956,11 +958,11 @@ describe('设计决定：作品卡、管理页与复核', () => {
     try {
       const page = opened.page;
       const controls = {
-        检查全部: page.locator('button[aria-label="检查全部"]'),
+        检查全部: page.locator('button[aria-label="전체 확인"]'),
         // 两枚图标键拼成一组，对齐的是整组的外框，不是组里单个键。
-        版式开关: page.locator('[aria-label="关注列表版式"]'),
-        排序框: page.locator('button[aria-label="关注列表排序"]'),
-        方向键: page.locator('button[aria-label^="按检查时间"]'),
+        版式开关: page.locator('[aria-label="팔로우 목록 레이아웃"]'),
+        排序框: page.locator('button[aria-label="팔로우 목록 정렬"]'),
+        方向键: page.locator('button[aria-label^="정렬 기준:확인 시간"]'),
       };
       const heights: Record<string, number> = {};
       for (const [name, control] of Object.entries(controls)) {
@@ -1000,15 +1002,15 @@ describe('设计决定：作品卡、管理页与复核', () => {
         assert.ok(waiting.length >= 3, '关注列表骨架里没有标出等数据的操作键');
         for (const face of waiting) assertDisabledFace(face, expected);
         release();
-        await page.locator('section[aria-label="kou 的关注来源"]').waitFor({ timeout: 15_000 });
+        await page.locator('section[aria-label="kou 팔로우 출처"]').waitFor({ timeout: 15_000 });
         await settle(page);
         const final = await controlFaces(page, {
-          检查全部: 'button[aria-label="检查全部"]',
-          默认视图: '[aria-label="关注列表版式"] > button:first-child',
-          表格视图: '[aria-label="关注列表版式"] > button:last-child',
-          排序框: 'button[aria-label="关注列表排序"]',
-          方向键: 'button[aria-label^="按检查时间"]',
-          全部收起: 'button[aria-label="全部收起"]',
+          检查全部: 'button[aria-label="전체 확인"]',
+          默认视图: '[aria-label="팔로우 목록 레이아웃"] > button:first-child',
+          表格视图: '[aria-label="팔로우 목록 레이아웃"] > button:last-child',
+          排序框: 'button[aria-label="팔로우 목록 정렬"]',
+          方向键: 'button[aria-label^="정렬 기준:확인 시간"]',
+          全部收起: 'button[aria-label="모두 접기"]',
           移除来源: '[data-source-divider] [data-follow-source-controls] > span:last-child > button:last-child',
         });
         const waitsForData = new Set(['检查全部', '全部收起', '移除来源']);
@@ -1038,7 +1040,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
         return getComputedStyle(element).backgroundColor;
       });
       /* 勾选框的 input 视觉隐藏在画出来的方框底下，点它要 force，和上面选中底色那条用例一样。 */
-      const select = () => page.getByRole('checkbox', { name: '选择 kou · Kemono' })
+      const select = () => page.getByRole('checkbox', { name: '선택: kou · Kemono' })
         .check({ force: true, timeout: 5_000 });
       const card = page.locator('[data-source-divider] > div').first();
       const cardRested = await background(card);
@@ -1051,14 +1053,14 @@ describe('设计决定：作品卡、管理页与复核', () => {
       assert.equal(cardSelectedHovered, cardSelectedRested, '卡片视图选中行指着时换了底色，盖掉了选中态');
       assert.notEqual(cardSelectedRested, cardRested, '卡片视图选中行没有自己的底色');
 
-      await page.locator('button[aria-label="表格视图"]').click({ timeout: 5_000 });
+      await page.locator('button[aria-label="표 보기"]').click({ timeout: 5_000 });
       const row = page.locator('[data-board-data-table] tbody tr').first();
       await row.waitFor({ timeout: 15_000 });
       await page.mouse.move(0, 0);
       const selectedRested = await background(row);
       await row.hover();
       assert.equal(await background(row), selectedRested, '表格视图选中行指着时换了底色，盖掉了选中态');
-      await page.getByRole('checkbox', { name: '选择 kou · Kemono' }).uncheck({ force: true, timeout: 5_000 });
+      await page.getByRole('checkbox', { name: '선택: kou · Kemono' }).uncheck({ force: true, timeout: 5_000 });
       await page.mouse.move(0, 0);
       const rested = await background(row);
       assert.notEqual(selectedRested, rested, '表格视图选中行没有自己的底色');

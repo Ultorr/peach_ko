@@ -44,7 +44,7 @@ describe('横向导航提示', () => {
   it('复核分类在窄屏横滚，桌面分类列不保留横滚提示', { timeout: 60_000 }, async () => {
     const opened = await visit(browser, '/review', MOBILE);
     try {
-      const row = opened.page.getByRole('tablist', { name: '复核分类' });
+      const row = opened.page.getByRole('tablist', { name: '검토 분류' });
       await row.waitFor();
       await settle(opened.page);
       await scrollPositions(row);
@@ -80,11 +80,11 @@ describe('横向导航提示', () => {
     });
     try {
       const page = opened.page;
-      const row = page.getByRole('group', { name: '标签类型' });
+      const row = page.getByRole('group', { name: '태그 유형' });
       await row.waitFor();
       await settle(page);
       await scrollPositions(row);
-      const alphabet = page.getByRole('navigation', { name: '按首字跳转' });
+      const alphabet = page.getByRole('navigation', { name: '첫 글자로 이동' });
       await scrollPositions(alphabet);
       await page.setViewportSize({ width: 1600, height: 900 });
       await edges(alphabet, false, false);

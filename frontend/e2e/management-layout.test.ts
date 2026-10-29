@@ -37,7 +37,7 @@ describe('管理页面容器与骨架', () => {
       const opened = await visit(browser, '/data-cleanup', viewport);
       try {
         await settle(opened.page);
-        for (const name of ['扫描与采集', '链接管理']) {
+        for (const name of ['스캔 및 수집', '링크 관리']) {
           const card = opened.page.locator('section').filter({ has: opened.page.getByRole('heading', { name, exact: true }) }).last();
           const geometry = await card.evaluate(node => {
             const children = Array.from(node.children);
@@ -58,7 +58,7 @@ describe('管理页面容器与骨架', () => {
       let release = () => {};
       try {
         const page = opened.page;
-        await page.getByRole('tablist', { name: '统计视图' }).waitFor();
+        await page.getByRole('tablist', { name: '통계 보기' }).waitFor();
         await page.emulateMedia({ reducedMotion: 'no-preference' });
         const cpu = await page.context().newCDPSession(page);
         await cpu.send('Emulation.setCPUThrottlingRate', { rate: 4 });
@@ -72,10 +72,10 @@ describe('管理页面容器与骨架', () => {
           const frames: { inventory: boolean; ranking: boolean; metricsY: number; dimensionsY: number }[] = [];
           (window as unknown as { statsPaintFrames: typeof frames }).statsPaintFrames = frames;
           const sample = () => {
-            const metrics = document.querySelector('[role="tablist"][aria-label="统计视图"]');
-            const dimensions = document.querySelector('[role="tablist"][aria-label="统计维度"]');
+            const metrics = document.querySelector('[role="tablist"][aria-label="통계 보기"]');
+            const dimensions = document.querySelector('[role="tablist"][aria-label="통계 기준"]');
             if (metrics && dimensions) frames.push({
-              inventory: !!document.querySelector('[role="img"][aria-label="网盘与本地"]'),
+              inventory: !!document.querySelector('[role="img"][aria-label="클라우드 및 로컬"]'),
               ranking: !!document.querySelector('[role="tabpanel"][id$="tags"]'),
               metricsY: metrics.getBoundingClientRect().y,
               dimensionsY: dimensions.getBoundingClientRect().y,
@@ -92,10 +92,10 @@ describe('管理页面容器与骨架', () => {
         const chart = await box(skeleton.locator('[data-stats-chart]').first());
         const waitingLayout = await layout(page);
         release();
-        await page.getByRole('tablist', { name: '统计视图' }).waitFor();
+        await page.getByRole('tablist', { name: '통계 보기' }).waitFor();
         await settle(page);
-        aligned(metrics, await box(page.getByRole('tablist', { name: '统计视图' })));
-        aligned(chart, await box(page.getByRole('img', { name: '网盘与本地', exact: true }).locator('..')), ['x', 'y', 'width']);
+        aligned(metrics, await box(page.getByRole('tablist', { name: '통계 보기' })));
+        aligned(chart, await box(page.getByRole('img', { name: '클라우드 및 로컬', exact: true }).locator('..')), ['x', 'y', 'width']);
         await page.waitForFunction(() => (window as unknown as { statsPaintFrames: unknown[] }).statsPaintFrames.length >= 12);
         const frames = await page.evaluate(() => (window as unknown as {
           statsPaintFrames: { inventory: boolean; ranking: boolean; metricsY: number; dimensionsY: number }[];
@@ -267,8 +267,8 @@ describe('管理页在极端内容下不撑出视口', () => {
       const right = (await box(card)).x + (await box(card)).width;
       assert.ok(right <= narrow.width, `卡片右缘 ${right}`);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth) <= narrow.width);
-      assert.equal(await page.locator('#stats [data-collection-summary] strong').textContent(), '1,234,567 部作品');
-      assert.match(await page.locator('#stats').textContent() ?? '', /显示前 1 部，共 1,234,567 部。/);
+      assert.equal(await page.locator('#stats [data-collection-summary] strong').textContent(), '1,234,567 개 항목');
+      assert.match(await page.locator('#stats').textContent() ?? '', /앞에서부터 1 개 표시, 총 1,234,567 개./);
     } finally { await opened.close(); }
   });
 });

@@ -219,13 +219,13 @@ class WebE2ESmokeTests(unittest.TestCase):
         mark_root = generated / "site-marks"
         mark_root.mkdir(parents=True)
         mark = (ROOT / "resources" / "peach-logo.png").read_bytes()
-        for spec in scraping_access.SOURCES.values():
-            # 聚合来源没有固定站点，页面使用本地字形，不请求站标。
-            if not spec["login"]:
-                continue
-            cached = link_marks.cached_path(mark_root, spec["login"])
+        mark_urls = [spec["login"] for spec in scraping_access.SOURCES.values() if spec["login"]]
+        # SiteLabel also requests a taste-domain icon outside the scraping-source registry.
+        mark_urls.append("https://missav.com/")
+        for url in mark_urls:
+            cached = link_marks.cached_path(mark_root, url)
             if cached is None:
-                raise AssertionError(f"采集来源没有可缓存的主机：{spec['login']}")
+                raise AssertionError(f"采集来源没有可缓存的主机：{url}")
             cached.write_bytes(mark)
         icon_root = generated / follow_assets.ROOT_NAME
         for provider in follow_assets.SOURCE_ICON_URLS:

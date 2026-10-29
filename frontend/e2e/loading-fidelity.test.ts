@@ -22,7 +22,7 @@ describe('页面等待态的结构', () => {
         await page.goto(requiredEnv('PEACH_E2E_ORIGIN') + '/', { waitUntil: 'load' });
         const pending = page.locator('#feedNew [data-feed-cover-state="fetching"]');
         await pending.waitFor();
-        assert.equal(await pending.innerText(), '抓取中');
+        assert.equal(await pending.innerText(), '가져오는 중');
         const color = await pending.evaluate(node => getComputedStyle(node.closest('.pic')!).backgroundColor);
         assert.notEqual(color, 'rgb(0, 0, 0)', '抓取中封面仍是黑底');
         completed = true;

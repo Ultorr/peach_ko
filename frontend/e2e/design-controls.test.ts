@@ -114,14 +114,14 @@ describe('设计决定：控件、状态与首页顶部', () => {
   it('持久警示是状态色块，不和字段说明共用灰色小字', { timeout: 60_000 }, async () => {
     const opened = await openAccess(browser);
     try {
-      await opened.form.getByText('关闭访问密码', { exact: true }).click({ timeout: 5_000 });
+      await opened.form.getByText('접속 비밀번호 해제', { exact: true }).click({ timeout: 5_000 });
       const note = opened.form.locator('[role="note"]');
       await note.waitFor({ timeout: 5_000 });
       const surface = await note.evaluate((element) => getComputedStyle(element).backgroundColor);
       assert.notEqual(surface, 'rgba(0, 0, 0, 0)', '警示没有底色');
       assert.equal(surface, await tokenColor(opened.page, '.peach-react', '--color-status-yellow-background'));
       const ink = await note.evaluate((element) => getComputedStyle(element).color);
-      const hint = await opened.form.getByText('关闭访问密码时无需填写。').evaluate((element) => getComputedStyle(element).color);
+      const hint = await opened.form.getByText('접속 비밀번호를 해제할 때는 입력하지 않아도 됩니다.').evaluate((element) => getComputedStyle(element).color);
       assert.notEqual(ink, hint, '警示文字和字段说明同色');
       assert.deepEqual(opened.problems, []);
     } finally {
@@ -207,13 +207,13 @@ describe('设计决定：控件、状态与首页顶部', () => {
       const fill = (name: string) => card.getByRole('button', { name, exact: true })
         .evaluate((element) => getComputedStyle(element).backgroundColor);
       // 收 Cookie 且已存了一份的来源，底下三颗：撤销、检查、保存；只有保存是写入。
-      assert.equal(await fill('保存'), await tokenColor(opened.page, '.peach-react', '--color-button-primary'));
+      assert.equal(await fill('저장'), await tokenColor(opened.page, '.peach-react', '--color-button-primary'));
       const secondary = await tokenColor(opened.page, '.peach-react', '--color-background-primary-default');
-      assert.equal(await fill('检查连接'), secondary, '检查连接被画成了主按钮');
-      assert.equal(await fill('撤销 Cookie'), secondary, '撤销 Cookie 被画成了主按钮');
+      assert.equal(await fill('연결 확인'), secondary, '检查连接被画成了主按钮');
+      assert.equal(await fill('쿠키 삭제'), secondary, '撤销 Cookie 被画成了主按钮');
       // 没存过 Cookie 的来源没有可撤的对象，那一颗不画。
       const plain = opened.page.locator('form[aria-label="演示来源乙"]');
-      assert.equal(await plain.getByRole('button', { name: '撤销 Cookie', exact: true }).count(), 0);
+      assert.equal(await plain.getByRole('button', { name: '쿠키 삭제', exact: true }).count(), 0);
       assert.deepEqual(opened.problems, []);
     } finally {
       await opened.close();
@@ -225,7 +225,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
     try {
       const banner = running.page.locator('#toasts [data-processing-dock][role="status"]');
       await banner.waitFor({ state: 'visible', timeout: 15_000 });
-      assert.match(await banner.innerText(), /采集缺失资料 · 38 \/ 100/);
+      assert.match(await banner.innerText(), /누락된 정보 수집 · 38 \/ 100/);
       // 一圈长度钉成 100，画出来的那一段就是百分比本身。
       assert.equal(await banner.locator('[role="progressbar"]').getAttribute('aria-valuenow'), '38');
       // 判据是「不是语气色」，不钉某一个具体的底：在跑那条走中性底，黄与红留给出事的时候。
@@ -290,7 +290,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
   it('扫描卡的进度条走焦点环色，底槽是三级底，按下的那颗键转成忙态', { timeout: 60_000 }, async () => {
     const opened = await openProcessing(browser, '/data-cleanup', RUNNING_JOB);
     try {
-      const card = opened.page.locator('section[aria-label="扫描与采集"]');
+      const card = opened.page.locator('section[aria-label="스캔 및 수집"]');
       await card.waitFor({ state: 'visible', timeout: 15_000 });
       const bar = card.locator('[role="progressbar"]');
       assert.equal(await bar.getAttribute('aria-valuenow'), '38');
@@ -302,7 +302,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
       assert.equal(await fill(1),
         await tokenColor(opened.page, '.peach-react', '--color-border-focus-ring'));
       // 忙态不改 `disabled`：控件仍可聚焦，重复触发由页面自己挡。
-      const scan = card.getByRole('button', { name: '同步媒体库', exact: true });
+      const scan = card.getByRole('button', { name: '미디어 라이브러리 동기화', exact: true });
       assert.equal(await scan.getAttribute('aria-busy'), 'true');
       assert.equal(await scan.evaluate((element) => (element as HTMLButtonElement).disabled), false,
         '用原生 disabled 挡的话按钮连焦点都拿不到');
@@ -334,7 +334,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
     const opened = await openProcessing(browser, '/data-cleanup', { status: 'idle' });
     try {
       // 骨架那张卡同名同结构，等到 React 接管、两半不再带骨架标记才量。
-      const split = opened.page.locator('section[aria-label="扫描与采集"] [data-split-button]:not(:has(> [data-skeleton-action]))');
+      const split = opened.page.locator('section[aria-label="스캔 및 수집"] [data-split-button]:not(:has(> [data-skeleton-action]))');
       await split.waitFor({ state: 'visible', timeout: 15_000 });
       await settle(opened.page);
       const parts = split.locator(':scope > button');
@@ -515,7 +515,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
       await input.fill('读数变值');
       await input.press('Enter');
       await opened.page.waitForFunction(() =>
-        document.querySelector('[data-catalog-filter] [data-count-readout]')?.textContent?.includes('34 个符合'));
+        document.querySelector('[data-catalog-filter] [data-count-readout]')?.textContent?.includes('34 개 일치'));
       /* 读数更新后还可能因自动续页再重画。在触发前观察真实节点，既能验收
          动画的计算值，也不把断言绑在之后某一次采样恰好撞上短暂节点。 */
       await opened.page.waitForFunction(() =>

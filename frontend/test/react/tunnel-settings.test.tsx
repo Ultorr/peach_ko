@@ -68,13 +68,13 @@ it('切到命名隧道才出现主机名与令牌，保存键是主按钮', asyn
   expect(token.type).toBe('password');
   await type(hostname, 'peach.example.com');
   await type(token, FAKE_TOKEN);
-  expect(host.querySelector('button[type="submit"]')?.textContent).toBe('保存配置');
+  expect(host.querySelector('button[type="submit"]')?.textContent).toBe('설정 저장');
 
   await submit(host);
   expect(sentBody(fetcher)).toMatchObject({
     enabled: false, mode: 'named', hostname: 'peach.example.com', token: FAKE_TOKEN,
   });
-  expect(receipt).toHaveBeenCalledWith('已保存配置');
+  expect(receipt).toHaveBeenCalledWith('설정이 저장되었습니다');
 });
 
 it('保存后令牌不回显，只说已保存', async () => {
@@ -90,14 +90,14 @@ it('保存后令牌不回显，只说已保存', async () => {
   const token = host.querySelector<HTMLInputElement>('#tunnel-token')!;
   expect(token.value).toBe('');
   expect(host.textContent).not.toContain(FAKE_TOKEN);
-  expect(host.textContent).toContain('已保存');
+  expect(host.textContent).toContain('저장됨');
 });
 
 it('独立包不渲染模式切换，只剩开关', async () => {
   const host = await mount({ ...STOPPED, named_available: false });
   expect(host.querySelector('[role="radiogroup"]')).toBeNull();
   expect(host.querySelector('button[type="submit"]')).toBeNull();
-  expect(host.textContent).toContain('启动公网入口');
+  expect(host.textContent).toContain('외부 접속 시작');
 });
 
 it('主机名的字段错误落在输入框上，不写成一行红字', async () => {

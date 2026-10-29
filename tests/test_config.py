@@ -301,17 +301,17 @@ class BadFileTests(unittest.TestCase):
                        "[media.mounts]\nlocal = '/mnt/a'\n")
             with self.assertRaises(SettingsFileError) as caught:
                 tree.load()
-        self.assertIn("2 个根", str(caught.exception))
+        self.assertIn("루트가 2개", str(caught.exception))
         with TempTree() as tree:
             tree.write("[media.locations]\nlocal = ['D:\\Videos', 'D:\\Videos']\n")
             with self.assertRaises(SettingsFileError) as caught:
                 tree.load()
-        self.assertIn("重复", str(caught.exception))
+        self.assertIn("중복 경로", str(caught.exception))
         with TempTree() as tree:
             tree.write("[media.locations]\nlocal = []\n")
             with self.assertRaises(SettingsFileError) as caught:
                 tree.load()
-        self.assertIn("没有声明根", str(caught.exception))
+        self.assertIn("선언된 루트가 없습니다", str(caught.exception))
 
     def test_without_a_locations_table_the_builtin_defaults_apply(self):
         with TempTree() as tree:

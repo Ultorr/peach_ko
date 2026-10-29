@@ -3,6 +3,7 @@
  * 一轮要跑几十分钟到几小时，跑到哪一步由服务自己记，页面关掉再回来照样接得上。
  * 首屏两份一起取，卡片挂上去直接读缓存。 */
 import { apiGet } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import { queryClient } from '../query';
 
 export const MEDIA_REPAIR_URL = '/api/media-repair';
@@ -58,7 +59,7 @@ export function statusLine(state: MediaRepairState): string {
     const where = state.total ? `${count(Math.min(state.checked || 0, state.total))} / ${count(state.total)}` : "준비 중";
     return state.stage === '修复' && state.message
       ? `복구 ${where} · ${state.message}`
-      : `${state.stage || "스캔"} ${where}`;
+      : `${koreanLabel(state.stage) || "스캔"} ${where}`;
   }
   if (state.status === 'complete' && (state.repaired || state.failed)) {
     return state.failed

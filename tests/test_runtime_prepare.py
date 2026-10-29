@@ -90,7 +90,7 @@ class DependencyTests(unittest.TestCase):
         step = self.dependencies(run).sync()
         self.assertEqual(step.state, "synced")
         self.assertIn("grpcio==1.84.0", step.message)
-        self.assertIn("2.5 秒", step.message)
+        self.assertIn("2.5초", step.message)
         sync_command = run.calls[1][0]
         self.assertNotIn("--check", sync_command)
         self.assertIn("--no-install-project", sync_command)
@@ -121,7 +121,7 @@ class DependencyTests(unittest.TestCase):
         step = self.dependencies(run, which=lambda _name: None,
                                  environ={"LOCALAPPDATA": str(self.temp)}).sync()
         self.assertEqual(step.state, "skipped")
-        self.assertIn("未取得 uv", step.message)
+        self.assertIn("uv를 찾을 수 없습니다", step.message)
         self.assertEqual(run.calls, [])
 
     def test_uv_is_found_in_the_winget_package_directory_when_path_lacks_it(self):
@@ -239,7 +239,7 @@ class MigrationTests(unittest.TestCase):
         step = self.migrations(run).apply()
         self.assertTrue(step.failed)
         self.assertIn("database is locked", step.message)
-        self.assertIn("备份", step.message)
+        self.assertIn("백업", step.message)
 
     def test_a_status_that_cannot_run_is_a_failure(self):
         step = self.migrations(FakeRun(OSError("peach.exe missing"))).apply()

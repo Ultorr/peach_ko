@@ -400,10 +400,10 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             await asyncio.sleep(0.005)
         sources = (await self.client.get("/api/sources?t=secret")).json()
         self.assertEqual(sources["offline"], ["local"])
-        self.assertEqual(sources["sources"][0]["message"], "本地磁盘：没有权限读取")
+        self.assertEqual(sources["sources"][0]["message"], "本地磁盘：읽기 권한 없음")
         payload = (await self.client.get("/healthz")).json()
         self.assertTrue(payload["ok"])
-        self.assertEqual(payload["media_mounts"]["warnings"], ["本地磁盘：没有权限读取"])
+        self.assertEqual(payload["media_mounts"]["warnings"], ["本地磁盘：읽기 권한 없음"])
 
     async def test_reader_role_keeps_gets_available_and_rejects_posts(self):
         class ReaderSync:
@@ -515,7 +515,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(response.status_code, 401)
                     self.assertTrue(response.headers["content-type"].startswith("text/plain"))
                     self.assertNotIn("location", response.headers)
-                    self.assertEqual(response.text, "需要 ?t=口令" if method == "GET" else "")
+                    self.assertEqual(response.text, "?t=접속토큰이 필요합니다" if method == "GET" else "")
 
     async def test_main_bundle_has_authenticated_get_head_mime_and_revalidation(self):
         for name, media in (("peach-app.js", "text/javascript"), ("peach-app.css", "text/css")):
@@ -1075,7 +1075,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
 
         asset = await self.client.get("/dist/peach-app.js")
         self.assertEqual(asset.status_code, 401)
-        self.assertEqual(asset.text, "需要 ?t=口令")
+        self.assertEqual(asset.text, "?t=접속토큰이 필요합니다")
         self.assertTrue(asset.headers["content-type"].startswith("text/plain"))
 
         api = await self.client.get("/api/items")
@@ -1844,11 +1844,11 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         refused = await self.client.post("/login", content=body, headers=page)
         self.assertEqual(refused.status_code, 400)
         self.assertTrue(refused.headers["content-type"].startswith("text/html"))
-        self.assertIn('data-page="login" data-next="/stats" data-error="请选择有效的保持登录时间">', refused.text)
+        self.assertIn('data-page="login" data-next="/stats" data-error="유효한 로그인 유지 기간을 선택하세요">', refused.text)
         self.assertNotIn("set-cookie", refused.headers)
         refused = await self.client.post("/login", content=body, headers=form)
         self.assertEqual(refused.status_code, 400)
-        self.assertEqual(refused.json(), {"error": "请选择有效的保持登录时间"})
+        self.assertEqual(refused.json(), {"error": "유효한 로그인 유지 기간을 선택하세요"})
         routes_auth._ATTEMPTS.clear()
         for _ in range(10):
             wrong = await self.client.post("/login", content="token=wrong&next=%2Fstats", headers=form)
@@ -1857,11 +1857,11 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(limited.status_code, 429)
         self.assertEqual(limited.headers["retry-after"], "60")
         self.assertTrue(limited.headers["content-type"].startswith("text/html"))
-        self.assertIn('data-page="login" data-next="/stats" data-error="尝试次数较多，请一分钟后重试">',
+        self.assertIn('data-page="login" data-next="/stats" data-error="시도 횟수가 많습니다. 1분 후에 다시 시도하세요">',
                       limited.text)
         limited = await self.client.post("/login", content="token=secret&next=%2Fstats", headers=form)
         self.assertEqual(limited.status_code, 429)
-        self.assertEqual(limited.json(),{"error": "尝试次数较多，请一分钟后重试"})
+        self.assertEqual(limited.json(),{"error": "시도 횟수가 많습니다. 1분 후에 다시 시도하세요"})
 
     async def test_index_directory_urls_keep_query_and_use_canonical_path(self):
         await self.client.post('/login', content='token=secret&next=%2F',
@@ -2977,8 +2977,8 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(climbing.status_code, 403, "`..` 爬出数据根的一样不开")
         self.assertEqual(gone.status_code, 410)
         # 410 与 403 在页面那层的通用错误映射里都没有说法，原因得由这条自己写成中文。
-        self.assertEqual(gone.json()["message"], "这个位置已经不在了")
-        self.assertIn("不归 Peach 管", refused.json()["message"])
+        self.assertEqual(gone.json()["message"], "이 위치가 더 이상 존재하지 않습니다")
+        self.assertIn("Peach가 관리하지 않는 위치", refused.json()["message"])
 
     async def test_photo_thumbnail_is_generated_once_and_cached(self):
         source = self._seed_photo()
@@ -3608,10 +3608,10 @@ class LoginPageWithoutSessionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(login.status_code, 303)
         page = await self.client.get("/dist/no-such.js", headers={"Accept": "text/html"})
         self.assertEqual(page.status_code, 404)
-        self.assertIn('data-page="error" data-status="404" data-detail="这个地址下没有页面。"', page.text)
+        self.assertIn('data-page="error" data-status="404" data-detail="이 주소에는 페이지가 없습니다."', page.text)
         script = await self.client.get("/dist/no-such.js")
         self.assertEqual(script.status_code, 404)
-        self.assertEqual(script.json(), {"error": "这个地址下没有页面。"})
+        self.assertEqual(script.json(), {"error": "이 주소에는 페이지가 없습니다."})
 
 
 if __name__ == "__main__":

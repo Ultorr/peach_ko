@@ -24,7 +24,7 @@ it('官方MP4预告进入现有播放器并在关闭时销毁', async () => {
   await settle();
   expect(player).toHaveBeenCalledOnce();
   expect(player.mock.calls[0]?.[1]).toEqual({ src, type: 'video/mp4' });
-  expect(mounted.host.querySelector('video')?.getAttribute('aria-label')).toBe('视频预览');
+  expect(mounted.host.querySelector('video')?.getAttribute('aria-label')).toBe('동영상 미리보기');
   const dispose = player.mock.results[0]!.value;
   await mounted.unmount();
   expect(dispose).toHaveBeenCalledOnce();

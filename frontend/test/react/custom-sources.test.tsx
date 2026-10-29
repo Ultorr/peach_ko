@@ -17,11 +17,11 @@ it('来源停用由服务端结果确认，保留配置以便再次启用', asyn
   const receipt = vi.fn();
   const host = await mount(<QueryClientProvider client={queryClient}><CustomSources receipt={receipt} /></QueryClientProvider>);
   await settle();
-  const disable = Array.from(host.querySelectorAll('button')).find(button => button.textContent === '停用');
+  const disable = Array.from(host.querySelectorAll('button')).find(button => button.textContent === '사용 중지');
   await click(disable!);
   await settle();
-  expect(receipt).toHaveBeenCalledWith('已停用来源');
-  expect(host.textContent).toContain('已停用');
+  expect(receipt).toHaveBeenCalledWith('출처 사용이 중지되었습니다');
+  expect(host.textContent).toContain('사용 중지됨');
   const sent = JSON.parse(fetcher.mock.calls.find(([, options]) => options?.method === 'POST')?.[1].body);
   expect(sent).toMatchObject({ id: row.id, enabled: false, fields: { code: 'id' } });
 });
@@ -34,7 +34,7 @@ it('试查期间修改配置后不展示旧请求的结果', async () => {
     : { ok: true, status: 200, json: async () => ({ items: [row] }) }));
   const host = await mount(<QueryClientProvider client={queryClient}><CustomSources receipt={() => {}} /></QueryClientProvider>);
   await settle();
-  await click(Array.from(host.querySelectorAll('button')).find(button => button.textContent === '编辑'));
+  await click(Array.from(host.querySelectorAll('button')).find(button => button.textContent === '편집'));
   const form = host.querySelector('form')!;
   const code = Array.from(form.querySelectorAll('input')).filter(input => input.type === 'text').at(-1)!;
   await type(code, 'ABW-032');

@@ -90,15 +90,15 @@ describe('规范路由与设置历史', () => {
         await openPanel(page);
         await page.waitForURL('**/settings/appearance');
         const panel = page.locator('#settingsPanel');
-        await panel.getByRole('tab', { name: '浏览与播放', exact: true }).click();
+        await panel.getByRole('tab', { name: '탐색 및 재생', exact: true }).click();
         await page.waitForURL('**/settings/playback');
-        await panel.getByRole('button', { name: '关闭设置' }).click();
+        await panel.getByRole('button', { name: '설정 닫기' }).click();
         await page.waitForURL(url => url.pathname === '/');
         await panel.waitFor({ state: 'hidden' });
         assert.ok(await page.evaluate(() => (window as unknown as { routeGrid: Element }).routeGrid === document.querySelector('#grid .peach-react')));
         await page.goForward();
         await page.waitForURL('**/settings/playback');
-        await panel.getByRole('heading', { name: '浏览与播放', exact: true }).waitFor();
+        await panel.getByRole('heading', { name: '탐색 및 재생', exact: true }).waitFor();
         assert.deepEqual(opened.problems, []);
       } finally { await opened.close() }
     });

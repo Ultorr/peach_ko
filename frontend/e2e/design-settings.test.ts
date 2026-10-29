@@ -31,7 +31,7 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
         } } });
       });
       await page.reload({ waitUntil: 'load' });
-      await page.getByRole('tab', { name: /使用空间/ }).click();
+      await page.getByRole('tab', { name: /사용 공간/ }).click();
       const panel = page.locator('[role="tabpanel"]').first();
       await panel.locator('[role="progressbar"]').first().waitFor({ state: 'visible', timeout: 15_000 });
       await settle(page);
@@ -62,12 +62,12 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
       const opened = await openTaste(browser, viewport);
       try {
         const page = opened.page;
-        const bars = page.locator('section[aria-label="口味维度排名"]');
+        const bars = page.locator('section[aria-label="취향 범주 순위"]');
         await bars.locator('.recharts-bar-rectangle').first().waitFor({ state: 'visible', timeout: 15_000 });
         await settle(page);
-        const shown = await page.locator('section[aria-label="浏览器画像"]').evaluate((section) => {
+        const shown = await page.locator('section[aria-label="브라우저 기반 취향 프로필"]').evaluate((section) => {
           const radar = section.firstElementChild!.getBoundingClientRect();
-          const ranked = section.querySelector('section[aria-label="口味维度排名"]')!.getBoundingClientRect();
+          const ranked = section.querySelector('section[aria-label="취향 범주 순위"]')!.getBoundingClientRect();
           return {
             radar: radar.height,
             ranked: ranked.height,
@@ -96,9 +96,9 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
     const opened = await openTaste(browser, DESKTOP);
     try {
       const page = opened.page;
-      await page.getByRole('tablist', { name: '口味证据来源' }).getByRole('tab', { name: 'Peach 内部' }).click();
-      for (const name of ['女优', '创作者']) {
-        await page.getByRole('tablist', { name: 'Peach 口味维度' }).getByRole('tab', { name }).click();
+      await page.getByRole('tablist', { name: '취향 분석 근거 출처' }).getByRole('tab', { name: 'Peach 내부' }).click();
+      for (const name of ['배우', '크리에이터']) {
+        await page.getByRole('tablist', { name: 'Peach 취향 범주' }).getByRole('tab', { name }).click();
         const img = page.getByRole('tabpanel', { name }).locator('img[data-facebox]').first();
         await img.scrollIntoViewIfNeeded();
         // 放大是图加载后 `avatarFrame` 写进内联 style 的；等到那一步落地再量。
@@ -377,7 +377,7 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
       const glide = () => nav.locator('[data-settings-glide]').evaluate((node) => Math.round(node.getBoundingClientRect().top));
       const top = (name: string) => nav.getByRole('tab', { name, exact: true })
         .evaluate((node) => Math.round(node.getBoundingClientRect().top));
-      const selected = await nav.getByRole('tab', { name: '外观与导航', exact: true }).evaluate((node) => {
+      const selected = await nav.getByRole('tab', { name: '외관 및 탐색', exact: true }).evaluate((node) => {
         const style = getComputedStyle(node), icon = getComputedStyle(node.querySelector('svg')!);
         return { face: style.backgroundColor, ring: style.boxShadow, icon: [icon.width, icon.height, icon.fill === style.color, icon.stroke] };
       });
@@ -385,16 +385,16 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
       assert.equal(selected.ring, 'none');
       // Remix 的线条是 `fill` 画出的轮廓，全站默认的 `stroke:currentColor;fill:none` 会让它整枚消失。
       assert.deepEqual(selected.icon, ['20px', '20px', true, 'none']);
-      assert.equal(await glide(), await top('外观与导航'), '玻璃没有落在当前项上');
+      assert.equal(await glide(), await top('외관 및 탐색'), '玻璃没有落在当前项上');
 
-      await nav.getByRole('tab', { name: '浏览与播放', exact: true }).hover();
-      const target = await top('浏览与播放');
+      await nav.getByRole('tab', { name: '탐색 및 재생', exact: true }).hover();
+      const target = await top('탐색 및 재생');
       await page.waitForFunction(([want]) => Math.round(document.querySelector(
         '#settingsPanel [data-settings-glide]')!.getBoundingClientRect().top) === want, [target]);
-      assert.equal(await nav.getByRole('tab', { name: '外观与导航', exact: true }).getAttribute('aria-selected'), 'true',
+      assert.equal(await nav.getByRole('tab', { name: '외관 및 탐색', exact: true }).getAttribute('aria-selected'), 'true',
         '指针移上去就换了分区');
       await page.locator(`${PANEL} [data-settings-scroll]`).hover();
-      const home = await top('外观与导航');
+      const home = await top('외관 및 탐색');
       await page.waitForFunction(([want]) => Math.round(document.querySelector(
         '#settingsPanel [data-settings-glide]')!.getBoundingClientRect().top) === want, [home]);
       assert.deepEqual(opened.problems, []);
@@ -499,9 +499,9 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
       server.schedule.available = false;
       await page.goto(new URL('/settings/library', page.url()).href, { waitUntil: 'load' });
       await settle(page);
-      const source = () => page.getByRole('tablist', { name: '配置分区' }).getByRole('tab', { name: '来源与订阅', exact: true });
+      const source = () => page.getByRole('tablist', { name: '설정 섹션' }).getByRole('tab', { name: '소스 및 구독', exact: true });
       await source().click();
-      const toggle = page.getByRole('switch', { name: '自动检查更新', exact: true });
+      const toggle = page.getByRole('switch', { name: '업데이트 자동 확인', exact: true });
       await toggle.and(page.locator(':disabled:checked')).waitFor({ state: 'attached', timeout: 10_000 });
       const face = (node: Element) => {
         const label = node.closest('label')!;
@@ -652,7 +652,7 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
       release();
       await page.locator('#index [data-alphabet]').waitFor({ timeout: 15_000 });
       await settle(page);
-      const live = await measure('#index [data-filter-glass]', '#index [data-alpha-group]', '[aria-label="标签视图"]');
+      const live = await measure('#index [data-filter-glass]', '#index [data-alpha-group]', '[aria-label="태그 보기"]');
       assert.ok(skeleton.glass && skeleton.group && skeleton.view, '标签页骨架里缺筛选玻璃、开头那组或视图切换');
       assert.ok(skeleton.pills > 0, '骨架玻璃的上排没有铺药丸占位');
       assert.ok(live.glass && live.group && live.view, '接管后找不到筛选玻璃、开头那组或视图切换');
@@ -684,7 +684,7 @@ describe('设计决定：设置、口味、统计与筛选玻璃', () => {
       await page.reload({ waitUntil: 'load' });
       await page.locator('#index [data-skeleton^="index/performers/"]').waitFor({ timeout: 15_000 });
       const measure = (cell: string) => page.evaluate((cellSelector) => {
-        const row = document.querySelector('#index [aria-label="身份分类"]');
+        const row = document.querySelector('#index [aria-label="인물 분류"]');
         const box = row?.getBoundingClientRect();
         const first = row?.querySelector('[aria-pressed="true"]')?.getBoundingClientRect();
         return { row: box ? { top: box.top, left: box.left, height: box.height } : null,

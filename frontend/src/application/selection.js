@@ -17,7 +17,10 @@ import { receiptsState } from './receipts.js';
 import { photoSize } from './../appearance/layout';
 import { applyDensity, toggleDensity } from './../appearance/density';
 import { installCardArt, refitNativeImages, upgradeCover } from './../card-art/framing';
+import { saveVideoRatings } from '../bulk-rating';
+import { errorMessage } from '../api';
 export const selectionState = { batchDockProps: undefined, trashCount: undefined, currentSelectSurface: undefined, REGION_CHOICES: undefined, BATCH_RUNNERS: undefined, coverRecheck: undefined };
+const selectedVideos=new Set();
 
 export function paintSelection(){
   // 卡片网格、垃圾队列与关注页的选中态归 React：每次推一份新的集合，卡片按引用比较才看得出变了。
@@ -31,6 +34,7 @@ export function paintSelection(){
 }
 
 export function setSelectMode(on,clear=false) {
+    if(clear)selectedVideos.clear();
     writeShell(setSelectionMode({selected,followSelected},selectionSnapshot(),selectionSurface(location.pathname),!!on,clear));
     document.body.classList.toggle('select-mode',selectMode);
     if(selectMode)releaseHoverPreviews();
@@ -41,8 +45,56 @@ export function visibleCardIds(){return [...loadingState.gridCards()].map(card=>
 
 export function toggleSelection(id,range=false) {
     writeShell(toggleSelected({selected,followSelected},selectionSnapshot(),selectionSurface(location.pathname),visibleCardIds(),id,range));
+    for(const known of selectedVideos)if(!selected.has(known))selectedVideos.delete(known);
+    document.querySelectorAll('[data-media-card][data-medium="video"],[data-catalog-row][data-medium="video"]').forEach(card=>{
+      const videoId=Number(card.dataset.id);if(selected.has(videoId))selectedVideos.add(videoId);
+    });
     setSelectMode(true);
   }
+
+export function selectCatalogItems(ids){
+  selected.clear();selectedVideos.clear();
+  ids.forEach(id=>{selected.add(id);selectedVideos.add(id)});
+  writeShell({lastSelectedId:null});
+  setSelectMode(ids.length>0);
+}
+
+export async function pickBatchRating(){
+  const ids=[...selected];if(!ids.length)return;
+  const videos=new Set(selectedVideos);
+  const completed=new Set(),skipped=new Set();
+  let value=null;
+  const modal=formModal({
+    title:'별점 일괄 지정',
+    description:`선택한 ${ids.length.toLocaleString()}개 항목 중 영상에 적용합니다. 기존 별점을 덮어씁니다.`,
+    body:`<fieldset data-rating-options><legend>부여할 별점</legend><div data-rating-choices>`+
+      [1,2,3,4,5,0].map(star=>`<label><input type="radio" name="batch-rating" value="${star*20}"><span>${star?`${star}점`:'별점 해제'}</span></label>`).join('')+
+      `</div></fieldset><progress data-rating-progress value="0" max="${ids.length}" aria-label="별점 저장 진행률"></progress><p data-rating-status role="status" aria-live="polite">점수를 선택한 뒤 적용하세요.</p>`,
+    confirmLabel:'별점 적용',confirmDisabled:true,
+    onConfirm:async()=>{
+      const picked=modal.dialog.querySelector('input[name="batch-rating"]:checked');
+      if(!picked)return;
+      if(value===null)value=Number(picked.value);
+      modal.dialog.querySelector('[data-rating-options]').disabled=true;
+      const progress=()=>{
+        modal.dialog.querySelector('[data-rating-progress]').value=completed.size+skipped.size;
+        modal.dialog.querySelector('[data-rating-status]').textContent=
+          `저장 ${completed.size.toLocaleString()}개 / ${ids.length.toLocaleString()}개${skipped.size?` · 영상 아님 ${skipped.size}개`:''}. 완료될 때까지 이 탭을 열어 두세요.`;
+      };
+      progress();
+      try{await saveVideoRatings(ids,value,videos,completed,skipped,progress)}
+      catch(error){throw new Error(`저장 ${completed.size}개, 남은 항목 ${ids.length-completed.size-skipped.size}개. ${errorMessage(error)} 다시 적용하면 남은 항목부터 처리합니다.`)}
+    },
+  });
+  modal.dialog.dataset.bulkRating='';
+  modal.dialog.addEventListener('change',()=>{modal.confirmButton.disabled=false});
+  const {confirmed}=await modal.done;
+  if(!completed.size&&!skipped.size)return;
+  for(const id of [...completed,...skipped]){selected.delete(id);selectedVideos.delete(id)}
+  setSelectMode(true);
+  if(completed.size)await reloadAfterWrite();
+  receiptsState.actionReceipt(`${confirmed?'완료':'일부 완료'}: ${completed.size}개 영상 ${value===0?'별점 해제':`${value/20}점 지정`}${skipped.size?` · 영상 아님 ${skipped.size}개 제외`:''}`);
+}
 
 export function visibleFollowIds(){return [...document.querySelectorAll('[data-follow-list] > [data-follow-item]')]
   .map(card=>+card.dataset.followItem)}
@@ -158,7 +210,7 @@ selectionState.currentSelectSurface = ()=>selectionSurface(location.pathname);
 applicationEffects.handler($('#selectMode'), 'onclick', ()=>setSelectMode(!selectMode,!selectMode?false:true));
 selectionState.REGION_CHOICES = [['jp',"일본"],['kr',"한국"],['cn',"중국"],['west',"서양"],
   ['other',"기타"],['none',"지정 취소"]];
-selectionState.BATCH_RUNNERS = {batch:runCatalogBatch,region:pickBatchRegion,follow:runFollowBatch,junk:runJunkBatch,
+selectionState.BATCH_RUNNERS = {batch:runCatalogBatch,rating:pickBatchRating,region:pickBatchRegion,follow:runFollowBatch,junk:runJunkBatch,
   clear:()=>setSelectMode(false,true)};
 applicationEffects.handler($('#density'), 'onclick', ()=>{if(photoViewActive()){
     setPhotoSize(photoSize()==='big'?'small':'big');return}

@@ -436,8 +436,13 @@ class LeftoverProcessTests(_WorktreeCase):
 
     def sleeper(self, cwd: Path) -> subprocess.Popen:
         cwd.mkdir(parents=True, exist_ok=True)
-        child = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"],
-                                 cwd=cwd, stdin=subprocess.PIPE)
+        python, environment = sys.executable, None
+        if os.name == "nt":
+            # venv 启动器另起解释器进程；这里要让 Popen 的 PID 就是持有目录的进程。
+            python = sys._base_executable
+            environment = dict(os.environ, __PYVENV_LAUNCHER__=sys.executable)
+        child = subprocess.Popen([python, "-c", "import sys; sys.stdin.read()"],
+                                 cwd=cwd, stdin=subprocess.PIPE, env=environment)
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             rows = processes_under([cwd])
@@ -447,7 +452,7 @@ class LeftoverProcessTests(_WorktreeCase):
         return child
 
     def stop(self, child: subprocess.Popen) -> None:
-        # EOF 让解释器自己退出；Windows venv 启动器也会等其子进程结束。
+        # EOF 让解释器自己退出。
         child.communicate(timeout=10)
 
     def test_a_process_working_in_a_worktree_is_listed_with_its_details(self):

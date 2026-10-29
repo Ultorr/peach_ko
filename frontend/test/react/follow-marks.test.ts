@@ -68,7 +68,7 @@ describe('创作者', () => {
       + 'referrerpolicy="no-referrer" data-drop="initial" data-fallbacks="/mirror.png" data-initial="K" '
       + 'data-drop-class="favatar none">');
     expect(authorAvatarHtml([source(1, { avatar_url: '/mirror.png' })], '初音')).not.toContain('data-fallbacks');
-    expect(authorAvatarHtml([], '初音')).toBe('<span class="favatar none" title="没有可用头像">初</span>');
+    expect(authorAvatarHtml([], '初音')).toBe('<span class="favatar none" title="사용 가능한 프로필 사진 없음">初</span>');
   });
 
   it('booru 帖子认出发布者时署发布者，被关注者退成「署名含」；发布者没关注过就只出首字母', () => {
@@ -76,16 +76,16 @@ describe('创作者', () => {
     const poster = source(2, { ref: 'Poster_One', author_key: 'name:poster', author_name: 'Poster One' });
     const credited = item(3, { credit: { poster: 'poster-one', credited: 'kou' } });
     const known = followIdentity(credited, followed, context({ sources: [...followed, poster] }));
-    expect(known).toEqual({ author: 'Poster One', avatar: '<span class="favatar none" title="没有可用头像">P</span>',
+    expect(known).toEqual({ author: 'Poster One', avatar: '<span class="favatar none" title="사용 가능한 프로필 사진 없음">P</span>',
         credited: 'kou', entityName: '' });
     const stranger = followIdentity(item(4, { credit: { poster: 'someone' } }), followed, context({ sources: followed }));
     expect(stranger.author).toBe('someone');
-    expect(stranger.avatar).toBe('<span class="favatar none" title="没有可用头像">S</span>');
+    expect(stranger.avatar).toBe('<span class="favatar none" title="사용 가능한 프로필 사진 없음">S</span>');
     const plain = followIdentity(item(5), followed, context());
     expect(plain.author).toBe('kou');
     expect(plain.avatar).toContain('src="/kou.png"');
     expect(followIdentity(item(6, { author: '帖子作者' }), [], context()).author).toBe('帖子作者');
-    expect(followIdentity(item(7), [], context()).author).toBe('创作者未取得');
+    expect(followIdentity(item(7), [], context()).author).toBe('크리에이터 정보를 가져오지 못했습니다');
   });
 });
 
@@ -95,11 +95,11 @@ describe('标题前后的字样', () => {
       '<small class="javedition" data-follow-edition="wip">WIP</small>');
     const shown = item(2, { audio: 'voiced' });
     expect(followTitleMarks(group(item(1, { version: 'v<2>' }), { has_wip: true }), shown)).toBe(
-      '<small class="javedition" data-follow-edition="has-wip">含 WIP</small>'
+      '<small class="javedition" data-follow-edition="has-wip">WIP 포함</small>'
       + '<small class="javedition" data-follow-edition="version">v&lt;2&gt;</small>'
-      + '<small class="javedition" data-follow-edition="voiced">配音版</small>');
+      + '<small class="javedition" data-follow-edition="voiced">더빙 버전</small>');
     expect(followTitleMarks(group(item(1)), item(3, { audio: 'silent' })))
-      .toContain('data-follow-edition="silent">无声版');
+      .toContain('data-follow-edition="silent">무음 버전');
     expect(followTitleMarks(group(item(1)))).toBe('');
   });
 
@@ -108,26 +108,26 @@ describe('标题前后的字样', () => {
     const mirror = item(2);
     const forum = item(3, { provider: 'somewhere', provider_label: '某论坛' });
     const badges = followBadges(group(primary, { duplicates: [mirror, forum] }), primary);
-    expect(badges).toBe('<span data-follow-seealso="" title="另见 Kemono、某论坛"><span data-follow-seealso-label="">另见</span> '
+    expect(badges).toBe('<span data-follow-seealso="" title="함께 보기: Kemono、某论坛"><span data-follow-seealso-label="">함께 보기</span> '
       + '<img data-follow-site-icon="" src="/source-icon?provider=kemono" alt="Kemono" title="Kemono" loading="lazy" data-drop="self">'
       + '<span>某论坛</span></span>');
-    expect(followBadges(group(primary, { duplicates: [mirror] }), mirror)).toContain('另见 Patreon');
+    expect(followBadges(group(primary, { duplicates: [mirror] }), mirror)).toContain('함께 보기: Patreon');
     expect(followBadges(group(primary))).toBe('');
   });
 
   it('媒体未取得说清原因；缺 F95 会话时分「部分」与「全部」', () => {
-    expect(followMediaIssue(item(1, { media_error: '404' }), context())).toBe('媒体未取得：404');
+    expect(followMediaIssue(item(1, { media_error: '404' }), context())).toBe('미디어를 가져오지 못했습니다：404');
     const needs = item(2, { provider: 'f95zone', media_needs_credential: true });
-    expect(followMediaIssue(needs, context())).toBe('媒体未取得：需要 F95 登录会话解析');
-    expect(followMediaIssue({ ...needs, playable: true }, context())).toBe('部分媒体未取得：需要 F95 登录会话解析');
+    expect(followMediaIssue(needs, context())).toBe('미디어를 가져오지 못했습니다: 분석에 F95 로그인 세션이 필요합니다');
+    expect(followMediaIssue({ ...needs, playable: true }, context())).toBe('일부 미디어를 가져오지 못했습니다: 분석에 F95 로그인 세션이 필요합니다');
     expect(followMediaIssue(needs, context({ credentials: new Set(['f95zone']) }))).toBe('');
   });
 
   it('时间按本机时区写，没给就明说，不加「约」', () => {
-    expect(followWhen(item(1))).toBe('时间未取得');
+    expect(followWhen(item(1))).toBe('시간 정보를 가져오지 못했습니다');
     const when = followWhen(item(2, { published_at: '2026-09-04T00:00:00Z' }));
     expect(when).toMatch(/^\d{4}-\d\d-\d\d \d\d:\d\d$/);
-    expect(when).not.toContain('约');
+    expect(when).not.toContain('약');
     /* 账本存 UTC：没带时区标记的串也按 UTC 读，不按本机时区读，否则 UTC+8 的人每个时间都早 8 小时。 */
     expect(followWhen(item(3, { published_at: '2026-09-04T00:00:00' }))).toBe(when);
   });
@@ -135,30 +135,30 @@ describe('标题前后的字样', () => {
   it('来源只给了相对时间（approximate）时只写到日并加「约」，不写换算出来的时分', () => {
     const now = Date.parse('2026-10-08T12:00:00Z');
     const old = item(1, { published_at: '2009-03-01T12:00:00Z', published_precision: 'approximate' });
-    expect(followWhen(old, now)).toBe('约 2009-03-01');
-    expect(followCompactWhen(old, now)).toBe('约 2009-03-01');
+    expect(followWhen(old, now)).toBe('약 2009-03-01');
+    expect(followCompactWhen(old, now)).toBe('약 2009-03-01');
     expect(followWhen({ ...old, published_precision: 'exact' }, now)).toMatch(/^2009-03-01 \d\d:\d\d$/);
   });
 
   it('晚于此刻一天以上的时间照写，后面标「晚于现在」；一天以内的时钟误差不标', () => {
     const now = Date.parse('2026-10-08T12:00:00Z');
     const future = item(1, { published_at: '2031-01-01T12:00:00Z' });
-    expect(followWhen(future, now)).toMatch(/^2031-01-01 \d\d:\d\d · 晚于现在$/);
-    expect(followCompactWhen(future, now)).toBe('2031-01-01 · 晚于现在');
-    expect(followWhen(item(2, { published_at: '2026-10-08T20:00:00Z' }), now)).not.toContain('晚于现在');
+    expect(followWhen(future, now)).toMatch(/^2031-01-01 \d\d:\d\d · 현재보다 미래 시각$/);
+    expect(followCompactWhen(future, now)).toBe('2031-01-01 · 현재보다 미래 시각');
+    expect(followWhen(item(2, { published_at: '2026-10-08T20:00:00Z' }), now)).not.toContain('현재보다 미래 시각');
   });
 
   it('列表里的短写法：今年的去掉年份，往年的留着', () => {
     const now = Date.parse('2026-10-08T12:00:00Z');
     expect(followCompactWhen(item(1, { published_at: '2026-09-04T12:00:00Z' }), now)).toBe('09-04');
     expect(followCompactWhen(item(2, { published_at: '2024-09-04T12:00:00Z' }), now)).toBe('2024-09-04');
-    expect(followCompactWhen(item(3), now)).toBe('时间未取得');
+    expect(followCompactWhen(item(3), now)).toBe('시간 정보를 가져오지 못했습니다');
   });
 
   it('标题为空或只有空白时写同一句「未命名内容」', () => {
     expect(followTitle(item(1, { title: '' }))).toBe(FOLLOW_UNTITLED);
-    expect(followTitle(item(2, { title: '   ' }))).toBe('未命名内容');
-    expect(followTitle({})).toBe('未命名内容');
+    expect(followTitle(item(2, { title: '   ' }))).toBe('제목 없는 콘텐츠');
+    expect(followTitle({})).toBe('제목 없는 콘텐츠');
     expect(followTitle(item(3, { title: ' 正题 ' }))).toBe('正题');
   });
 });

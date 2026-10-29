@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   createColumnHelper, flexRender, rowPaginationFeature, rowSelectionFeature, rowSortingFeature,
@@ -34,6 +34,7 @@ const positions = new Map<string, ListState>();
 
 /** 服务端对完整筛选结果排序、分页；选择集及批量栏归现有馆藏控制器。 */
 export function CatalogListPage(props: CatalogGridProps) {
+  const rangeSelection = useRef(false);
   const params = catalogParams(props.filters || {}, false);
   const [scope] = useState(() => {
     const position = new URLSearchParams(params);
@@ -87,9 +88,10 @@ export function CatalogListPage(props: CatalogGridProps) {
         isDisabled={result.isPlaceholderData}
         isSelected={table.getIsAllRowsSelected()} isIndeterminate={table.getIsSomeRowsSelected()}
         onChange={on => table.toggleAllRowsSelected(on)} />,
-      cell: ({ row }) => <Checkbox slot={null} aria-label={`선택: ${props.helpers.displayName(row.original, row.original.name || '')}`}
+      cell: ({ row }) => <span onPointerDownCapture={event => { rangeSelection.current = event.shiftKey }}
+        onKeyDownCapture={event => { rangeSelection.current = event.shiftKey }}><Checkbox slot={null} aria-label={`선택: ${props.helpers.displayName(row.original, row.original.name || '')}`}
         isDisabled={result.isPlaceholderData}
-        isSelected={row.getIsSelected()} onChange={on => row.toggleSelected(on)} /> }),
+        isSelected={row.getIsSelected()} onChange={() => props.actions.toggleSelection(row.original.id, rangeSelection.current)} /></span> }),
       helper.accessor(item => item.name || '', { id: 'name', header: "이름", enableSorting: true,
         cell: ({ row }) => <ListIdentity item={row.original} props={props} disabled={result.isPlaceholderData} /> }),
       helper.accessor(item => item.duration, { id: 'dur', header: "재생 시간", enableSorting: true,
@@ -125,7 +127,7 @@ export function CatalogListPage(props: CatalogGridProps) {
     </div>
     <LibraryCompletionPrompt assetIds={props.filters?.state === 'trash' ? [] : missingPreviewIds(items, props.layout.javImage)} />
     {result.isError ? <RetryNote message={requestErrorMessage(result.error)} onRetry={() => void result.refetch()} /> : null}
-    <DataTableFrame follow onRowClick={id => { if (!result.isPlaceholderData) props.actions.toggleSelection(Number(id), false) }}>
+    <DataTableFrame follow onRowClick={(id, range) => { if (!result.isPlaceholderData) props.actions.toggleSelection(Number(id), range) }}>
       <Table aria-label="항목 목록" size="sm"
         sortDescriptor={sort ? { column: sort.id, direction: sort.desc ? 'descending' : 'ascending' } : undefined}
         onSortChange={next => table.setSorting([{ id: String(next.column), desc: next.direction === 'descending' }])}>
@@ -141,6 +143,7 @@ export function CatalogListPage(props: CatalogGridProps) {
             {Array.from({ length: 6 }, (_, index) => <div key={index}><i className="skeleton-sheen" /><span className="skeleton-sheen" /></div>)}
           </div> : result.isError ? "항목 목록을 가져오지 못했습니다" : "조건에 맞는 항목 없음"}>
           {table.getRowModel().rows.map(row => <TableRow key={row.id} id={row.id} data-catalog-row="" data-id={row.original.id}
+            data-medium={row.original.medium || 'video'}
             data-board-selected={row.getIsSelected() || undefined}>
             {row.getAllCells().map(cell => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}
           </TableRow>)}

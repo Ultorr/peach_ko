@@ -15,7 +15,7 @@ it('保存端口保留已保存的媒体文件夹与来源映射', async () => {
   await settle();
   expect(sentBody(fetcher)).toEqual({ revision: 'rev-1', media_dirs: data.media_dirs,
     media_sources: data.media_sources, port: '9124', scan_now: false });
-  expect(receipt).toHaveBeenCalledWith('已保存配置');
+  expect(receipt).toHaveBeenCalledWith('설정이 저장되었습니다');
   expect(host.querySelector('a')?.getAttribute('href')).toBe('http://127.0.0.1:9124/');
 });
 it('端口校验失败保留输入，错误显示在字段旁', async () => {

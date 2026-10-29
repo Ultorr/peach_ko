@@ -13,7 +13,7 @@ describe('原位改字', () => {
       const opened = await visit(browser, '/settings/library?section=' + encodeURIComponent('应用与维护') + '&edit', viewport);
       try {
         const { page } = opened;
-        await page.getByRole('region', { name: '数据上传', exact: true }).waitFor();
+        await page.getByRole('region', { name: '데이터 업로드', exact: true }).waitFor();
         await settle(page);
         const dock = page.getByRole('group', { name: '文案编辑', exact: true });
         await dock.waitFor();

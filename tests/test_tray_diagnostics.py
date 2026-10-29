@@ -73,7 +73,7 @@ class DiagnosticExportTests(unittest.TestCase):
             with instance._diagnostics_lock:
                 pass
         self.assertIn(str(path), message.call_args.args[1])
-        self.assertIn('诊断报告已保存', message.call_args.args[1])
+        self.assertIn('진단 보고서를 저장했습니다', message.call_args.args[1])
         self.assertIn('no association', message.call_args.args[1])
 
     def test_dialog_module_requires_a_tray_restart(self):
@@ -94,7 +94,7 @@ class NativeReportDialogTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 data = json.loads(result.stdout)
                 self.assertEqual(data['opened'], [action] if action in ('file', 'directory') else [])
-                self.assertEqual(data['buttons'], ['打开目录', '打开文件', '关闭'])
+                self.assertEqual(data['buttons'], ["폴더 열기", "파일 열기", "닫기"])
 
 
 def native_harness(action):

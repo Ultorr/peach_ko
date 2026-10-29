@@ -103,30 +103,30 @@ it('首屏一次取回分组和来源可达性，页面挂上去不再补取', a
       <DuplicatesPage openItem={vi.fn()} toast={vi.fn()} failure={vi.fn()} />
     </QueryClientProvider>);
   expect(fetcher.mock.calls.map((call) => call[0]).sort()).toEqual(['/api/duplicates?limit=120', '/api/sources']);
-  expect(host.textContent).toContain('2 组');
-  expect(host.textContent).toContain('4 个文件 · 可回收 2.0 GB');
+  expect(host.textContent).toContain('2 그룹');
+  expect(host.textContent).toContain('4 개 파일 · 확보 가능 공간 2.0 GB');
 });
 
 it('组头说清判据：sha1 齐全才写「一致」，否则只是时长推断；跨盘的组写出盘符', async () => {
   vi.stubGlobal('fetch', fetchMock(200, {}));
   const { host } = await open();
-  expect(card(host, 'ABC-001').textContent).toContain('sha1 一致');
-  expect(card(host, 'ABC-002').textContent).toContain('时长推断');
-  expect(card(host, 'ABC-002').textContent).toContain('跨盘 R: B:');
+  expect(card(host, 'ABC-001').textContent).toContain('sha1 일치');
+  expect(card(host, 'ABC-002').textContent).toContain('영상 길이로 추정');
+  expect(card(host, 'ABC-002').textContent).toContain('여러 드라이브에 있음 R: B:');
   expect(card(host, 'ABC-001').textContent).not.toContain('跨盘');
 });
 
 it('「留 115」只出现在混着 115 与别处文件的那一组，批量条上的「全部优先 115」同理', async () => {
   vi.stubGlobal('fetch', fetchMock(200, {}));
   const { host } = await open();
-  expect(buttonNamed('留 115', card(host, 'ABC-001'))).toBeNull();
-  expect(buttonNamed('留 115', card(host, 'ABC-002'))).not.toBeNull();
-  expect(buttonNamed('全部优先 115', host)).not.toBeNull();
-  expect(buttonNamed('留 115', card(host, 'ABC-002'))?.querySelector('svg use')?.getAttribute('href'))
+  expect(buttonNamed('유지: 115', card(host, 'ABC-001'))).toBeNull();
+  expect(buttonNamed('유지: 115', card(host, 'ABC-002'))).not.toBeNull();
+  expect(buttonNamed('모든 그룹의 우선순위: 115', host)).not.toBeNull();
+  expect(buttonNamed('유지: 115', card(host, 'ABC-002'))?.querySelector('svg use')?.getAttribute('href'))
     .toBe(`#i-${legacyUi.MEDIA_SOURCE_ICONS['115']}`);
-  expect(buttonNamed('全部优先 115', host)?.querySelector('svg use')?.getAttribute('href'))
+  expect(buttonNamed('모든 그룹의 우선순위: 115', host)?.querySelector('svg use')?.getAttribute('href'))
     .toBe(`#i-${legacyUi.MEDIA_SOURCE_ICONS['115']}`);
-  expect(buttonNamed('全部优先 PikPak', host)).toBeNull();
+  expect(buttonNamed('모든 그룹의 우선순위: PikPak', host)).toBeNull();
 });
 
 it('批量保留最大先确认，弹层点名条数与字节数；确认后进回收站，回执带撤销', async () => {
@@ -134,14 +134,14 @@ it('批量保留最大先确认，弹层点名条数与字节数；确认后进�
   const fetcher = fetchMock(200, { ok: true });
   vi.stubGlobal('fetch', fetcher);
   const { host, toast } = await open();
-  await click(buttonNamed('全部保留最大', host));
+  await click(buttonNamed('모든 그룹에서 가장 큰 파일 유지', host));
   await settle();
   expect(seen).toHaveLength(1);
-  expect(seen[0]!.body).toContain('将把 2 个重复文件的馆藏记录移入回收站，每组保留最大的一个。');
-  expect(seen[0]!.body).toContain('文件共 2.0 GB，记录可从回收站还原。');
+  expect(seen[0]!.body).toContain('총 2 개 중복 파일의 컬렉션 기록을 휴지통으로 이동합니다. 그룹마다 유지할 파일:가장 큰 파일。');
+  expect(seen[0]!.body).toContain('전체 파일 크기 2.0 GB, 기록은 휴지통에서 복원할 수 있습니다.');
   const batch = fetcher.mock.calls.findIndex((call) => call[0] === '/api/batch');
   expect(sentBody(fetcher, batch)).toEqual({ ids: [2, 4], operation: 'dispose', disposal_reason: 'duplicate' });
-  expect(toast).toHaveBeenCalledWith('已把 2 项移入回收站', expect.objectContaining({ undo: expect.any(Function) }));
+  expect(toast).toHaveBeenCalledWith('총 2 개 항목을 휴지통으로 이동했습니다', expect.objectContaining({ undo: expect.any(Function) }));
   const { undo } = toast.mock.calls[0]![1] as { undo(): Promise<void> };
   await undo();
   const batches = fetcher.mock.calls.flatMap((call, index) => (call[0] === '/api/batch' ? [index] : []));
@@ -154,7 +154,7 @@ it('一次最多 200 条，超过的分批发', async () => {
   vi.stubGlobal('fetch', fetcher);
   const many = Array.from({ length: 251 }, (_, index) => file(index + 1, { is_largest: index === 0 }));
   const { host } = await open({ total: 1, files: 251, reclaimable: 250 * GB, groups: [group('BIG-001', many)] });
-  await click(buttonNamed('留最大', card(host, 'BIG-001')));
+  await click(buttonNamed('가장 큰 파일 유지', card(host, 'BIG-001')));
   await settle();
   const batches = fetcher.mock.calls.flatMap((call, index) => (call[0] === '/api/batch' ? [sentBody(fetcher, index)] : []));
   expect(batches.map((body: { ids: number[] }) => body.ids.length)).toEqual([200, 50]);
@@ -165,7 +165,7 @@ it('取消确认就什么都不发', async () => {
   const fetcher = fetchMock(200, { ok: true });
   vi.stubGlobal('fetch', fetcher);
   const { host } = await open();
-  await click(buttonNamed('整组回收', card(host, 'ABC-001')));
+  await click(buttonNamed('그룹 전체 휴지통으로', card(host, 'ABC-001')));
   await settle();
   expect(fetcher.mock.calls.some((call) => call[0] === '/api/batch')).toBe(false);
 });
@@ -173,7 +173,7 @@ it('取消确认就什么都不发', async () => {
 it('点封面或文件名打开那一项', async () => {
   vi.stubGlobal('fetch', fetchMock(200, {}));
   const { host, openItem } = await open();
-  await click(host.querySelector('button[aria-label="预览 ABC-3.mp4"]'));
+  await click(host.querySelector('button[aria-label="미리 보기 ABC-3.mp4"]'));
   await click(host.querySelector('button[title="ABC-4.mp4"]'));
   expect(openItem.mock.calls).toEqual([[3], [4]]);
 });
@@ -181,8 +181,8 @@ it('点封面或文件名打开那一项', async () => {
 it('没有重复组时是一张空态，不画批量条', async () => {
   vi.stubGlobal('fetch', fetchMock(200, {}));
   const { host } = await open({ total: 0, files: 0, reclaimable: 0, groups: [] });
-  expect(host.textContent).toContain('没有找到重复文件');
-  expect(buttonNamed('全部保留最大', host)).toBeNull();
+  expect(host.textContent).toContain('중복 파일을 찾지 못했습니다');
+  expect(buttonNamed('모든 그룹에서 가장 큰 파일 유지', host)).toBeNull();
 });
 
 it('同组副本只在中段不同时，名字去掉共有开头、退到断词处，差别留在显示的那一段里', () => {

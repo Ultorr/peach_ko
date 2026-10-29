@@ -138,7 +138,7 @@ describe('图片灯箱', () => {
       await page.waitForFunction(() => document.querySelector('[data-photo-count]')?.textContent === '5 / 5');
       await expectStripOn(page, 4);
 
-      await labelled(box, '关闭').click();
+      await labelled(box, '닫기').click();
       await box.waitFor({ state: 'detached' });
       assert.equal(await page.evaluate(() => document.body.classList.contains('photolight-open')), false);
       assert.deepEqual(opened.problems, []);
@@ -161,11 +161,11 @@ describe('图片灯箱', () => {
       const { fit } = start;
       assert.ok(fit < 100, `4000×3000 的图在 1280×800 里应当缩着放，读到 ${fit}%`);
       await page.waitForFunction((want) => document.querySelector('[data-photo-zoom-readout]')?.textContent === want, `${fit}%`);
-      await labelled(box, '放大').click();
+      await labelled(box, '확대').click();
       assert.equal(await readout.innerText(), `${fit + 10}%`);
-      await labelled(box, '缩小').click();
+      await labelled(box, '축소').click();
       assert.equal(await readout.innerText(), `${fit}%`);
-      await labelled(box, '原大小').click();
+      await labelled(box, '원본 크기').click();
       assert.equal(await readout.innerText(), '100%');
       await page.waitForFunction((want) => Math.abs(document.querySelector('[data-photo-main] .swiper-slide-active img')!
         .getBoundingClientRect().width - want) <= want * .01, ORIGINAL.width, { timeout: 5_000 });
@@ -174,7 +174,7 @@ describe('图片灯箱', () => {
         input.dispatchEvent(new Event('input', { bubbles: true }));
       });
       assert.equal(await readout.innerText(), '200%');
-      await labelled(box, '适应窗口').click();
+      await labelled(box, '창에 맞추기').click();
       assert.equal(await readout.innerText(), `${fit}%`);
       await page.waitForFunction((want) => Math.abs(document.querySelector('[data-photo-main] .swiper-slide-active img')!
         .getBoundingClientRect().width - want) <= 1, start.width, { timeout: 5_000 })
@@ -192,13 +192,13 @@ describe('图片灯箱', () => {
       await page.locator('[data-photo-cell]').nth(4).click();
       const box = lightbox(page);
       await box.waitFor();
-      const toggle = labelled(box, '图片详情');
+      const toggle = labelled(box, '이미지 상세');
       const panel = box.locator('[data-photo-detail]');
       await toggle.click();
       await panel.waitFor({ state: 'visible' });
       assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
       assert.equal((await panel.locator('h2').innerText()).trim(), '102.jpg');
-      assert.match((await panel.locator('[data-photo-detail-meta]').innerText()).trim(), /^本地 · 2(?:\.\d)? MB$/);
+      assert.match((await panel.locator('[data-photo-detail-meta]').innerText()).trim(), /^로컬 · 2(?:\.\d)? MB$/);
       assert.equal(await panel.locator('[data-photo-reveal]').isVisible(), true, '本地图要有定位键');
       await box.locator('[data-photo-zoom-readout]').click();
       await panel.waitFor({ state: 'hidden' });
@@ -225,7 +225,7 @@ describe('图片灯箱', () => {
       assert.equal((await box.locator('[data-photo-count]').innerText()).trim(), '1 / 3');
       assert.equal(await box.locator('[data-photo-main] .swiper-slide-active img').getAttribute('src'),
         '/follow-stream?id=501&media=0');
-      await labelled(box, '图片详情').click();
+      await labelled(box, '이미지 상세').click();
       const panel = box.locator('[data-photo-detail]');
       await panel.waitFor({ state: 'visible' });
       assert.equal((await panel.locator('h2').innerText()).trim(), '帖子图 1.png');
@@ -233,7 +233,7 @@ describe('图片灯箱', () => {
       assert.match(meta, /^pixivFANBOX · 4000 × 3000 · 121\sKB$/u);
       assert.doesNotMatch(meta, /第/, '第几张只看底栏的页码，面板不另编一个号');
       assert.equal(await panel.locator('[data-photo-reveal]').isVisible(), false, '在线图不该有定位键');
-      await labelled(box, '关闭').click();
+      await labelled(box, '닫기').click();
       await box.waitFor({ state: 'detached' });
       assert.deepEqual(opened.problems, []);
     } finally {

@@ -32,9 +32,9 @@ export async function openAccess(browser: Browser): Promise<Visit & { form: Loca
   const opened = await visit(browser, '/settings/library', DESKTOP);
   await expectBody(opened.page, '/settings/library', configurationBody(opened.page));
   await settle(opened.page);
-  await opened.page.getByRole('tab', { name: '网络与访问' }).click({ timeout: 5_000 });
+  await opened.page.getByRole('tab', { name: '네트워크 및 접속' }).click({ timeout: 5_000 });
   await settle(opened.page);
-  const form = opened.page.locator('form[aria-label="访问密码"]');
+  const form = opened.page.locator('form[aria-label="접속 비밀번호"]');
   await form.waitFor({ timeout: 10_000 });
   return { ...opened, form };
 }
@@ -99,7 +99,7 @@ export async function openTaste(browser: Browser, viewport: typeof DESKTOP): Pro
   }));
   await opened.page.reload({ waitUntil: 'load' });
   await expectBody(opened.page, '/taste', [
-    opened.page.locator('#stats').getByRole('tab', { name: '浏览器记录', exact: true }),
+    opened.page.locator('#stats').getByRole('tab', { name: '브라우저 기록', exact: true }),
   ]);
   return opened;
 }
@@ -200,7 +200,7 @@ export async function openProcessing(
     })));
   try {
     const body = opened.page.locator(path === '/data-cleanup'
-      ? '#libraryProcessing section[aria-label="扫描与采集"]'
+      ? '#libraryProcessing section[aria-label="스캔 및 수집"]'
       : '[data-catalog-filter] [data-count-readout]');
     await expectBody(opened.page, path, [body], opened.problems);
     return opened;
@@ -458,7 +458,7 @@ export async function openFollowManage(browser: Browser, viewport = DESKTOP, dat
   const opened = await visit(browser, '/subscriptions', viewport);
   await stubFollowManage(opened.page, data);
   await opened.page.reload({ waitUntil: 'load' });
-  await opened.page.locator('section[aria-label="kou 的关注来源"]').waitFor({ timeout: 15_000 });
+  await opened.page.locator('section[aria-label="kou 팔로우 출처"]').waitFor({ timeout: 15_000 });
   await settle(opened.page);
   return opened;
 }

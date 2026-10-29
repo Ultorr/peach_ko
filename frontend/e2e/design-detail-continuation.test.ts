@@ -85,8 +85,8 @@ describe('详情底部的队列与推荐', () => {
         await page.reload({ waitUntil: 'load' });
         const empty = page.locator('#stage [data-item-related] [data-empty-state]');
         await empty.waitFor({ state: 'visible' });
-        assert.equal(await empty.locator('h3').textContent(), '暂无接着看的内容');
-        assert.equal(await empty.locator('p').textContent(), '可以回到列表挑选其他作品。');
+        assert.equal(await empty.locator('h3').textContent(), '이어서 볼 콘텐츠 없음');
+        assert.equal(await empty.locator('p').textContent(), '목록으로 돌아가 다른 항목을 선택할 수 있습니다.');
         const box = await empty.boundingBox();
         assert.ok(box && box.width > 0 && box.x >= 0 && box.x + box.width <= viewport.width + 1);
         assert.equal(await page.locator('#stage [data-item-related] [aria-busy="true"]').count(), 0);

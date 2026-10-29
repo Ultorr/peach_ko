@@ -113,7 +113,7 @@ class BrowserLoginTests(unittest.TestCase):
         with self.assertNoLogs(pb.LOGGER, level="WARNING"):
             self.assertEqual(login.start()["state"], pb.WAITING)
             status = self.finish(login)
-        self.assertEqual(status, {"state": pb.DONE, "message": "已用浏览器登录 PikPak"})
+        self.assertEqual(status, {"state": pb.DONE, "message": "브라우저로 PikPak에 로그인했습니다"})
         self.assertEqual(made[0][1], Path("C:/fake/secrets/browser-pikpak"))
         self.assertEqual(self.saved, [{
             "refresh_token": "page-refresh", "access_token": "page-access", "expires_at": "1790935200",
@@ -159,7 +159,7 @@ class BrowserLoginTests(unittest.TestCase):
         login.start()
         status = self.finish(login)
         self.assertEqual(status["state"], pb.TIMEOUT)
-        self.assertIn("用浏览器登录", status["message"])
+        self.assertIn("브라우저로 로그인", status["message"])
         self.assertTrue(browser.closed)
 
     def test_cancel_returns_at_once_and_the_thread_closes_the_window(self):
@@ -187,7 +187,7 @@ class BrowserLoginTests(unittest.TestCase):
         self.assertFalse(login.available())
         with self.assertRaises(ValueError) as caught:
             login.start()
-        self.assertIn("账号密码", str(caught.exception))
+        self.assertIn("계정과 비밀번호", str(caught.exception))
         self.assertEqual(made, [])
 
     def test_a_browser_that_does_not_start_is_a_failure_to_poll(self):

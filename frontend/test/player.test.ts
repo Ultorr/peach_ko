@@ -178,9 +178,9 @@ describe('加载读数', () => {
   });
 
   it('码率未知时报还能往前放多久，不报「× 实时」这类要换算的口径', () => {
-    expect(fmtLoadRate(0, 12.4)).toBe('已缓冲 12 秒');
+    expect(fmtLoadRate(0, 12.4)).toBe('버퍼링됨 12 초');
     expect(fmtLoadRate(8 * 2048, 0)).toBe('2 KB/s');
-    expect(fmtLoadRate(0, 0)).toBe('加载中…');
+    expect(fmtLoadRate(0, 0)).toBe('불러오는 중…');
   });
 
   it('三条指标各留 24 个采样，坏值记成 0', () => {
@@ -254,7 +254,7 @@ describe('播放器清晰度', () => {
     const view = menu([{ id: 'private-stream-url', enabled: true }]);
     try {
       view.open();
-      expect(view.labels()).toEqual(['当前画质']);
+      expect(view.labels()).toEqual(['현재 화질']);
       expect(view.bar.querySelector<HTMLElement>('[data-player-quality-badge]')!.hidden).toBe(true);
     } finally { view.close() }
   });
@@ -266,7 +266,7 @@ describe('播放器清晰度', () => {
       view.open();
       entries.push({ width: 1920, height: 1080, enabled: true });
       view.notify('addqualitylevel');
-      expect(view.labels()).toEqual(['自动', '360p', '1080p']);
+      expect(view.labels()).toEqual(['자동', '360p', '1080p']);
       expect(view.bar.querySelector('[data-player-quality-option="auto"]')?.getAttribute('aria-checked')).toBe('true');
     } finally { view.close() }
   });
@@ -276,7 +276,7 @@ describe('播放器清晰度', () => {
       { id: 'private-url', enabled: true }]);
     try {
       view.open();
-      expect(view.labels()).toEqual(['自动', '360p', '2160p', '线路 3']);
+      expect(view.labels()).toEqual(['자동', '360p', '2160p', '경로 3']);
       const badge = view.bar.querySelector<HTMLElement>('[data-player-quality-badge]')!;
       expect(badge.hidden).toBe(true);
       view.levels.selectedIndex = 1; view.change();
@@ -296,9 +296,9 @@ describe('播放器清晰度', () => {
       entries.push({ width: 3840, height: 2160, enabled: true });
       view.notify('addqualitylevel');
       const panel = view.bar.querySelector('.vjs-peach-settings-menu')!.lastElementChild!;
-      expect(panel.querySelector('strong')?.textContent).toBe('清晰度');
+      expect(panel.querySelector('strong')?.textContent).toBe('화질');
       expect([...panel.querySelectorAll('[data-player-quality-option]')].map((node) => node.textContent))
-        .toEqual(['自动', '360p', '1080p', '2160p']);
+        .toEqual(['자동', '360p', '1080p', '2160p']);
       expect((document.activeElement as HTMLElement).dataset.playerQualityOption).toBe('1');
     } finally { view.close() }
   });
@@ -308,7 +308,7 @@ describe('播放器清晰度', () => {
     try {
       view.bar.querySelector<HTMLButtonElement>('.vjs-peach-settings-toggle')!.click();
       const row = view.bar.querySelector('[data-player-quality-view]')!;
-      expect(row.querySelector('b')?.textContent).toBe('当前画质');
+      expect(row.querySelector('b')?.textContent).toBe('현재 화질');
       Object.defineProperties(view.video, { videoWidth: { value: 1920 }, videoHeight: { value: 1080 } });
       view.video.dispatchEvent(new Event('resize'));
       expect(view.bar.querySelector('[data-player-quality-view]')).toBe(row);

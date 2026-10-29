@@ -47,6 +47,6 @@ describe('搜索图片推荐', () => {
     expect(groups.find(group => group.kind === 'jav')!.items).toEqual([]);
     expect(groups.find(group => group.kind === 'author')!.items[0]!.href).toBe('/follow?author=name%3A%E4%BD%9C%E8%80%85');
     expect(groups.find(group => group.kind === 'release')!.items).toEqual([]);
-    expect(groups.find(group => group.kind === 'performer')!.action).toBe('订阅新作');
+    expect(groups.find(group => group.kind === 'performer')!.action).toBe('새 항목 구독');
   });
 });

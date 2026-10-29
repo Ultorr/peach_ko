@@ -177,13 +177,13 @@ class TunnelPlanTests(unittest.TestCase):
 
     def test_open_access_and_missing_token_are_rejected_before_binary_lookup(self):
         access.save(self.access_path, "")
-        with self.assertRaisesRegex(tunnel.TunnelError, "访问密码"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "접속 비밀번호"):
             tunnel.plan_for_config(
                 self.config, access_path=self.access_path, token="internal-token",
                 standalone_mode=True,
             )
         access.save(self.access_path, "a-strong-test-password")
-        with self.assertRaisesRegex(tunnel.TunnelError, "内部访问令牌"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "내부 접속 토큰"):
             tunnel.plan_for_config(
                 self.config, access_path=self.access_path, token="",
                 standalone_mode=True,
@@ -192,7 +192,7 @@ class TunnelPlanTests(unittest.TestCase):
     def test_missing_binary_is_rejected(self):
         self.binary.unlink()
         self.config.tunnel.binary = str(self.root / "missing.exe")
-        with self.assertRaisesRegex(tunnel.TunnelError, "找不到 cloudflared"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "cloudflared를 찾을 수 없습니다"):
             tunnel.plan_for_config(
                 self.config, access_path=self.access_path, token="internal-token",
                 standalone_mode=True, environ={}, which=lambda _name: None,
@@ -200,7 +200,7 @@ class TunnelPlanTests(unittest.TestCase):
 
     def test_a_binary_dropped_into_the_data_root_is_not_picked_up(self):
         self.config.tunnel.binary = ""
-        with self.assertRaisesRegex(tunnel.TunnelError, "找不到 cloudflared"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "cloudflared를 찾을 수 없습니다"):
             tunnel.plan_for_config(
                 self.config, access_path=self.access_path, token="internal-token",
                 standalone_mode=True, environ={}, which=lambda _name: None,
@@ -264,12 +264,12 @@ class TunnelPlanTests(unittest.TestCase):
             )
 
     def test_named_mode_needs_both_a_token_and_a_hostname(self):
-        with self.assertRaisesRegex(tunnel.TunnelError, "隧道令牌"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "터널 토큰"):
             tunnel.plan_for_config(
                 self.named_config(token="  "), access_path=self.access_path,
                 token="internal-token", standalone_mode=False,
             )
-        with self.assertRaisesRegex(tunnel.TunnelError, "公开主机名"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "공개 호스트명"):
             tunnel.plan_for_config(
                 self.named_config(hostname=""), access_path=self.access_path,
                 token="internal-token", standalone_mode=False,
@@ -285,7 +285,7 @@ class TunnelPlanTests(unittest.TestCase):
             tunnel.normalize_hostname(" https://Peach.Example.COM/ "), "peach.example.com")
 
     def test_an_unknown_mode_is_refused_instead_of_falling_back(self):
-        with self.assertRaisesRegex(tunnel.TunnelError, "quick 或 named"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "quick 또는 named"):
             tunnel.normalize_mode("tunnel")
         self.assertEqual(tunnel.normalize_mode(""), "quick")
 
@@ -415,7 +415,7 @@ class TunnelManagerTests(unittest.TestCase):
         )
         snapshot = tunnel.saved_snapshot(state_dir)
         self.assertEqual(snapshot.state, "stopped")
-        self.assertIn("上一次", snapshot.error)
+        self.assertIn("이전 터널", snapshot.error)
 
     def test_missing_state_file_is_a_clean_stopped_snapshot(self):
         snapshot = tunnel.saved_snapshot(self.root / "state")
@@ -428,7 +428,7 @@ class TunnelManagerTests(unittest.TestCase):
         (state_dir / tunnel.STATE_FILENAME).write_text("{", encoding="utf-8")
         snapshot = tunnel.saved_snapshot(state_dir)
         self.assertEqual(snapshot.state, "stopped")
-        self.assertEqual(snapshot.error, "Tunnel 状态文件不可读")
+        self.assertEqual(snapshot.error, "터널 상태 파일을 읽을 수 없습니다")
 
     def test_pidfile_for_another_process_does_not_mark_tunnel_ready(self):
         manager = tunnel.TunnelManager(
@@ -442,7 +442,7 @@ class TunnelManagerTests(unittest.TestCase):
             return process
 
         manager._popen = mismatched_popen
-        with self.assertRaisesRegex(tunnel.TunnelError, "连接到 Cloudflare"):
+        with self.assertRaisesRegex(tunnel.TunnelError, "Cloudflare 엣지에 연결하지 못했습니다"):
             manager.start(self.plan())
         self.assertTrue(self.processes[0].terminated)
         self.assertFalse((self.root / "state" / tunnel.PID_FILENAME).exists())
@@ -1015,7 +1015,7 @@ class AccessTunnelInterlockTests(unittest.TestCase):
         response, write = self.save(manager)
         manager.stop.assert_called_once_with()
         self.assertFalse(write.call_args.args[0].tunnel.enabled)
-        self.assertIn("临时远程链接", json.loads(response.body)["tunnel_notice"])
+        self.assertIn("임시 원격 접속 링크", json.loads(response.body)["tunnel_notice"])
 
     def test_disabling_the_password_without_a_tunnel_changes_nothing(self):
         manager = self.manager("stopped")

@@ -91,8 +91,9 @@ describe('关注页岛', () => {
         await page.route((url) => url.pathname === '/api/items', (route) =>
           route.fulfill({ json: { items: [], total: 0, has_more: false } }));
         await page.reload({ waitUntil: 'networkidle' });
-        assert.equal(await page.getByRole('searchbox', { name: '搜索创作者' }).count(), 0);
         const author = page.locator('[data-follow-authors] a[data-follow-author="name:kou"]');
+        await author.waitFor({ state: 'visible' });
+        assert.equal(await page.locator('[data-follow-feed]').getByRole('searchbox').count(), 0);
         assert.equal(await author.count(), 1);
         assert.equal(await author.getAttribute('href'), '/creators/90101');
         assert.equal(await author.getAttribute('aria-pressed'), null);
@@ -332,7 +333,7 @@ describe('关注页岛', () => {
         const url = new URL(response.url());
         return url.pathname === '/api/follow' && url.searchParams.get('sort') === 'rand';
       });
-      await page.getByRole('button', { name: '换一批', exact: true }).click();
+      await page.getByRole('button', { name: '다른 항목 보기', exact: true }).click();
       await page.waitForFunction(() => new URLSearchParams(location.search).get('sort') === 'rand');
       const response = await shuffled;
       assert.equal(response.status(), 200);
@@ -590,7 +591,7 @@ describe('关注页岛', () => {
         const picture = await image.evaluate((node) => node.parentElement!.getBoundingClientRect().toJSON());
         assert.ok(picture.height <= picture.width * 2.5 + 1.5, JSON.stringify(picture));
         assert.equal(await image.evaluate((node) => getComputedStyle(node).objectFit), 'cover');
-        await page.locator('[data-glass-segment]').filter({ has: page.getByRole('radio', { name: '固定比例' }) }).click();
+        await page.locator('[data-glass-segment]').filter({ has: page.getByRole('radio', { name: '고정 비율' }) }).click();
         await page.locator('[data-follow-wall][data-layout="fixed"]').waitFor();
         assert.equal(await cards.last().evaluate((node) => (node as HTMLElement).style.gridRow), '');
         const geometry = await layout(page);
@@ -608,7 +609,7 @@ describe('关注页岛', () => {
     try {
       const page = opened.page;
       const before = await cardIds(page);
-      const more = page.getByRole('button', { name: '加载更多' });
+      const more = page.getByRole('button', { name: '더 불러오기' });
       await more.scrollIntoViewIfNeeded();
       // 滚到底续页会自己接上；没接上再按一下。
       await page.waitForTimeout(800);
@@ -633,7 +634,7 @@ describe('关注页岛', () => {
       assert.equal(await card.locator('[data-to="new"]').count(), 1);
       await card.hover();
       await card.locator('[data-follow-save="1001"]').click();
-      await card.locator('[data-follow-save="1001"][aria-label="已保存"]').waitFor();
+      await card.locator('[data-follow-save="1001"][aria-label="저장됨"]').waitFor();
       assert.deepEqual(opened.stub.writes, [
         { url: '/api/follow/status', body: { item: 1001, to: 'seen' } },
         { url: '/api/follow/save', body: { item: 1001 } },
@@ -650,8 +651,8 @@ describe('关注页岛', () => {
       const page = opened.page;
       await page.locator('[data-follow-older]').click();
       await page.locator('[data-follow-older][aria-busy="true"]').waitFor();
-      await page.locator('[data-follow-older]').filter({ hasText: '抓取中' }).waitFor();
-      assert.match(await page.locator('[data-follow-older]').innerText(), /抓取中/);
+      await page.locator('[data-follow-older]').filter({ hasText: '가져오는 중' }).waitFor();
+      assert.match(await page.locator('[data-follow-older]').innerText(), /가져오는 중/);
       await page.locator('[data-follow-recheck][aria-busy="true"]').waitFor();
       assert.deepEqual(opened.stub.writes, [{ url: '/api/follow/check', body: { older: true, background: true } }]);
       // 忙态包含请求中的阶段；任务编号在响应返回后写入。
@@ -669,7 +670,7 @@ describe('关注页岛', () => {
       await page.locator('[data-follow-recheck][aria-busy="true"]').waitFor();
       await page.locator('[data-follow-older][aria-busy="true"]').waitFor();
       // 检查那一趟只让往回抓那枚忙、不换字。
-      assert.equal(await page.locator('[data-follow-older]').innerText(), '抓更早的一页');
+      assert.equal(await page.locator('[data-follow-older]').innerText(), '이전 페이지 가져오기');
       assert.deepEqual(again.stub.writes, [{ url: '/api/follow/check', body: { background: true } }]);
       assert.deepEqual(again.problems, []);
     } finally {

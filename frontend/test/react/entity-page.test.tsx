@@ -197,7 +197,7 @@ describe('首屏', () => {
   });
   it('FC2 合集读数按作品展示，文件总数留给分页', async () => {
     const page=await open({ entity:entity({asset_count:1}),items:()=>({...items([1,2,3]),total:19,work_total:1}) });
-    expect(readout(page.props)).toBe('视频 · 1');
+    expect(readout(page.props)).toBe('동영상 · 1');
     expect(cards(page.props)).toEqual(['1','2','3']);
   });
 
@@ -219,7 +219,7 @@ describe('首屏', () => {
     const page = await open();
     expect(page.props.actions.openEntity).not.toHaveBeenCalled();
     expect(cards(page.props)).toEqual(['1', '2', '3']);
-    expect(readout(page.props)).toBe('视频 · 3');
+    expect(readout(page.props)).toBe('동영상 · 3');
   });
 
   it('资料、作品第一页、整组照片与新作在挂载前取齐，挂上之后不再补请求', async () => {
@@ -230,7 +230,7 @@ describe('首屏', () => {
     expect(page.calls('/api/feeds/discoveries')[0]?.searchParams.get('entity')).toBe('7001');
     expect(page.fetcher.mock.calls).toHaveLength(page.requestsBeforeMount);
     expect(cards(page.props)).toEqual(['1', '2', '3']);
-    expect(readout(page.props)).toBe('视频 · 3');
+    expect(readout(page.props)).toBe('동영상 · 3');
     expect(page.props.hosts.feed.querySelector('[data-feed-id="31"]')).not.toBeNull();
   });
 
@@ -263,7 +263,7 @@ describe('首屏', () => {
     expect(page.calls('/api/photo-set')[0]?.search).toBe('?id=9&limit=120');
     expect(page.fetcher.mock.calls).toHaveLength(page.requestsBeforeMount);
     expect(pressedView(page.props)).toBe('photos');
-    expect(readout(page.props)).toBe('图集 · 2 张');
+    expect(readout(page.props)).toBe('图集 · 2 장');
     expect(page.props.hosts.filter.querySelector('[data-photo-back]')).not.toBeNull();
   });
 
@@ -289,7 +289,7 @@ describe('换筛选与视图', () => {
     expect(page.calls('/api/items').map((url) => url.searchParams.get('tag'))).toEqual([null, '巨乳']);
     expect(cards(page.props)).toEqual(['7']);
     // 选了哪几枚由交集条列着，读数只报个数：标签名再列一遍，几枚长标签就能把这一行撑出页面。
-    expect(readout(page.props)).toBe('视频 · 1 · 已选 1 个标签');
+    expect(readout(page.props)).toBe('동영상 · 1 · 선택됨 1 개 태그');
     expect(page.props.hosts.filter.querySelector('[data-entity-tag="巨乳"]')?.getAttribute('aria-pressed')).toBe('true');
     await push({ filters: {} });
     await settle();
@@ -299,17 +299,17 @@ describe('换筛选与视图', () => {
 
   it('名下一部视频也没有：正文是空态，下排不出排序键', async () => {
     const page = await open({ entity: entity({ asset_count: 0 }), items: () => items([]) });
-    expect(page.props.hosts.body.textContent).toContain('还没有视频');
+    expect(page.props.hosts.body.textContent).toContain('동영상이 없습니다');
     expect(page.props.hosts.body.querySelector('[data-media-grid]')).toBeNull();
     expect(page.props.hosts.filter.querySelector('[data-entity-sort]')).toBeNull();
-    expect(buttonNamed('查看全部视频', page.props.hosts.body)).toBeNull();
+    expect(buttonNamed('모든 동영상 보기', page.props.hosts.body)).toBeNull();
   });
 
   it('筛完一部不剩：空态给一条回到全部视频的路，撤掉观看状态与交集条上的筛选', async () => {
     const page = await open({ items: (query) => items(query.get('tag') ? [] : [1, 2, 3]) },
       { filters: { tag: '巨乳', state: 'fresh', sort: 'new' } });
-    expect(page.props.hosts.body.textContent).toContain('没有符合条件的视频');
-    await click(buttonNamed('查看全部视频', page.props.hosts.body));
+    expect(page.props.hosts.body.textContent).toContain('조건에 맞는 동영상이 없습니다');
+    await click(buttonNamed('모든 동영상 보기', page.props.hosts.body));
     expect(page.props.actions.route).toHaveBeenCalledWith(
       expect.objectContaining({ sort: 'new', tag: '', state: '', creator: '', studio: '', owner: '' }),
       expect.objectContaining({ media: 'videos' }));
@@ -335,7 +335,7 @@ describe('换筛选与视图', () => {
     const page = await open({ entity: entity({ kind: 'agency', canonical_name: 'NAX', related_performers: roster }) },
       { kind: 'agency', name: 'NAX' });
     expect(pressedView(page.props)).toBe('people');
-    expect(readout(page.props)).toBe('艺人 · 2');
+    expect(readout(page.props)).toBe('아티스트 · 2');
     await push({ filters: { state: 'fresh' } });
     await settle();
     expect(pressedView(page.props)).toBe('videos');
@@ -346,7 +346,7 @@ describe('换筛选与视图', () => {
       entity: entity({ kind: 'studio', canonical_name: 'S1', labels: [{ k: 'S1 NO.1 STYLE', n: 40 }],
         related_performers: [{ id: 3, k: '河北彩花', n: 2 }] }),
     }, { kind: 'studio', name: 'S1' });
-    expect(readout(page.props)).toBe('厂牌 · 1');
+    expect(readout(page.props)).toBe('스튜디오 · 1');
     expect(page.props.hosts.filter.querySelector('[data-media-view="photos"]')).toBeNull();
     expect(page.host.querySelector('[data-related-performer="河北彩花"]')).not.toBeNull();
   });
@@ -400,7 +400,7 @@ describe('照片墙', () => {
     expect(page.props.actions.route).toHaveBeenLastCalledWith({}, { media: 'photos', set: 0 });
     await push({ media: { media: 'photos', set: 0 } });
     await settle();
-    expect(readout(page.props)).toBe('照片 · 6 张');
+    expect(readout(page.props)).toBe('사진 · 6 장');
   });
 });
 
@@ -420,7 +420,7 @@ describe('创作者的在线视图', () => {
       ?.getAttribute('data-media-view')).toBe('images');
     expect(page.props.hosts.body.querySelector('[data-follow-wall]')).not.toBeNull();
     expect(followCards(page.props)).toEqual(['1', '2']);
-    expect(readout(page.props)).toBe('在线 · 3 项更新');
+    expect(readout(page.props)).toBe('온라인 · 3 개 업데이트');
     expect(page.props.actions.painted).toHaveBeenLastCalledWith('online', true);
   });
 
@@ -478,11 +478,11 @@ describe('写操作', () => {
     const portrait = () => page.props.hosts.filter.ownerDocument.querySelector('[data-test-portrait]')?.getAttribute('src');
     expect(portrait()).toBe('/entity-image?v=old');
     expect(cards(page.props)).toEqual(['1', '2', '3']);
-    await click(document.querySelector(`button[aria-label="更换${NAME}的头像"]`));
+    await click(document.querySelector(`button[aria-label="프로필 사진 변경(${NAME})"]`));
     await settle();
     await click(document.querySelector('[data-avatar-choice]'));
     await settle();
-    await click(buttonNamed('整张使用'));
+    await click(buttonNamed('전체 이미지 사용'));
     await settle();
     expect(page.writes.map((one) => one.url)).toEqual(['/api/avatar-frame', '/api/avatar-pick']);
     expect(portrait()).toBe('/entity-image?v=new');
@@ -501,13 +501,13 @@ describe('写操作', () => {
     await settle();
     // 换统称会重写整条实体的扁平投影：写之前让人看见换成什么、旧写法去哪；按钮与回执同一个动词。
     expect(legacyUi.confirmModal).toHaveBeenCalledWith(expect.objectContaining({
-      title: '更改统称', confirmLabel: '更改统称',
-      body: `「しのだゆう」将成为这条实体的规范名，「${NAME}」留作别名。作品上的署名、搜索和标签都会跟着改写。`,
+      title: '대표 이름 변경', confirmLabel: '대표 이름 변경',
+      body: `「しのだゆう」을(를) 이 개체의 대표 이름으로 설정하고, 「${NAME}」은(는) 별칭으로 남깁니다. 항목의 크레딧, 검색 및 태그에도 변경 사항이 반영됩니다.`,
     }));
     expect(page.writes[0]).toEqual({ url: '/api/entity-name', body: { kind: 'performer', name: NAME, canonical: 'しのだゆう' } });
     expect(page.props.actions.openEntity).toHaveBeenLastCalledWith('performer', 'しのだゆう');
     const [message, options] = vi.mocked(page.props.helpers.receipt).mock.calls[0]!;
-    expect(message).toBe('已把统称更改为 しのだゆう');
+    expect(message).toBe('대표 이름 변경 완료: しのだゆう');
     await act(async () => { await options?.undo?.() });
     expect(page.writes[1]).toEqual({ url: '/api/entity-name', body: { kind: 'performer', name: 'しのだゆう', canonical: NAME } });
     expect(page.props.actions.openEntity).toHaveBeenLastCalledWith('performer', NAME);
@@ -524,7 +524,7 @@ describe('写操作', () => {
     page.fetcher.mockImplementationOnce(async () => ({ ok: false, status: 502, json: async () => ({}) }));
     await click(toggle());
     await settle();
-    expect(page.props.helpers.failure).toHaveBeenCalledWith('取消订阅新作', expect.any(Error));
+    expect(page.props.helpers.failure).toHaveBeenCalledWith('새 항목 구독 취소', expect.any(Error));
     expect(toggle().checked).toBe(true);
   });
 

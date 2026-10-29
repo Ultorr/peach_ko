@@ -11,7 +11,7 @@ const camera = (page: Page) => page.locator('[data-wall-viewport]').evaluate(nod
   x: (node as HTMLElement).dataset.cameraX, y: (node as HTMLElement).dataset.cameraY,
 }));
 async function enter(page: Page) {
-  await page.getByRole('button', { name: '进入播放墙', exact: true }).click();
+  await page.getByRole('button', { name: '비디오 월 열기', exact: true }).click();
   await page.waitForURL('**/wall?*');
   await page.locator('[data-wall-tile]').first().waitFor();
 }
@@ -47,7 +47,7 @@ describe('播放墙的浏览与详情', () => {
     try {
       const notice = page.locator('[data-wall-filter-notice]');
       assert.equal(await notice.isVisible(), true);
-      assert.match(await notice.innerText(), /当前仅显示筛选结果/);
+      assert.match(await notice.innerText(), /현재 필터 결과만 표시됩니다/);
       assert.equal(await page.locator('[data-wall-refresh]').count(), 0);
       const geometry = await notice.evaluate(node => {
         const box = node.getBoundingClientRect(), back = document.querySelector('[data-wall-back]')!.getBoundingClientRect();
@@ -57,9 +57,9 @@ describe('播放墙的浏览与详情', () => {
       });
       assert(geometry.left >= geometry.backRight + 8 && geometry.right <= geometry.width, JSON.stringify(geometry));
       assert.equal(geometry.overlap, false);
-      await notice.getByRole('button', { name:'清除筛选', exact:true }).click();
+      await notice.getByRole('button', { name:'필터 지우기', exact:true }).click();
       await notice.waitFor({ state:'detached' });
-      await page.getByRole('button', { name:'换一批', exact:true }).waitFor();
+      await page.getByRole('button', { name:'다른 항목 보기', exact:true }).waitFor();
       await page.locator('[data-wall-tile]').first().waitFor();
       const current = new URL(page.url());
       assert.equal(current.searchParams.get('jav'), '1');
@@ -72,7 +72,7 @@ describe('播放墙的浏览与详情', () => {
       assert(look.scrollWidth <= look.viewportWidth, JSON.stringify(look));
       await page.reload(); await page.locator('[data-wall-tile]').first().waitFor();
       assert.equal(await notice.count(), 0);
-      await page.getByRole('button', { name:'退出播放墙', exact:true }).click();
+      await page.getByRole('button', { name:'비디오 월 나가기', exact:true }).click();
       await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('q') === '原来的搜索');
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close() }
@@ -100,18 +100,18 @@ describe('播放墙的浏览与详情', () => {
         const style = getComputedStyle(node, '::before'); return { width:style.borderTopWidth, shadow:style.boxShadow };
       });
       assert.equal(glow.width, '2px'); assert.match(glow.shadow, /inset/);
-      await page.getByRole('button', { name:'切换视频',exact:true }).click();
+      await page.getByRole('button', { name:'동영상 전환',exact:true }).click();
       const list = page.locator('[data-wall-queue] [data-mix-list]');
       const box = await list.boundingBox(); assert.ok(box);
       const position = await camera(page);
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.wheel(0, 480);
       await page.waitForFunction(() => document.querySelector('[data-wall-queue] [data-mix-list]')!.scrollTop > 0);
       assert.deepEqual(await camera(page), position);
-      await page.getByRole('button', { name:'收起作品',exact:true }).click();
+      await page.getByRole('button', { name:'항목 접기',exact:true }).click();
       await page.waitForFunction(() => document.querySelector('[data-wall-refresh] button')?.getAttribute('aria-busy') !== 'true');
       const before = await camera(page);
       hold = true;
-      await page.getByRole('button', { name:'换一批',exact:true }).click();
+      await page.getByRole('button', { name:'다른 항목 보기',exact:true }).click();
       await page.locator('[data-video-wall][data-refreshing]').waitFor();
       assert.match(await page.locator('[data-wall-viewport]').evaluate(node => getComputedStyle(node).filter), /blur\(8px\).*grayscale\(1\)/);
       assert.deepEqual(await camera(page), before);
@@ -127,11 +127,11 @@ describe('播放墙的浏览与详情', () => {
       await addWallCovers(page);
       for (const path of ['/stats','/trash']) {
         await page.goto(new URL(path, page.url()).href); await settle(page);
-        assert.equal(await page.getByRole('button', { name:'进入沉浸模式',exact:true }).isVisible(), true);
-        assert.equal(await page.getByRole('button', { name:'进入播放墙',exact:true }).isVisible(), true);
+        assert.equal(await page.getByRole('button', { name:'몰입 모드 시작',exact:true }).isVisible(), true);
+        assert.equal(await page.getByRole('button', { name:'비디오 월 열기',exact:true }).isVisible(), true);
         await enter(page);
         assert.equal(new URL(page.url()).searchParams.get('state'), null);
-        await page.getByRole('button', { name:'退出播放墙',exact:true }).click();
+        await page.getByRole('button', { name:'비디오 월 나가기',exact:true }).click();
         await page.waitForURL(url => url.pathname === path);
       }
     } finally { await page.unrouteAll({ behavior:'wait' }); await opened.close() }
@@ -197,7 +197,7 @@ describe('播放墙的浏览与详情', () => {
       const attempts = failures, position = await camera(page);
       await page.waitForTimeout(400);
       assert.equal(failures, attempts, '失败后不连续触发新请求');
-      recover = true; await page.getByRole('button', { name:'重试',exact:true }).click();
+      recover = true; await page.getByRole('button', { name:'다시 시도',exact:true }).click();
       await page.locator('[data-wall-error]').waitFor({ state:'hidden' });
       await page.waitForFunction(() => [...document.querySelectorAll<HTMLElement>('[data-wall-id]')].some(node => Number(node.dataset.wallId) >= 1060));
       assert.deepEqual(await camera(page), position);
@@ -228,7 +228,7 @@ describe('播放墙的浏览与详情', () => {
       assert.equal(await page.locator('header.top').isVisible(), false);
       releaseItems(); await page.locator('[data-wall-empty]').waitFor();
       assert.equal(await page.evaluate(() => (window as unknown as { wallBoot:{ home:number } }).wallBoot.home), 0);
-      await page.getByRole('button', { name:'退出播放墙' }).click();
+      await page.getByRole('button', { name:'비디오 월 나가기' }).click();
       await page.locator('header.top').waitFor({ state:'visible' });
       assert.equal(await page.locator('html').getAttribute('data-wall-entry'), null);
     } finally { releaseModule(); releaseItems(); await context.close() }
@@ -251,8 +251,8 @@ describe('播放墙的浏览与详情', () => {
       assert.equal(await img.evaluate(node => getComputedStyle(node.closest('[data-media-pic]')!).clipPath), 'inset(0px)');
       const wide = await page.locator('[data-wall-id="1"] img').evaluate(node => ({ whole:node.classList.contains('whole'), fit:getComputedStyle(node).objectFit }));
       assert.deepEqual(wide, { whole:true, fit:'cover' });
-      await page.getByRole('button', { name:'播放墙工具', exact:true }).click();
-      await page.getByText('缩略图', { exact:true }).click();
+      await page.getByRole('button', { name:'비디오 월 도구', exact:true }).click();
+      await page.getByText('썸네일', { exact:true }).click();
       assert.equal(await page.locator('[data-wall-id="11"]').count(), 0);
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close() }
@@ -263,16 +263,16 @@ describe('播放墙的浏览与详情', () => {
       const { page } = opened;
       try {
         await pick(page);
-        await page.getByRole('button', { name:'切换分卷或版本', exact:true }).waitFor();
+        await page.getByRole('button', { name:'분할 파일 또는 버전 전환', exact:true }).waitFor();
         await page.waitForFunction(() => !document.querySelector('[data-wall-play][aria-busy="true"]'));
-        await page.getByRole('button', { name:'切换分卷或版本', exact:true }).click();
+        await page.getByRole('button', { name:'분할 파일 또는 버전 전환', exact:true }).click();
         const requested = page.waitForRequest(request => new URL(request.url()).pathname === '/api/item' && new URL(request.url()).searchParams.get('id') === String(target));
         await page.locator(`[data-wall-source="${target}"]`).click();
         await requested;
         await page.locator('[data-wall-player] video.vjs-tech').waitFor();
         assert.equal(new URL(page.url()).pathname, '/wall');
         assert.equal(await page.getByText('请打开详情选择分卷或版本', { exact:true }).count(), 0);
-        await page.getByRole('button', { name:'切换分卷或版本', exact:true }).click();
+        await page.getByRole('button', { name:'분할 파일 또는 버전 전환', exact:true }).click();
         assert.equal(await page.locator(`[data-wall-source="${target}"]`).getAttribute('aria-current'), 'true');
         const box = await page.locator('[data-wall-queue]').boundingBox(), focus = await page.locator('[data-wall-focus]').boundingBox();
         assert.ok(box && focus && box.x >= focus.x && box.x + box.width <= focus.x + focus.width + 1);
@@ -284,7 +284,7 @@ describe('播放墙的浏览与详情', () => {
     const { page } = opened;
     try {
       await pick(page);
-      await page.getByRole('button', { name:'切换视频', exact:true }).click();
+      await page.getByRole('button', { name:'동영상 전환', exact:true }).click();
       const requested = page.waitForRequest(request => new URL(request.url()).pathname === '/api/item' && new URL(request.url()).searchParams.get('id') === '41');
       await page.locator('[data-wall-source="41"]').click();
       await requested;
@@ -315,7 +315,7 @@ describe('播放墙的浏览与详情', () => {
         const box = node.getBoundingClientRect();
         return Math.abs(box.width - box.height) < .5 && Math.abs(box.left + box.width / 2 - innerWidth / 2) < 1;
       });
-      await page.getByRole('button', { name:'收起作品' }).click();
+      await page.getByRole('button', { name:'항목 접기' }).click();
       assert.equal(await page.locator('[data-wall-focus]').count(), 0);
       assert.deepEqual(await readSlot(), before);
       assert.equal(await page.locator('[data-motion-instance="original"]').count(), 1);
@@ -368,10 +368,10 @@ describe('播放墙的浏览与详情', () => {
         assert.notDeepEqual(await camera(page), initial);
         assert.equal(await page.locator('[data-wall-focus]').count(), 0, '拖动不展开作品');
         await region.focus(); await page.keyboard.press('ArrowRight');
-        await page.getByRole('button', { name: '播放墙工具', exact: true }).click();
-        await page.getByRole('button', { name: '回到起点', exact: true }).click();
-        await page.getByText('缩略图', { exact: true }).click();
-        await page.getByText('封面', { exact: true }).click();
+        await page.getByRole('button', { name: '비디오 월 도구', exact: true }).click();
+        await page.getByRole('button', { name: '처음으로 돌아가기', exact: true }).click();
+        await page.getByText('썸네일', { exact: true }).click();
+        await page.getByText('표지', { exact: true }).click();
         await pick(page);
         const visuals = await page.locator('[data-video-wall]').evaluate(root => {
           const tile = root.querySelector('[data-wall-tile]')!;
@@ -396,14 +396,14 @@ describe('播放墙的浏览与详情', () => {
         assert.equal(visuals.single, true); assert.equal(visuals.clipped, true);
         const selectedCamera = await camera(page);
         await page.screenshot({ path: `../build/video-wall-${viewport.mobile ? 'mobile' : 'desktop'}.png` });
-        await page.getByRole('button', { name: '详情', exact: true }).click();
+        await page.getByRole('button', { name: '상세 정보', exact: true }).click();
         await page.locator('#stage[open] [data-item-side]').waitFor();
         await page.keyboard.press('Escape');
         await page.locator('#stage[open]').waitFor({ state: 'hidden' });
         await page.locator('[data-video-wall]').waitFor({ state: 'visible' });
         assert.deepEqual(await camera(page), selectedCamera);
-        await page.getByRole('button', { name: '收起作品', exact: true }).click();
-        await page.getByRole('button', { name: '退出播放墙', exact: true }).click();
+        await page.getByRole('button', { name: '항목 접기', exact: true }).click();
+        await page.getByRole('button', { name: '비디오 월 나가기', exact: true }).click();
         assert.equal(new URL(page.url()).pathname, '/');
         const geometry = await layout(page);
         assert.ok(geometry.scrollWidth <= geometry.viewportWidth + 1, JSON.stringify(geometry));
@@ -419,25 +419,25 @@ describe('播放墙的浏览与详情', () => {
       await enter(page);
       const ids = await page.locator('[data-wall-id]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.wallId));
       assert.equal(new Set(ids).size, ids.length);
-      await page.getByRole('button', { name:'播放墙工具', exact:true }).click();
+      await page.getByRole('button', { name:'비디오 월 도구', exact:true }).click();
       const searched = page.waitForRequest(request => {
         const url = new URL(request.url());
         return url.pathname === '/api/items' && url.searchParams.get('q') === '新的关键词';
       });
-      await page.getByRole('searchbox', { name:'搜索播放墙' }).fill('新的关键词');
-      await page.getByRole('searchbox', { name:'搜索播放墙' }).press('Enter');
+      await page.getByRole('searchbox', { name:'비디오 월 검색' }).fill('新的关键词');
+      await page.getByRole('searchbox', { name:'비디오 월 검색' }).press('Enter');
       await searched;
       await page.locator('[data-wall-tile]').first().waitFor();
       const returned = page.waitForRequest(request => {
         const url = new URL(request.url());
         return url.pathname === '/api/items' && url.searchParams.get('q') === '作品';
       });
-      await page.getByRole('button', { name:'退出播放墙', exact:true }).click();
+      await page.getByRole('button', { name:'비디오 월 나가기', exact:true }).click();
       await returned;
       assert.equal(new URL(page.url()).searchParams.get('q'), '作品');
       await page.goto(new URL('/trash', page.url()).href);
       await settle(page);
-      assert.equal(await page.getByRole('button', { name: '进入播放墙', exact: true }).isVisible(), true);
+      assert.equal(await page.getByRole('button', { name: '비디오 월 열기', exact: true }).isVisible(), true);
     } finally { await opened.close() }
   });
   it('非番号作品也能切换封面与视频缩略图', async () => {
@@ -450,12 +450,12 @@ describe('播放墙的浏览与详情', () => {
           location: 'local', is_jav: false, has_cover: true, cover_key: 'NON-JAV', has_thumb: true }], total: params.has('orient') ? 0 : 1 } });
       });
       await page.reload(); await page.locator('[data-media-card]').first().waitFor(); await enter(page);
-      await page.getByRole('button', { name: '播放墙工具', exact: true }).click();
+      await page.getByRole('button', { name: '비디오 월 도구', exact: true }).click();
       const source = () => page.locator('[data-wall-tile] img').first().getAttribute('src');
       assert.match((await source())!, /\/cover\?/);
-      await page.getByText('缩略图', { exact: true }).click();
+      await page.getByText('썸네일', { exact: true }).click();
       assert.match((await source())!, /\/poster\?/);
-      await page.getByText('封面', { exact: true }).click();
+      await page.getByText('표지', { exact: true }).click();
       assert.match((await source())!, /\/cover\?/);
     } finally { await opened.close() }
   });
@@ -487,7 +487,7 @@ describe('播放墙的浏览与详情', () => {
         assert.equal(controls.gap, 8); assert.equal(controls.backgrounds[0], controls.backgrounds[1]);
         assert.deepEqual(controls.radii, ['50%','50%']); assert.equal(controls.glyph, '#i-shuffle'); assert.equal(controls.text, '');
       }
-      await page.getByRole('button', { name: '换一批', exact: true }).click();
+      await page.getByRole('button', { name: '다른 항목 보기', exact: true }).click();
       await page.waitForFunction(() => !!document.querySelector('[data-wall-id="11"]'));
       await page.locator('[data-video-wall][data-refreshing]').waitFor({ state: 'hidden' });
       const ids = () => page.locator('[data-wall-id]').evaluateAll(nodes => [...new Set(nodes.map(node => (node as HTMLElement).dataset.wallId))].sort());
@@ -498,7 +498,7 @@ describe('播放墙的浏览与详情', () => {
         for (let frame = 0; frame < 2; frame++) await new Promise(requestAnimationFrame);
       });
       const position = await camera(page), visibleIds = await ids();
-      await page.getByRole('button', { name: '详情', exact: true }).click();
+      await page.getByRole('button', { name: '상세 정보', exact: true }).click();
       await page.locator('#stage[open] [data-item-side]').waitFor();
       await page.keyboard.press('Escape'); await page.locator('#stage[open]').waitFor({ state: 'hidden' });
       await page.locator('[data-wall-tile]').first().waitFor();
@@ -516,7 +516,7 @@ describe('播放墙的浏览与详情', () => {
       await page.locator('[data-media-card]').first().waitFor();
       await addWallCovers(page);
       await enter(page); await pick(page);
-      await page.getByRole('button', { name: '播放', exact: true }).click();
+      await page.getByRole('button', { name: '재생', exact: true }).click();
       await page.waitForFunction(() => {
         const video = document.querySelector<HTMLVideoElement>('[data-wall-player] video');
         return !!video && video.readyState >= 2 && !video.paused && video.currentTime > 0;
@@ -532,9 +532,9 @@ describe('播放墙的浏览与详情', () => {
       assert.match(playingStyle.blur, /blur\(36px\)/); assert.ok(playingStyle.title < .2);
       assert.equal(playingStyle.font, 22); assert.equal(playingStyle.close, 'rgba(0, 0, 0, 0.66)');
       assert.equal(playingStyle.overlays.length, 3); assert.ok(playingStyle.overlays.every(value => value === 'none'));
-      await page.getByRole('button', { name:'暂停', exact:true }).click();
+      await page.getByRole('button', { name:'일시 정지', exact:true }).click();
       await page.waitForFunction(() => document.querySelector<HTMLVideoElement>('[data-wall-player] video')?.paused);
-      await page.getByRole('button', { name:'播放', exact:true }).click();
+      await page.getByRole('button', { name:'재생', exact:true }).click();
       await page.waitForFunction(() => !document.querySelector<HTMLVideoElement>('[data-wall-player] video')?.paused);
       await page.evaluate(() => {
         const video = document.querySelector('[data-wall-player] video')!;
@@ -542,7 +542,7 @@ describe('播放墙的浏览与详情', () => {
       });
       await page.locator('[data-wall-viewport]').focus(); await page.keyboard.press('ArrowLeft');
       assert.equal(await page.locator('[data-wall-player] video[data-wall-instance="same"]').count(), 1);
-      await page.getByRole('button', { name: '详情', exact: true }).click();
+      await page.getByRole('button', { name: '상세 정보', exact: true }).click();
       await page.locator('#stage video[data-wall-instance="same"]').waitFor();
       await page.keyboard.press('Escape');
       await page.locator('#stage[open]').waitFor({ state: 'hidden' });
@@ -555,11 +555,11 @@ describe('播放墙的浏览与详情', () => {
       await page.locator('[data-wall-empty]').waitFor();
       await addWallCovers(page);
       assert.equal(await page.locator('[data-wall-tile]').count(), 0);
-      assert.equal(await page.getByRole('button', { name:'退出播放墙' }).isVisible(), true);
-      assert.equal(await page.getByRole('button', { name:'清除筛选', exact:true }).isVisible(), true);
-      await page.getByRole('button', { name:'播放墙工具', exact:true }).click();
-      await page.getByRole('searchbox', { name:'搜索播放墙' }).fill('');
-      await page.getByRole('searchbox', { name:'搜索播放墙' }).press('Enter');
+      assert.equal(await page.getByRole('button', { name:'비디오 월 나가기' }).isVisible(), true);
+      assert.equal(await page.getByRole('button', { name:'필터 지우기', exact:true }).isVisible(), true);
+      await page.getByRole('button', { name:'비디오 월 도구', exact:true }).click();
+      await page.getByRole('searchbox', { name:'비디오 월 검색' }).fill('');
+      await page.getByRole('searchbox', { name:'비디오 월 검색' }).press('Enter');
       await page.locator('[data-wall-tile]').first().waitFor();
       assert.deepEqual(opened.problems, []);
     } finally { await page.unrouteAll({ behavior:'wait' }); await opened.close() }
@@ -574,9 +574,9 @@ describe('播放墙的浏览与详情', () => {
         ? route.fulfill({ status:500, json:{ error:'预览读取失败' } }) : route.continue());
       await page.goto(new URL('/wall?q=不会匹配的查询', page.url()).href);
       await page.locator('[data-wall-error]').waitFor();
-      assert.equal(await page.getByRole('button', { name:'退出播放墙' }).isVisible(), true);
+      assert.equal(await page.getByRole('button', { name:'비디오 월 나가기' }).isVisible(), true);
       fail = false;
-      await page.getByRole('button', { name:'重试', exact:true }).click();
+      await page.getByRole('button', { name:'다시 시도', exact:true }).click();
       await page.locator('[data-wall-empty]').waitFor();
       assert.equal(await page.locator('[data-wall-error]').count(), 0);
     } finally { await opened.close() }

@@ -1881,7 +1881,7 @@ class OperationalScriptTests(unittest.TestCase):
         self.assertIn("fromJSON(needs.plan.outputs.matrix)", workflow)
         from scripts.ci_plan import plan
         self.assertEqual({row["python"] for row in plan("workflow_dispatch", [])["matrix"]["include"]}, {floor})
-        self.assertIn(f"Python {floor} 或更高", (ROOT / "README.md").read_text(encoding="utf-8"))
+        self.assertIn(f"Python {floor} 이상", (ROOT / "README.md").read_text(encoding="utf-8"))
         self.assertIn(f"Python {floor} or newer", (ROOT / "README.en.md").read_text(encoding="utf-8"))
 
     def test_functional_test_scopes_are_explicit(self):

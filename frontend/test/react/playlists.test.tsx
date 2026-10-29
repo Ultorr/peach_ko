@@ -104,7 +104,7 @@ describe('首屏', () => {
     serve({ 'GET /api/playlists': () => (fail ? { status: 500, body: { error: '数据库被锁住' } } : { body: { items: [row(1)] } }) });
     const host = await mount(<QueryClientProvider client={queryClient}><Shell {...props()} /></QueryClientProvider>);
     await settle();
-    expect(host.querySelector('h2')?.textContent).toBe('播放列表');
+    expect(host.querySelector('h2')?.textContent).toBe('재생목록');
     expect(host.querySelector('[data-playlist-create]')).not.toBeNull();
     const note = host.querySelector('[data-media-error]')!;
     expect(note.textContent).toContain('数据库被锁住');
@@ -118,7 +118,7 @@ describe('首屏', () => {
   it('没有列表时是整页空态，图标取播放列表字形', async () => {
     const host = await open([]);
     const empty = host.querySelector('[data-empty-state]')!;
-    expect(empty.querySelector('h3')?.textContent).toBe('还没有播放列表');
+    expect(empty.querySelector('h3')?.textContent).toBe('재생목록이 아직 없습니다');
     expect(empty.querySelector('use')?.getAttribute('href')).toBe('#i-playlist');
     expect(host.querySelector('[data-playlist-grid]')).toBeNull();
   });
@@ -127,25 +127,25 @@ describe('首屏', () => {
 describe('卡片', () => {
   it('名称只有空白时标题与读屏名写「未命名播放列表」', async () => {
     const host = await open([row(1, { name: '   ' })]);
-    expect(card(host, 1).textContent).toContain('未命名播放列表');
-    expect(card(host, 1).querySelector('[data-mix-open]')?.getAttribute('aria-label')).toBe('打开播放列表 未命名播放列表');
+    expect(card(host, 1).textContent).toContain('이름 없는 재생목록');
+    expect(card(host, 1).querySelector('[data-mix-open]')?.getAttribute('aria-label')).toBe('재생목록 열기: 이름 없는 재생목록');
   });
 
   it('上千条的徽标带千分位', async () => {
     const host = await open([row(1, { item_count: 98765 })]);
-    expect(card(host, 1).querySelector('[data-mix-badge]')?.textContent).toBe('98,765 个视频');
+    expect(card(host, 1).querySelector('[data-mix-badge]')?.textContent).toBe('98,765 개 영상');
   });
 
   it('来源、条数与封面按行画；点封面从续播点接着播', async () => {
     const given = props();
     const host = await open([row(1, { source_kind: 'mix', current_asset_id: 12, item_count: 3 }), row(2)], given);
     const mix = card(host, 1);
-    expect(mix.textContent).toContain('由 Mix 保存');
-    expect(card(host, 2).textContent).toContain('手动播放列表');
-    expect(mix.querySelector('[data-mix-badge]')?.textContent).toBe('3 个视频');
+    expect(mix.textContent).toContain('Mix에서 저장됨');
+    expect(card(host, 2).textContent).toContain('수동 재생목록');
+    expect(mix.querySelector('[data-mix-badge]')?.textContent).toBe('3 개 영상');
     expect(mix.querySelector('[data-mix-poster]')?.getAttribute('src')).toBe('/poster?id=11&c=4');
     const opener = mix.querySelector<HTMLButtonElement>('[data-mix-open]')!;
-    expect(opener.getAttribute('aria-label')).toBe('打开播放列表 列表1');
+    expect(opener.getAttribute('aria-label')).toBe('재생목록 열기: 列表1');
     await click(opener);
     expect(given.openPlaylist).toHaveBeenCalledWith(1, 12);
     await click(card(host, 2).querySelector('[data-mix-open]'));
@@ -157,7 +157,7 @@ describe('卡片', () => {
     const host = await open([row(3, { item_count: 0, preview_asset_id: null, preview_ids: [] })], given);
     const opener = card(host, 3).querySelector<HTMLButtonElement>('[data-mix-open]')!;
     expect(opener.disabled).toBe(true);
-    expect(card(host, 3).querySelector('[data-mix-cover]')?.textContent).toContain('无预览');
+    expect(card(host, 3).querySelector('[data-mix-cover]')?.textContent).toContain('미리 보기 없음');
     await click(opener);
     expect(given.openPlaylist).not.toHaveBeenCalled();
   });
@@ -167,7 +167,7 @@ describe('卡片', () => {
     const faces = [{ kind: 'performer', id: 7, name: '甲', has_image: false }];
     const host = await open([row(1, { faces }), row(2, { name: '周末慢看' })], given);
     const avatar = card(host, 1).querySelector<HTMLButtonElement>('[data-mix-avatars] button')!;
-    expect(avatar.getAttribute('aria-label')).toBe('打开资料页：甲');
+    expect(avatar.getAttribute('aria-label')).toBe('정보 페이지 열기:甲');
     expect(avatar.innerHTML).toBe('<span class="ini">甲</span>');
     await click(avatar);
     expect(given.openEntity).toHaveBeenCalledWith('performer', '甲');
@@ -187,7 +187,7 @@ describe('新建', () => {
     expect(server.posts()).toEqual([{ action: 'create', name: '新列表', asset_ids: [] }]);
     expect(createInput(host).value).toBe('');
     expect(server.reads()).toBe(1);
-    expect(given.toast).toHaveBeenCalledWith('已新建播放列表', { undo: expect.any(Function) });
+    expect(given.toast).toHaveBeenCalledWith('재생목록이 생성되었습니다', { undo: expect.any(Function) });
     await act(async () => { await undoOf(given.toast)() });
     await settle();
     expect(server.posts()[1]).toEqual({ action: 'delete', id: 9 });
@@ -201,7 +201,7 @@ describe('新建', () => {
     await submit(host.querySelector('[data-playlist-create]'));
     expect(server.calls).toHaveLength(0);
     expect(createInput(host).getAttribute('aria-invalid')).toBe('true');
-    expect(host.querySelector('[data-playlist-create]')?.textContent).toContain('播放列表名称不能为空');
+    expect(host.querySelector('[data-playlist-create]')?.textContent).toContain('재생목록 이름은 비워 둘 수 없습니다');
   });
 
   it('服务端拒绝时原因留在原位，输入框里的名字不丢', async () => {
@@ -222,7 +222,7 @@ describe('改名', () => {
     const server = serve({ 'POST /api/playlist': written(1) });
     const given = props();
     const host = await open([row(1)], given);
-    await menuAction(host, 1, '编辑名称');
+    await menuAction(host, 1, '이름 편집');
     const form = document.querySelector('[data-playlist-rename]')!;
     const input = form.querySelector('input')!;
     expect(input.value).toBe('列表1');
@@ -231,7 +231,7 @@ describe('改名', () => {
     await settle();
     expect(server.posts()).toEqual([{ action: 'rename', id: 1, name: '改过的名字' }]);
     expect(document.querySelector('[data-playlist-rename]')).toBeNull();
-    expect(given.toast).toHaveBeenCalledWith('已重命名播放列表', { undo: expect.any(Function) });
+    expect(given.toast).toHaveBeenCalledWith('재생목록 이름이 변경되었습니다', { undo: expect.any(Function) });
     await act(async () => { await undoOf(given.toast)() });
     await settle();
     expect(server.posts()[1]).toEqual({ action: 'rename', id: 1, name: '列表1' });
@@ -241,7 +241,7 @@ describe('改名', () => {
   it('失败原因写在弹层里，弹层不关', async () => {
     serve({ 'POST /api/playlist': { status: 409, body: { error: '已有同名播放列表' } } });
     const host = await open([row(1)]);
-    await menuAction(host, 1, '编辑名称');
+    await menuAction(host, 1, '이름 편집');
     const form = document.querySelector('[data-playlist-rename]')!;
     await type(form.querySelector('input'), '重名');
     await submit(form);
@@ -265,13 +265,13 @@ describe('删除', () => {
     });
     const given = props();
     const host = await open([row(1, { source_kind: 'mix' })], given);
-    await menuAction(host, 1, '删除播放列表');
+    await menuAction(host, 1, '재생목록 삭제');
     await settle();
-    expect(seen[0]).toMatchObject({ title: '删除播放列表', confirmLabel: '删除播放列表', danger: true });
+    expect(seen[0]).toMatchObject({ title: '재생목록 삭제', confirmLabel: '재생목록 삭제', danger: true });
     const order = server.calls.map((call) => `${call.method} ${call.url}`);
     expect(order.indexOf('GET /api/playlist?id=1')).toBeLessThan(order.indexOf('POST /api/playlist'));
     expect(server.posts()[0]).toEqual({ action: 'delete', id: 1 });
-    expect(given.toast).toHaveBeenCalledWith('已删除播放列表', { undo: expect.any(Function) });
+    expect(given.toast).toHaveBeenCalledWith('재생목록이 삭제되었습니다', { undo: expect.any(Function) });
     await act(async () => { await undoOf(given.toast)() });
     await settle();
     expect(server.posts()[1]).toEqual({
@@ -288,7 +288,7 @@ describe('删除', () => {
     });
     const given = props();
     const host = await open([row(1)], given);
-    await menuAction(host, 1, '删除播放列表');
+    await menuAction(host, 1, '재생목록 삭제');
     await settle();
     await act(async () => { await undoOf(given.toast)() });
     expect(server.posts()[1]).toMatchObject({ action: 'create', source_seed_asset_id: null });
@@ -302,9 +302,9 @@ describe('删除', () => {
     });
     const given = props();
     const host = await open([row(1)], given);
-    await menuAction(host, 1, '删除播放列表');
+    await menuAction(host, 1, '재생목록 삭제');
     await settle();
-    expect(given.toast).toHaveBeenCalledWith('已删除播放列表', undefined);
+    expect(given.toast).toHaveBeenCalledWith('재생목록이 삭제되었습니다', undefined);
   });
 });
 

@@ -138,7 +138,7 @@ describe('实体与索引域控制', () => {
   it('公司不以代表作作头像，人物占位说明和版本保留，创作者回落关注头像', () => {
     const person = { k: '甲', n: 1, id: 3, has_avatar: true, rep: 9, avatar_stand_in: true };
     expect(personAvatar(person, 'studio', true).html).not.toContain('/avatar');
-    expect(personAvatar(person, 'creator', false).html).toContain('代表作画面，非本人');
+    expect(personAvatar(person, 'creator', false).html).toContain('대표 항목의 장면이며 본인 사진이 아닙니다');
     const host = document.createElement('div');
     host.innerHTML = personAvatar({ ...person, has_image: true, image_version: 'v 2' }, 'creator', false).html;
     expect(new URL(host.querySelector('img')!.src).searchParams.get('v')).toBe('v 2');

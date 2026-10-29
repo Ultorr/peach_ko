@@ -41,7 +41,7 @@ describe('后台任务状态恢复', () => {
     mount(host); await vi.advanceTimersByTimeAsync(0);
     expect(host.textContent).toContain('1/3');
     expect(host.querySelector('[data-geist-fieldset]')).not.toBeNull();
-    expect(host.textContent).toContain('第 3/5 次尝试');
+    expect(host.textContent).toContain('시도 3/5 회');
     host.remove();
     const fresh = document.createElement('div'); document.body.append(fresh);
     mount(fresh); await vi.advanceTimersByTimeAsync(0);

@@ -110,9 +110,9 @@ it('在跑的那一轮给出真实计数的进度条与已跑时长', async () =
   const bar = host.querySelector('[role=progressbar]')!;
   expect(bar.getAttribute('aria-valuenow')).toBe('3');
   expect(bar.getAttribute('aria-valuemax')).toBe('12');
-  expect(host.textContent).toContain('3 / 12 项');
-  expect(host.textContent).toContain('已跑 1 分 15 秒');
-  expect(host.querySelector('strong')?.textContent).toBe('追更检查');
+  expect(host.textContent).toContain('3 / 12 개');
+  expect(host.textContent).toContain('실행 시간 1 분 15 초');
+  expect(host.querySelector('strong')?.textContent).toBe('업데이트 확인');
 });
 
 it('总量未知时不画假进度条，只说正在做什么', async () => {
@@ -128,11 +128,11 @@ it('被挡下的那一轮单独成段，不在最近完成里再出现一次', a
     result_summary: { blocked_by: 3 }, error: '与第 3 轮（手动触发）冲突，本次跳过',
   });
   const { host } = await open(payload({ skipped: [blocked], finished: [blocked] }));
-  expect(sections(host)).toEqual(['正在进行', '被挡下的']);
+  expect(sections(host)).toEqual(['진행 중', '차단됨']);
   expect(host.querySelectorAll('li')).toHaveLength(1);
   // 原因落在卡片底部的说明区，状态由徽章说。
   expect(host.querySelector('[data-status=cancelled]')?.textContent).toContain('与第 3 轮');
-  expect(host.querySelector('[data-status=cancelled] span')?.textContent).toBe('已取消');
+  expect(host.querySelector('[data-status=cancelled] span')?.textContent).toBe('취소됨');
 });
 
 it('跑完那一轮显示摘要，失败那一轮显示原因', async () => {
@@ -142,9 +142,9 @@ it('跑完那一轮显示摘要，失败那一轮显示原因', async () => {
     run({ id: 3, status: 'failed', task_label: '扫描与采集', finished_at: '2026-09-11T10:03:00Z',
           progress_total: null, error: 'RuntimeError: 上游挡回来了' }),
   ] }));
-  expect(host.querySelector('[data-status=succeeded]')?.textContent).toContain('已检查 7');
+  expect(host.querySelector('[data-status=succeeded]')?.textContent).toContain('확인 완료 7');
   expect(host.querySelector('[data-status=failed]')?.textContent).toContain('上游挡回来了');
-  expect(host.querySelector('[data-status=succeeded] span')?.textContent).toBe('已完成');
+  expect(host.querySelector('[data-status=succeeded] span')?.textContent).toBe('완료');
   // 跑成功那张没有说明区：没有原因可写时不留一条空条子。
   expect(host.querySelectorAll('[data-status=succeeded] p')).toHaveLength(2);
 });
@@ -158,8 +158,8 @@ it('后继挂在派出它的那一轮下面，不另占一张卡', async () => {
   const row = host.querySelector('[data-followup-key]')!;
   expect(host.querySelector('[data-task-key=follow-check]')!.contains(row)).toBe(true);
   expect([...row.querySelectorAll('span')].map((node) => node.textContent))
-    .toEqual(['补实体头像', '已完成', '涼森れむ · 结果 已装上']);
-  expect(host.textContent).toContain('派出后继 1');
+    .toEqual(['개체 프로필 사진 보완', '완료', '涼森れむ · 결과 已装上']);
+  expect(host.textContent).toContain('후속 작업 등록 1');
 });
 
 it('完成的任务明细默认收起，展开和收起不丢失后继结果', async () => {
@@ -167,12 +167,12 @@ it('完成的任务明细默认收起，展开和收起不丢失后继结果', a
   const { host } = await open(payload({ finished: [parent, followup(parent.id)] }));
   const details = host.querySelector('details')!;
   const trigger = details.querySelector('summary')!;
-  expect(trigger.textContent).toBe('任务明细 · 1 项');
+  expect(trigger.textContent).toBe('작업 상세 · 1 개');
   expect(trigger.getAttribute('aria-expanded')).toBe('false');
   await click(trigger);
   expect(trigger.getAttribute('aria-expanded')).toBe('true');
   expect(details.open).toBe(true);
-  expect(details.textContent).toContain('涼森れむ · 结果 已装上');
+  expect(details.textContent).toContain('涼森れむ · 결과 已装上');
   await click(trigger);
   expect(trigger.getAttribute('aria-expanded')).toBe('false');
 });
@@ -197,10 +197,10 @@ it('后继还在跑时，派出它的那一轮整张卡留在正在进行，那�
     progress_label: '取新作资料：MIZD-441', progress_current: 13, progress_total: 22,
     followup_key: 'feed-scrape:MIZD-441', result_summary: {} });
   const { host } = await open(payload({ running: [scraping], finished: [parent] }));
-  expect(sections(host)).toEqual(['正在进行']);
+  expect(sections(host)).toEqual(['진행 중']);
   const row = host.querySelector('[data-followup-key]')!;
   expect([...row.querySelectorAll('span')].map((node) => node.textContent))
-    .toEqual(['取新作资料', '进行中', 'MIZD-441 · 13 / 22 项']);
+    .toEqual(['신작 정보 가져오기', '진행 중', 'MIZD-441 · 13 / 22 개']);
 });
 
 it('连着几轮什么也没发生的定时任务按种类各并成一张卡，有事的那一轮截断并单独摆', async () => {
@@ -215,11 +215,11 @@ it('连着几轮什么也没发生的定时任务按种类各并成一张卡，�
   ] }));
   expect(shownIds(host)).toEqual([9, 8, 4, 3]);
   const first = host.querySelector('[data-run-id="9"]')!;
-  expect(first.textContent).toContain('定时 · 近 3 轮 · ');
-  expect(first.textContent).toContain('已检查 83 · 总数 83');
-  expect(host.querySelector('[data-run-id="8"]')!.textContent).toContain('近 2 轮');
-  expect(host.querySelector('[data-run-id="4"]')!.textContent).toContain('新增 3');
-  expect(host.querySelector('[data-run-id="3"]')!.textContent).toContain('近 2 轮');
+  expect(first.textContent).toContain('예약 · 최근 3 회 · ');
+  expect(first.textContent).toContain('확인 완료 83 · 전체 83');
+  expect(host.querySelector('[data-run-id="8"]')!.textContent).toContain('최근 2 회');
+  expect(host.querySelector('[data-run-id="4"]')!.textContent).toContain('추가 3');
+  expect(host.querySelector('[data-run-id="3"]')!.textContent).toContain('최근 2 회');
 });
 
 it('父任务不在这一屏上时，后继照常单独摆出来', async () => {
@@ -230,7 +230,7 @@ it('父任务不在这一屏上时，后继照常单独摆出来', async () => {
 
 it('一条记录都没有时给空态，不是一片白', async () => {
   const { host } = await open(payload());
-  expect(host.querySelector('h3')?.textContent).toBe('还没有任务记录');
+  expect(host.querySelector('h3')?.textContent).toBe('작업 기록이 없습니다');
   // 任务中心那三段都不画；云下载没有任务，也不画。
   expect(sections(host)).toEqual([]);
 });
@@ -275,7 +275,7 @@ it('一轮请求失败不擦掉上一份数据，只在页内多一条原因', a
   await tick(10_000);
   expect(fetcher).toHaveBeenCalledTimes(2);
   expect(host.querySelector('[role=alert]')?.textContent).toContain('账本当前只能浏览');
-  expect(host.textContent, '失败一次就把上一份结果擦掉，页面比原来知道得更少').toContain('扫描与采集');
+  expect(host.textContent, '失败一次就把上一份结果擦掉，页面比原来知道得更少').toContain('스캔 및 수집');
 });
 
 it('卸载之后不再敲库：轮询跟着这棵根一起走', async () => {
@@ -331,22 +331,22 @@ it('「加载更早」以最旧那一行为游标往后接一页，到头就不�
   const host = await mount(page());
   expect(shownIds(host)).toEqual([9, 8]);
 
-  await click(buttonNamed('加载更早', host));
+  await click(buttonNamed('이전 기록 불러오기', host));
   await settle();
   expect(cursorOf(fetcher, 1).get('before_id')).toBe('8');
   expect(cursorOf(fetcher, 1).get('before_finished_at')).toBe('2026-09-11T10:08:00.000Z');
   expect(shownIds(host)).toEqual([9, 8, 7, 6]);
 
-  await click(buttonNamed('加载更早', host));
+  await click(buttonNamed('이전 기록 불러오기', host));
   await settle();
   expect(cursorOf(fetcher, 2).get('before_id')).toBe('6');
   expect(shownIds(host)).toEqual([9, 8, 7, 6, 5]);
-  expect(buttonNamed('加载更早', host), '已经到头还留着「加载更早」').toBeNull();
+  expect(buttonNamed('이전 기록 불러오기', host), '已经到头还留着「加载更早」').toBeNull();
 });
 
 it('第一页之后没有更早的就不给「加载更早」', async () => {
   const { host } = await open(payload({ finished: [done(9)], finished_has_more: false }));
-  expect(buttonNamed('加载更早', host)).toBeNull();
+  expect(buttonNamed('이전 기록 불러오기', host)).toBeNull();
 });
 
 it('轮询刷新之后翻过的行还在，被新完成挤出第一页的那一轮也不丢、不重复', async () => {
@@ -361,7 +361,7 @@ it('轮询刷新之后翻过的行还在，被新完成挤出第一页的那一�
     [{ finished: [done(7), done(6)], finished_has_more: true }]);
   await prefetchTasks(new AbortController().signal);
   const host = await mount(page());
-  await click(buttonNamed('加载更早', host));
+  await click(buttonNamed('이전 기록 불러오기', host));
   await settle();
   expect(shownIds(host)).toEqual([9, 8, 7, 6]);
 
@@ -370,7 +370,7 @@ it('轮询刷新之后翻过的行还在，被新完成挤出第一页的那一�
   await tick(10_000);
   await tick(10_000);
   expect(shownIds(host)).toEqual([12, 11, 10, 9, 8, 7, 6]);
-  expect(buttonNamed('加载更早', host), '刷新一次就把往前翻的进度丢了').not.toBeNull();
+  expect(buttonNamed('이전 기록 불러오기', host), '刷新一次就把往前翻的进度丢了').not.toBeNull();
 });
 
 it('往前翻失败时原位说原因，已有的行不动，再点一次照常接上', async () => {
@@ -379,39 +379,39 @@ it('往前翻失败时原位说原因，已有的行不动，再点一次照常�
   await prefetchTasks(new AbortController().signal);
   const host = await mount(page());
 
-  await click(buttonNamed('加载更早', host));
+  await click(buttonNamed('이전 기록 불러오기', host));
   await settle();
   expect(host.querySelector('[role=alert]')?.textContent).toContain('账本当前只能浏览');
   expect(shownIds(host)).toEqual([9]);
 
-  await click(buttonNamed('加载更早', host));
+  await click(buttonNamed('이전 기록 불러오기', host));
   await settle();
   expect(host.querySelector('[role=alert]')).toBeNull();
   expect(shownIds(host)).toEqual([9, 7]);
 });
 
 it('时长与摘要的折算各自成立', () => {
-  expect(elapsedText(0)).toBe('0 秒');
-  expect(elapsedText(59)).toBe('59 秒');
-  expect(elapsedText(75)).toBe('1 分 15 秒');
-  expect(elapsedText(3725)).toBe('1 小时 2 分');
+  expect(elapsedText(0)).toBe('0 초');
+  expect(elapsedText(59)).toBe('59 초');
+  expect(elapsedText(75)).toBe('1 분 15 초');
+  expect(elapsedText(3725)).toBe('1 시간 2 분');
   // 满 48 小时按天说：「73 小时 1 分」读不出是三天。
-  expect(elapsedText(47 * 3600 + 59 * 60)).toBe('47 小时 59 分');
-  expect(elapsedText(73 * 3600 + 60)).toBe('3 天 1 小时');
+  expect(elapsedText(47 * 3600 + 59 * 60)).toBe('47 시간 59 분');
+  expect(elapsedText(73 * 3600 + 60)).toBe('3 일 1 시간');
   expect(elapsedText(null)).toBe('');
-  expect(summaryText({ checked: 1234567 })).toBe('已检查 1,234,567');
+  expect(summaryText({ checked: 1234567 })).toBe('확인 완료 1,234,567');
   // 进度按总数封顶，带千分位。
   expect(progressText(1500, 1000)).toBe('1,000 / 1,000');
   expect(progressText(-3, 10)).toBe('0 / 10');
   expect(progressText(null, null)).toBe('0 / 0');
   // 明细与「谁挡的」不进这一行：前者太长，后者已经写在错误那一句里了。
   expect(summaryText({ checked: 7, operation: 'like', rows: [1], blocked_by: 3 }))
-    .toBe('已检查 7 · 操作 like');
+    .toBe('확인 완료 7 · 작업 like');
   // 追更检查结算时带着整份状态字典，簿记字段不能漏到卡片上。
   expect(summaryText({
     status: 'complete', run_id: 351, started_at: 1790138114.86, checked: 83, total: 83,
     request_id: '417dab8d', completed_at: 1790138495.48,
-  })).toBe('已检查 83 · 总数 83');
+  })).toBe('확인 완료 83 · 전체 83');
 });
 
 it('报错在列表里只露一行：traceback 取最后一行，别的取第一行非空', () => {
@@ -425,14 +425,14 @@ it('报错在列表里只露一行：traceback 取最后一行，别的取第一
 it('报错摘要平时只露一行，「查看详情」展开全文、再点收起；只有一行时不给这颗键', async () => {
   const stack = 'Traceback (most recent call last):\n  File "x.py", line 1\nValueError: 坏了';
   const host = await mount(<ErrorExcerpt text={stack} />);
-  expect(host.textContent).toBe('ValueError: 坏了查看详情');
-  await click(buttonNamed('查看详情', host));
+  expect(host.textContent).toBe('ValueError: 坏了상세 보기');
+  await click(buttonNamed('상세 보기', host));
   expect(host.textContent).toContain('File "x.py", line 1');
-  expect(buttonNamed('收起详情', host)?.getAttribute('aria-expanded')).toBe('true');
-  await click(buttonNamed('收起详情', host));
-  expect(host.textContent).toBe('ValueError: 坏了查看详情');
+  expect(buttonNamed('상세 접기', host)?.getAttribute('aria-expanded')).toBe('true');
+  await click(buttonNamed('상세 접기', host));
+  expect(host.textContent).toBe('ValueError: 坏了상세 보기');
 
   const single = await mount(<ErrorExcerpt text="只有一行" />);
   expect(single.textContent).toBe('只有一行');
-  expect(buttonNamed('查看详情', single)).toBeNull();
+  expect(buttonNamed('상세 보기', single)).toBeNull();
 });

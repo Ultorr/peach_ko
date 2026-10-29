@@ -99,13 +99,13 @@ it('候选到点开才取，图片只带服务端列出来的 ref', async () => 
   // 在用的那张标出来，但照样可点——换回去和换过去是同一件事。
   expect(cells()[1]?.getAttribute('aria-selected')).toBe('true');
   expect(cells()[1]?.getAttribute('aria-disabled')).toBeNull();
-  expect(cells()[1]?.textContent).toContain('在用');
+  expect(cells()[1]?.textContent).toContain('사용 중');
 });
 
 it('图库里的名字与页面上的不同名时说清按谁找到的', async () => {
   server(listing([choice()]));
   await openPicker();
-  expect(dialog()?.textContent).toContain('图库里按「葵つかさ」找到的');
+  expect(dialog()?.textContent).toContain('이미지 라이브러리에서「葵つかさ」(으)로 찾았습니다.');
 });
 
 it('好几个名字各带回一批图时，每一格说清自己是按哪个名字找到的', async () => {
@@ -116,9 +116,9 @@ it('好几个名字各带回一批图时，每一格说清自己是按哪个名�
       choice({ ref: 'gfriends:3-Prestige/葵ツカサ.jpg', label: '3-Prestige', found_by: '葵ツカサ' })],
     { matched_names: ['葵つかさ', '葵ツカサ'] }));
   await openPicker();
-  expect(dialog()?.textContent).toContain('图库里按「葵つかさ」「葵ツカサ」找到的');
-  expect(cells()[0]?.getAttribute('title')).toContain('按「葵つかさ」找到');
-  expect(cells()[1]?.getAttribute('title')).toContain('按「葵ツカサ」找到');
+  expect(dialog()?.textContent).toContain('이미지 라이브러리에서「葵つかさ」「葵ツカサ」(으)로 찾았습니다.');
+  expect(cells()[0]?.getAttribute('title')).toContain('검색명 「葵つかさ」');
+  expect(cells()[1]?.getAttribute('title')).toContain('검색명 「葵ツカサ」');
 });
 
 it('图库人像点开先框一块，默认框落在服务端检出的脸上，换完关掉弹层并让宿主重画', async () => {
@@ -129,11 +129,11 @@ it('图库人像点开先框一块，默认框落在服务端检出的脸上，�
   // 点一下不直接换：先问服务端这张图多大、脸在哪，再进框选。
   expect(sent(calls, 1)[0]).toBe('/api/avatar-frame');
   expect(body(calls, 1)).toEqual({ kind: 'performer', id: 7792, ref: 'gfriends:7-S1/葵つかさ.jpg' });
-  expect(dialog()?.textContent).toContain('框出头像那一块');
+  expect(dialog()?.textContent).toContain('프로필 사진으로 쓸 영역 선택');
   expect(document.querySelector('[role="dialog"] img')?.getAttribute('src'))
     .toBe('/avatar-choice?kind=performer&id=7792&ref=gfriends%3A7-S1%2F%E8%91%B5%E3%81%A4%E3%81%8B%E3%81%95.jpg');
   await reportSize(300, 400);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(sent(calls, 2)[0]).toBe('/api/avatar-pick');
   expect(body(calls, 2)).toEqual({
@@ -149,7 +149,7 @@ it('没检出脸的人像居中落框', async () => {
   await click(cells()[0]);
   await settle();
   await reportSize(300, 400);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(body(calls, 2).crop).toEqual({ x0: 0, y0: 50, x1: 300, y1: 350 });
 });
@@ -159,12 +159,12 @@ it('人像框选里能整张使用，作品画面不给这条路', async () => {
   await openPicker();
   await click(cells()[1]);
   await settle();
-  expect(buttonNamed('整张使用')).toBeNull();
-  await click(buttonNamed('回候选'));
+  expect(buttonNamed('전체 이미지 사용')).toBeNull();
+  await click(buttonNamed('후보로 돌아가기'));
   await settle();
   await click(cells()[0]);
   await settle();
-  await click(buttonNamed('整张使用'));
+  await click(buttonNamed('전체 이미지 사용'));
   await settle();
   expect(body(calls, 2)).toEqual({ kind: 'performer', id: 7792, ref: 'gfriends:7-S1/葵つかさ.jpg' });
   expect(dialog()).toBeNull();
@@ -175,7 +175,7 @@ it('换过之后再点开重新取，「在用」不停在上一次那一格', a
   const { host } = await openPicker();
   await click(cells()[0]);
   await settle();
-  await click(buttonNamed('整张使用'));
+  await click(buttonNamed('전체 이미지 사용'));
   await settle();
   await click(host.querySelector('button'));
   await settle();
@@ -187,17 +187,17 @@ it('地址栏填了才允许取图，取回来的那一份进框选，交的是�
     ref: 'url:https://example.com/a.jpg', source: 'url', label: 'example.com', bases: ['url:https://example.com/a.jpg'],
   });
   await openPicker();
-  expect(buttonNamed('用这个地址')?.disabled).toBe(true);
-  await type(document.querySelector<HTMLInputElement>('input[aria-label="图片地址"]'), '  https://example.com/a.jpg  ');
-  expect(buttonNamed('用这个地址')?.disabled).toBe(false);
-  await click(buttonNamed('用这个地址'));
+  expect(buttonNamed('이 주소 사용')?.disabled).toBe(true);
+  await type(document.querySelector<HTMLInputElement>('input[aria-label="이미지 주소"]'), '  https://example.com/a.jpg  ');
+  expect(buttonNamed('이 주소 사용')?.disabled).toBe(false);
+  await click(buttonNamed('이 주소 사용'));
   await settle();
   expect(body(calls, 1)).toEqual({ kind: 'performer', id: 7792, url: 'https://example.com/a.jpg' });
   // 预览走服务端缓存里那一份，不把手填的地址直接塞进 <img>。
   expect(document.querySelector('[role="dialog"] img')?.getAttribute('src'))
     .toBe('/avatar-choice?kind=performer&id=7792&ref=url%3Ahttps%3A%2F%2Fexample.com%2Fa.jpg');
   await reportSize(300, 400);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(body(calls, 2)).toEqual({
     kind: 'performer', id: 7792, ref: 'url:https://example.com/a.jpg', crop: FRAMED.focus, version: '',
@@ -217,7 +217,7 @@ it('本机选的图在浏览器里预览着框，确认时按原字节发出去�
   expect(sent(calls, 1)[1].body).toBe(file);
   expect(document.querySelector('[role="dialog"] img')?.getAttribute('src')).toMatch(/^blob:/);
   await reportSize(300, 400);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(sent(calls, 2)[0])
     .toBe('/api/avatar-pick?kind=performer&id=7792&name=%E6%88%91%E7%9A%84%E5%9B%BE.jpg&crop=90,20,210,140');
@@ -232,7 +232,7 @@ it('本机的图整张使用时不带框', async () => {
   Object.defineProperty(input, 'files', { value: [file], configurable: true });
   await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })) });
   await settle();
-  await click(buttonNamed('整张使用'));
+  await click(buttonNamed('전체 이미지 사용'));
   await settle();
   expect(sent(calls, 2)[0]).toBe('/api/avatar-pick?kind=performer&id=7792&name=me.jpg');
 });
@@ -244,11 +244,11 @@ it('取景就失败时原因留在候选那一屏', async () => {
       : { ok: true, status: 200, json: async () => listing([]) }
   )));
   await openPicker();
-  await type(document.querySelector<HTMLInputElement>('input[aria-label="图片地址"]'), 'https://192.0.2.1/a.jpg');
-  await click(buttonNamed('用这个地址'));
+  await type(document.querySelector<HTMLInputElement>('input[aria-label="이미지 주소"]'), 'https://192.0.2.1/a.jpg');
+  await click(buttonNamed('이 주소 사용'));
   await settle();
   expect(dialog()?.querySelector('[role="alert"]')?.textContent).toContain('只接受指向公网的 https 地址');
-  expect(dialog()?.textContent).toContain('更换头像');
+  expect(dialog()?.textContent).toContain('프로필 사진 변경');
 });
 
 it('换不成时弹层留在原地，原因写在里面', async () => {
@@ -260,7 +260,7 @@ it('换不成时弹层留在原地，原因写在里面', async () => {
   const { picked } = await openPicker();
   await click(cells()[0]);
   await settle();
-  await click(buttonNamed('整张使用'));
+  await click(buttonNamed('전체 이미지 사용'));
   await settle();
   expect(dialog()?.querySelector('[role="alert"]')?.textContent).toContain('这张图还没下载过');
   expect(picked).not.toHaveBeenCalled();
@@ -271,16 +271,16 @@ it('图库索引还没取过时只剩手填那两条路', async () => {
   server(listing([], { matched_names: [], index_age_hours: null, index_stale: true }));
   await openPicker();
   expect(cells()).toHaveLength(0);
-  expect(dialog()?.textContent).toContain('图库索引还没取过');
-  expect(buttonNamed('从本机选图片')).not.toBeNull();
+  expect(dialog()?.textContent).toContain('이미지 라이브러리 색인을 아직 가져오지 않아 이전에 사용한 이미지만 선택할 수 있습니다.');
+  expect(buttonNamed('이 기기에서 이미지 선택')).not.toBeNull();
   expect(document.querySelector('input[type=file]')).not.toBeNull();
 });
 
 it('过期的图库索引说出多久没更新，不说成还没取过', async () => {
   server(listing([], { matched_names: [], index_age_hours: 124, index_stale: true }));
   await openPicker();
-  expect(dialog()?.textContent).toContain('图库索引 5 天没更新');
-  expect(dialog()?.textContent).not.toContain('还没取过');
+  expect(dialog()?.textContent).toContain('이미지 라이브러리 색인이 5 일동안 갱신되지 않아');
+  expect(dialog()?.textContent).not.toContain('아직 가져오지 않아');
 });
 
 it('按好多个名字找到时说明只点名前两个，余下的报个数', async () => {
@@ -288,18 +288,18 @@ it('按好多个名字找到时说明只点名前两个，余下的报个数', a
   server(listing([choice({ found_by: names[4] })], { matched_names: names }));
   await openPicker();
   const note = dialog()?.textContent || '';
-  expect(note).toContain('图库里按「葵つかさ」「葵ツカサ」等 5 个名字找到的');
+  expect(note).toContain('이미지 라이브러리에서「葵つかさ」「葵ツカサ」등 5 개의 이름(으)로 찾았습니다.');
   expect(note).not.toContain('あおいつかさ');
   // 没点名的那几个照旧落在各自格子的 title 里。
-  expect(cells()[0]?.getAttribute('title')).toContain('按「葵司 (AV女優)」找到');
+  expect(cells()[0]?.getAttribute('title')).toContain('검색명 「葵司 (AV女優)」');
 });
 
 it('一张候选也没有时不留网格那一带，手填那两条路照旧在', async () => {
   server(listing([], { matched_names: [] }));
   await openPicker();
   expect(document.querySelector('[role="listbox"]')).toBeNull();
-  expect(buttonNamed('从本机选图片')).not.toBeNull();
-  expect(document.querySelector('input[aria-label="图片地址"]')).not.toBeNull();
+  expect(buttonNamed('이 기기에서 이미지 선택')).not.toBeNull();
+  expect(document.querySelector('input[aria-label="이미지 주소"]')).not.toBeNull();
 });
 
 it('候选没取到时原因旁边有「重试」，点了再取一遍', async () => {
@@ -312,7 +312,7 @@ it('候选没取到时原因旁边有「重试」，点了再取一遍', async (
   expect(dialog()?.querySelector('[role="alert"]')?.textContent).toContain('候选读不出来');
   expect(document.querySelector('[role="listbox"]')).toBeNull();
   fail = false;
-  await click(buttonNamed('重试'));
+  await click(buttonNamed('다시 시도'));
   await settle();
   expect(fetched).toHaveBeenCalledTimes(2);
   expect(cells()).toHaveLength(1);
@@ -329,7 +329,7 @@ it('提交失败的原因旁边不给「重试」：重来的是那颗提交键�
   await click(cells()[0]);
   await settle();
   expect(dialog()?.querySelector('[role="alert"]')).not.toBeNull();
-  expect(buttonNamed('重试')).toBeNull();
+  expect(buttonNamed('다시 시도')).toBeNull();
 });
 
 it('合演作品的格子标出人数，框选时提醒先找到她自己的脸', async () => {
@@ -339,10 +339,10 @@ it('合演作品的格子标出人数，框选时提醒先找到她自己的脸'
   })]));
   await openPicker();
   const [cell] = cells();
-  expect(cell?.textContent).toContain('15 人');
-  expect(cell?.getAttribute('title')).toContain('15 人合演');
+  expect(cell?.textContent).toContain('15 명');
+  expect(cell?.getAttribute('title')).toContain('15 명 공동 출연');
   await click(cell);
-  expect(dialog()?.textContent).toContain('DVAJ-495：15 人合演，先找到她自己的脸');
+  expect(dialog()?.textContent).toContain('DVAJ-495：15 명이 함께 출연합니다. 해당 인물의 얼굴을 찾은 뒤');
 });
 
 it('账号的作品画面格子在说明里注明是代表作画面、非本人', async () => {
@@ -368,7 +368,7 @@ it('候选回来之前网格里是同一种格子的骨架，回来之后换成�
   expect(grid?.getAttribute('aria-busy')).toBe('true');
   expect(document.querySelectorAll('[data-avatar-skeleton]').length).toBeGreaterThan(0);
   // 骨架只给辅助技术一个忙态，不再另写一句「正在读取」。
-  expect(dialog()?.textContent).not.toContain('正在');
+  expect(dialog()?.textContent).not.toContain('처리 중:');
   await act(async () => answer({ ok: true, status: 200, json: async () => listing([choice()]) }));
   await settle();
   expect(grid?.getAttribute('aria-busy')).toBeNull();
@@ -428,21 +428,21 @@ it('按番号取来的封面直接进框选，默认框就是脸那一块，交�
     return { ok: true, status: 200, json: async () => answer };
   }));
   await openPicker();
-  expect(buttonNamed('取封面来框')?.disabled).toBe(true);
-  const input = document.querySelector<HTMLInputElement>('input[aria-label="番号"]');
+  expect(buttonNamed('표지에서 영역 선택')?.disabled).toBe(true);
+  const input = document.querySelector<HTMLInputElement>('input[aria-label="품번"]');
   await type(input, ' abw-999 ');
   // 回车就能交，和按那枚键是同一件事。
   await act(async () => { input?.form?.requestSubmit() });
   await settle();
   expect(sent(calls, 1)[0]).toBe('/api/avatar-code-cover');
   expect(body(calls, 1)).toEqual({ code: 'abw-999' });
-  expect(dialog()?.textContent).toContain('框出头像那一块');
+  expect(dialog()?.textContent).toContain('프로필 사진으로 쓸 영역 선택');
   expect([...document.querySelectorAll('[data-crop-base]')]).toHaveLength(0);
   // 封面会原地替换：底图地址带着版本，换过的封面是另一个地址，不会复用旧图。
   expect(document.querySelector('[role="dialog"] img')?.getAttribute('src'))
     .toBe('/avatar-choice?kind=performer&id=7792&ref=cover%3AABW-999&v=18f3a');
   await reportSize(800, 540);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(body(calls, 2)).toEqual({
     kind: 'performer', id: 7792, ref: 'cover:ABW-999',
@@ -457,11 +457,11 @@ it('番号取不到封面时原因留在弹层里', async () => {
       : { ok: true, status: 200, json: async () => listing([]) }
   )));
   await openPicker();
-  await type(document.querySelector<HTMLInputElement>('input[aria-label="番号"]'), 'ABW-999');
-  await click(buttonNamed('取封面来框'));
+  await type(document.querySelector<HTMLInputElement>('input[aria-label="품번"]'), 'ABW-999');
+  await click(buttonNamed('표지에서 영역 선택'));
   await settle();
   expect(dialog()?.querySelector('[role="alert"]')?.textContent).toContain('官方渠道没有这个番号的封面');
-  expect(dialog()?.textContent).toContain('更换头像');
+  expect(dialog()?.textContent).toContain('프로필 사진 변경');
 });
 
 /** happy-dom 不真取图，所以自己报一次尺寸：框的一切都从这一步开始。 */
@@ -483,9 +483,9 @@ it('作品画面先框一块再装，方框是正方形的', async () => {
   await settle();
   // 点一下不该直接换头像：这一步只是进框选。
   expect(calls).toHaveLength(1);
-  expect(dialog()?.textContent).toContain('框出头像那一块');
+  expect(dialog()?.textContent).toContain('프로필 사진으로 쓸 영역 선택');
   await reportSize(800, 540);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(sent(calls, 1)[0]).toBe('/api/avatar-pick');
   expect(body(calls, 1)).toEqual({
@@ -502,12 +502,12 @@ it('换底图就换一张图，上一张的框一个数都不留', async () => {
   await click(cells()[0]);
   await settle();
   const bases = [...document.querySelectorAll<HTMLElement>('[data-crop-base]')];
-  expect(bases.map((one) => one.textContent?.trim())).toEqual(['封面', '第 5 格']);
+  expect(bases.map((one) => one.textContent?.trim())).toEqual(['표지', '제 5 칸']);
   await reportSize(800, 540);
   await click(bases[1]);
   await settle();
   // 新底图还没量出尺寸，这一刻没有框可提交。
-  expect(buttonNamed('用这一块')?.getAttribute('disabled')).not.toBeNull();
+  expect(buttonNamed('이 영역 사용')?.getAttribute('disabled')).not.toBeNull();
 });
 
 it('在线作品可在封面与正文图片间选底图，裁切回递创作者和原始媒体序号', async () => {
@@ -517,10 +517,10 @@ it('在线作品可在封面与正文图片间选底图，裁切回递创作者�
   await click(cells()[0]);
   await settle();
   const bases = [...document.querySelectorAll<HTMLElement>('[data-crop-base]')];
-  expect(bases.map((one) => one.textContent?.trim())).toEqual(['作品封面', '内容图片 4']);
+  expect(bases.map((one) => one.textContent?.trim())).toEqual(['항목 표지', '콘텐츠 이미지 4']);
   await click(bases[1]);
   await reportSize(800, 540);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(body(calls, 1)).toEqual({ kind: 'creator', id: 8892, ref: 'follow:11:image3',
     crop: { x0: 130, y0: 0, x1: 670, y1: 540 }, version: '' });
@@ -531,7 +531,7 @@ it('框错了能回候选，回去还是那一屏', async () => {
   await openPicker();
   await click(cells()[0]);
   await settle();
-  await click(buttonNamed('回候选'));
+  await click(buttonNamed('후보로 돌아가기'));
   await settle();
   expect(cells()).toHaveLength(1);
   expect(calls).toHaveLength(1);

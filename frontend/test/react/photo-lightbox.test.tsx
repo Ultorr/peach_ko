@@ -134,7 +134,7 @@ describe('打开', () => {
   it('从点中那一张开始：模态打开、页码写「n / N」并读给读屏、缩略图条当场居中到这一张', async () => {
     const box = await open(2, WALL);
     expect(box.open).toBe(true);
-    expect(box.getAttribute('aria-label')).toBe('图片浏览');
+    expect(box.getAttribute('aria-label')).toBe('이미지 탐색');
     expect(box.hasAttribute('data-has-strip')).toBe(true);
     expect(document.body.classList.contains('photolight-open')).toBe(true);
     expect(box.closest('.peach-react')?.parentElement).toBe(document.body);
@@ -161,10 +161,10 @@ describe('打开', () => {
     });
     expect(options.thumbs.swiper).toBe(strip());
     expect(options.pagination.el).toBe(q(box, '[data-photo-pagination]'));
-    expect(options.pagination.el.getAttribute('aria-label')).toBe('选择图片');
+    expect(options.pagination.el.getAttribute('aria-label')).toBe('이미지 선택');
     expect(options.pagination.renderBullet(1, 'swiper-pagination-bullet'))
-      .toBe('<button type="button" class="swiper-pagination-bullet" aria-label="查看第 2 张图片"></button>');
-    expect(options.navigation).toEqual({ prevEl: labelled(box, '上一张'), nextEl: labelled(box, '下一张') });
+      .toBe('<button type="button" class="swiper-pagination-bullet" aria-label="이미지 보기: 2 번째 이미지"></button>');
+    expect(options.navigation).toEqual({ prevEl: labelled(box, '이전 이미지'), nextEl: labelled(box, '다음 이미지') });
     expect(strip().options).toEqual({
       slidesPerView: 'auto', spaceBetween: 8, freeMode: true, watchSlidesProgress: true,
       centeredSlides: true, slideToClickedSlide: true,
@@ -212,7 +212,7 @@ describe('翻页', () => {
     expect(img.getAttribute('src')).toBe('/sample-thumb?code=SSIS-057&n=1');
     await act(async () => { img.dispatchEvent(new Event('error')) });
     expect(slide.querySelector('img')).toBeNull();
-    expect(slide.querySelector('[data-photo-missing]')?.textContent).toBe('图片取不到');
+    expect(slide.querySelector('[data-photo-missing]')?.textContent).toBe('이미지를 불러올 수 없습니다');
   });
 
   it('灯箱量到新尺寸就让两条轮播重量，缩放按上一次的目标重算', async () => {
@@ -231,31 +231,31 @@ describe('缩放条', () => {
     const box = await open(0, WALL);
     const readout = q(box, '[data-photo-zoom-readout]');
     const range = q<HTMLInputElement>(box, '[data-photo-zoom] input[type=range]');
-    expect([range.min, range.max, range.getAttribute('aria-label')]).toEqual(['10', '400', '缩放']);
+    expect([range.min, range.max, range.getAttribute('aria-label')]).toEqual(['10', '400', '확대/축소']);
     expect(readout.textContent).toBe('100%');
-    await click(labelled(box, '放大'));
+    await click(labelled(box, '확대'));
     expect(main().zoom.in).toHaveBeenLastCalledWith(1.1);
     expect([readout.textContent, range.value]).toEqual(['110%', '110']);
-    await click(labelled(box, '原大小'));
+    await click(labelled(box, '원본 크기'));
     expect(readout.textContent).toBe('100%');
     expect(main().zoom.out).toHaveBeenCalled();
-    await click(labelled(box, '缩小'));
+    await click(labelled(box, '축소'));
     expect(main().zoom.in).toHaveBeenLastCalledWith(.9);
     await type(range, '250');
     expect(main().zoom.in).toHaveBeenLastCalledWith(2.5);
     expect(readout.textContent).toBe('250%');
     main().zoom.out.mockClear();
-    await click(labelled(box, '适应窗口'));
+    await click(labelled(box, '창에 맞추기'));
     expect(main().zoom.out).toHaveBeenCalledTimes(1);
     expect(readout.textContent).toBe('100%');
   });
 
   it('两端步进键画的是放大镜加减号，不是文本字形', async () => {
     const box = await open(0, WALL);
-    expect(labelled(box, '缩小').innerHTML).toContain('href="#i-zoom-out"');
-    expect(labelled(box, '放大').innerHTML).toContain('href="#i-zoom-in"');
-    expect(labelled(box, '适应窗口').innerHTML).toContain('href="#i-maximize"');
-    expect(labelled(box, '原大小').textContent).toBe('1:1');
+    expect(labelled(box, '축소').innerHTML).toContain('href="#i-zoom-out"');
+    expect(labelled(box, '확대').innerHTML).toContain('href="#i-zoom-in"');
+    expect(labelled(box, '창에 맞추기').innerHTML).toContain('href="#i-maximize"');
+    expect(labelled(box, '원본 크기').textContent).toBe('1:1');
   });
 
   it('捏合或双击改了倍数，读数按原图像素折算回来', async () => {
@@ -337,10 +337,10 @@ describe('信息面板', () => {
     const panel = q(box, '[data-photo-detail]');
     expect(q(panel, 'h2').textContent).toBe('100.jpg');
     expect(q(panel, 'h2').getAttribute('tabindex')).toBe('-1');
-    expect(q(panel, '[data-photo-detail-meta]').textContent).toBe('本地 · 2\u00a0MB');
+    expect(q(panel, '[data-photo-detail-meta]').textContent).toBe('로컬 · 2 MB');
     const reveal = q<HTMLButtonElement>(panel, '[data-photo-reveal]');
     expect(reveal.hidden).toBe(false);
-    expect(reveal.textContent).toBe('在资源管理器中显示');
+    expect(reveal.textContent).toBe('파일 탐색기에서 표시');
     await click(reveal);
     expect(revealSource).toHaveBeenCalledWith(100);
     expect(document.body.innerHTML).not.toContain('secret');
@@ -353,13 +353,13 @@ describe('信息面板', () => {
     const reveal = q<HTMLButtonElement>(box, '[data-photo-reveal]');
     await click(reveal);
     expect(reveal.getAttribute('aria-busy')).toBe('true');
-    expect(reveal.querySelector('[role=status]')?.getAttribute('aria-label')).toBe('正在定位');
+    expect(reveal.querySelector('[role=status]')?.getAttribute('aria-label')).toBe('위치 확인 중');
     await click(reveal);
     expect(revealSource).toHaveBeenCalledTimes(1);
     await act(async () => release('源文件不在这台机器上'));
     await settle();
     expect(reveal.hasAttribute('aria-busy')).toBe(false);
-    expect(reveal.textContent).toBe('在资源管理器中显示');
+    expect(reveal.textContent).toBe('파일 탐색기에서 표시');
     const status = q(box, '[data-photo-status]');
     expect(status.getAttribute('aria-live')).toBe('polite');
     expect(status.textContent).toBe('源文件不在这台机器上');
@@ -378,8 +378,8 @@ describe('信息面板', () => {
     await act(async () => { img.dispatchEvent(new Event('load')) });
     expect(meta.textContent).toBe('DMM · 1600 × 1200');
     await main().go(1);
-    expect(q(box, '[data-photo-detail] h2').textContent).toBe('未命名图片');
-    expect(meta.textContent).toBe('在线图片 · 3\u00a0KB');
+    expect(q(box, '[data-photo-detail] h2').textContent).toBe('이름 없는 이미지');
+    expect(meta.textContent).toBe('온라인 이미지 · 3 KB');
   });
 
   it('本地图没给定位的壳也不出定位键', async () => {
@@ -389,7 +389,7 @@ describe('信息面板', () => {
 
   it('圆圈 i 点开面板、点面板外收起而不关灯箱；Escape 先收面板再关灯箱', async () => {
     const box = await open(0, WALL);
-    const toggle = labelled(box, '图片详情');
+    const toggle = labelled(box, '이미지 상세');
     const panel = q(box, '[data-photo-detail]');
     expect(toggle.getAttribute('aria-haspopup')).toBe('dialog');
     expect(toggle.getAttribute('aria-controls')).toBe(panel.id);
@@ -414,7 +414,7 @@ describe('关闭', () => {
   it('关闭键：拆掉两条轮播、摘掉页面锁滚、停止量尺寸，Escape 不再归它管', async () => {
     const box = await open(0, WALL);
     const [s, m] = [strip(), main()];
-    await click(labelled(box, '关闭'));
+    await click(labelled(box, '닫기'));
     expect(box.isConnected).toBe(false);
     expect(m.destroy).toHaveBeenCalledWith(true, true);
     expect(s.destroy).toHaveBeenCalledWith(true, true);
@@ -450,6 +450,6 @@ describe('关闭', () => {
 });
 
 it('面板第二行的口径：本地图缺来源写「来源未知」、缺大小写「大小未知」，一千字节以下也写 1 KB', () => {
-  expect(photoMeta({ src: '', thumb: '', asset: { id: 1 } }, undefined)).toBe('来源未知 · 大小未知');
+  expect(photoMeta({ src: '', thumb: '', asset: { id: 1 } }, undefined)).toBe('출처 알 수 없음 · 크기 알 수 없음');
   expect(photoMeta({ src: '', thumb: '', asset: { id: 1, location: 'pikpak', size: 10 } }, undefined)).toBe('PikPak · 1\u00a0KB');
 });

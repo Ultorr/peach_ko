@@ -236,7 +236,8 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
         ? <ArtSlot artwork={artwork} identity={identity} relayout={(root) => relayoutCovers(root, size)} />
         : <span data-media-nopic="">미리 보기 없음</span>}
       <div data-media-badge="" dangerouslySetInnerHTML={{ __html: helpers.badgeHtml(item.location || '', item.cost || '') }} />
-      <span data-media-check=""><Icon name="check" /></span>
+      <button type="button" role="checkbox" aria-checked={selected} aria-label={`선택: ${shownName}`}
+        data-media-check="" onClick={event => { event.stopPropagation(); actions.toggleSelection(item.id, event.shiftKey) }}><Icon name="check" /></button>
       <span data-media-trash-mark=""><Icon name="trash" /><b>휴지통</b></span>
       {parts && !editions ? <span data-media-group="">{`${Number(parts.count).toLocaleString()} 편`}</span> : null}
       {editions
@@ -271,7 +272,7 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
   );
 
   return (
-    <article ref={attach} data-media-card="" data-id={item.id} data-variant={variant}
+    <article ref={attach} data-media-card="" data-id={item.id} data-medium={item.medium || 'video'} data-variant={variant}
       data-jav-item={item.is_jav ? '' : undefined}
       data-part-seed={parts ? parts.seed_id : undefined} data-stacked={stacked ? '' : undefined}
       data-pending-delete={item.disposal === 'trash' ? '' : undefined} data-selected={selected ? '' : undefined}

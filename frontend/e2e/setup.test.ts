@@ -44,11 +44,11 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
       await page.goto(`${origin}/`, { waitUntil: 'load' });
 
       // 加载：题目到齐后表单出现，等待态结束，页面不横向溢出。
-      const heading = page.getByRole('heading', { name: '欢迎使用 Peach' });
+      const heading = page.getByRole('heading', { name: 'Peach에 오신 것을 환영합니다' });
       await heading.waitFor({ state: 'visible', timeout: 15_000 });
-      const folder = page.getByRole('textbox', { name: '媒体库 1' });
+      const folder = page.getByRole('textbox', { name: '미디어 라이브러리 1' });
       await folder.waitFor({ state: 'visible', timeout: 15_000 });
-      const windowsRoot = page.getByRole('textbox', { name: 'Windows 中的对应路径' });
+      const windowsRoot = page.getByRole('textbox', { name: 'Windows의 대응 경로' });
       if (await windowsRoot.count()) {
         assert.ok(ledgerRoot, '非 Windows 首启需要账本中的声明根');
         await windowsRoot.fill(ledgerRoot);
@@ -59,13 +59,13 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
       assert.deepEqual((await layout(page)).offenders, []);
 
       // React Aria 的原生 input 是视觉隐藏的，点击落在外面那层画出来的开关上，所以按状态设值。
-      await page.getByRole('switch', { name: '访问密码' }).setChecked(false, { force: true });
-      await page.getByRole('checkbox', { name: /^完成设置后扫描/ }).setChecked(false, { force: true });
+      await page.getByRole('switch', { name: '접속 비밀번호' }).setChecked(false, { force: true });
+      await page.getByRole('checkbox', { name: /^설정 완료 후 스캔/ }).setChecked(false, { force: true });
 
       // 填错：目录不存在、端口越界。
       const missing = join(media, 'missing');
       await folder.fill(missing);
-      await page.getByText('高级设置', { exact: true }).click();
+      await page.getByText('고급 설정', { exact: true }).click();
       const port = page.locator('#f-port');
       await port.waitFor({ state: 'visible' });
       const defaultPort = await port.inputValue();
@@ -73,12 +73,12 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
       assert.equal(await page.locator('#f-data_root').inputValue(), dataRoot);
       await port.fill('70000');
       // 折叠关上，验证出错时它自己展开。
-      await page.getByText('高级设置', { exact: true }).click();
+      await page.getByText('고급 설정', { exact: true }).click();
       await port.waitFor({ state: 'hidden' });
 
       const rejected = page.waitForResponse((response) => response.url().endsWith('/api/setup')
         && response.request().method() === 'POST');
-      await page.getByRole('button', { name: '完成设置' }).click();
+      await page.getByRole('button', { name: '설정 완료' }).click();
       assert.equal((await rejected).status(), 400);
 
       // 写回：目录行与端口各标各的，高级设置展开，已填的值都在，焦点落在第一个错处。
@@ -88,9 +88,9 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
       await port.waitFor({ state: 'visible' });
       assert.equal(await port.getAttribute('aria-invalid'), 'true');
       assert.equal(await port.inputValue(), '70000');
-      await page.getByText(/目录不存在/).first().waitFor({ state: 'visible' });
-      await page.getByText('端口要是 1 到 65535 之间的整数').waitFor({ state: 'visible' });
-      await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === '媒体库 1');
+      await page.getByText(/폴더가 없거나 폴더 경로가 아닙니다/).first().waitFor({ state: 'visible' });
+      await page.getByText('포트는 1~65535 사이의 정수여야 합니다').waitFor({ state: 'visible' });
+      await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === '미디어 라이브러리 1');
 
       // 改对：已有目录、默认端口，不扫描。
       await folder.fill(media);
@@ -99,20 +99,20 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
       await page.locator('#f-data_root').fill(selectedData);
       const accepted = page.waitForResponse((response) => response.url().endsWith('/api/setup')
         && response.request().method() === 'POST');
-      await page.getByRole('button', { name: '完成设置' }).click();
+      await page.getByRole('button', { name: '설정 완료' }).click();
       const acceptedResponse = await accepted;
       assert.equal(acceptedResponse.status(), 200, await acceptedResponse.text());
 
       // 完成态：入口链接拿到焦点，扫描没有排队，运行信息收起，口令不在页面上。
-      await page.getByRole('heading', { name: '设置完成' }).waitFor({ state: 'visible' });
-      const entry = page.getByRole('link', { name: '进入 Peach' });
+      await page.getByRole('heading', { name: '설정 완료' }).waitFor({ state: 'visible' });
+      const entry = page.getByRole('link', { name: 'Peach 시작' });
       await entry.waitFor({ state: 'visible' });
       assert.ok(await entry.evaluate((element) => element === document.activeElement), '入口链接拿到焦点');
       assert.match((await entry.getAttribute('href')) ?? '', /^https?:\/\//);
-      await page.getByText('稍后在配置页开始扫描媒体库。').waitFor({ state: 'visible' });
-      assert.equal(await page.title(), 'Peach · 设置完成');
+      await page.getByText('나중에 설정 페이지에서 미디어 라이브러리 스캔을 시작하세요.').waitFor({ state: 'visible' });
+      assert.equal(await page.title(), 'Peach · 설정 완료');
       assert.deepEqual((await layout(page)).offenders, []);
-      await page.getByText('运行信息', { exact: true }).click();
+      await page.getByText('실행 정보', { exact: true }).click();
       await page.getByText(selectedData, { exact: true }).waitFor({ state: 'visible' });
       const mobile = VIEWPORTS.find((candidate) => candidate.name === 'mobile')!;
       await page.setViewportSize({ width: mobile.width, height: mobile.height });
@@ -122,19 +122,19 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
       const originalConfig = await readFile(join(selectedData, 'config.toml'));
       await unlink(join(dataRoot, 'state', 'data-root.txt'));
       await page.reload({ waitUntil: 'load' });
-      await page.getByRole('button', { name: '使用已有数据目录', exact: true }).click();
-      const existing = page.getByRole('textbox', { name: '已有数据目录' });
+      await page.getByRole('button', { name: '기존 데이터 폴더 사용', exact: true }).click();
+      const existing = page.getByRole('textbox', { name: '기존 데이터 폴더' });
       await existing.fill(join(dataRoot, 'missing'));
       const restoreRejected = page.waitForResponse((response) => response.url().endsWith('/api/setup/restore'));
-      await page.getByRole('button', { name: '使用此目录', exact: true }).click();
+      await page.getByRole('button', { name: '이 폴더 사용', exact: true }).click();
       assert.equal((await restoreRejected).status(), 400);
       await page.getByRole('alert').filter({ hasText: 'config.toml' }).waitFor({ state: 'visible' });
       assert.deepEqual((await layout(page)).offenders, []);
       await existing.fill(selectedData);
       const restoreAccepted = page.waitForResponse((response) => response.url().endsWith('/api/setup/restore'));
-      await page.getByRole('button', { name: '使用此目录', exact: true }).click();
+      await page.getByRole('button', { name: '이 폴더 사용', exact: true }).click();
       assert.equal((await restoreAccepted).status(), 200);
-      await page.getByText('已连接已有数据目录。', { exact: true }).waitFor({ state: 'visible' });
+      await page.getByText('기존 데이터 폴더에 연결되었습니다.', { exact: true }).waitFor({ state: 'visible' });
       assert.equal(await readFile(join(dataRoot, 'state', 'data-root.txt'), 'utf8'), selectedData);
       assert.deepEqual(await readFile(join(selectedData, 'config.toml')), originalConfig);
       assert.deepEqual((await layout(page)).offenders, []);

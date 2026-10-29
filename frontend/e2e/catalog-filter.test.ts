@@ -75,7 +75,7 @@ async function openHome(browser: Browser, path = '/', viewport = DESKTOP): Promi
     } });
   });
   await page.goto(new URL(path, page.url()).toString(), { waitUntil: 'load' });
-  await page.locator(READOUT, { hasText: '个符合' }).waitFor({ timeout: 15_000 });
+  await page.locator(READOUT, { hasText: '개 일치' }).waitFor({ timeout: 15_000 });
   await page.locator(`${FILTER} [data-tier-performer]`).first().waitFor({ timeout: 15_000 });
   await settle(page);
   // 关页时 `/api/facets` 那一趟 `route.fetch` 可能还在路上，它落空不算失败。
@@ -152,11 +152,11 @@ describe('首页筛选条', () => {
     const opened = await openHome(browser, '/?studio=Peach%20Studio');
     try {
       const { page, counts } = opened;
-      await chips(page).filter({ hasText: '厂牌 Peach Studio' }).waitFor();
+      await chips(page).filter({ hasText: '스튜디오 Peach Studio' }).waitFor();
       const before = counts.items.length;
-      await chips(page).filter({ hasText: 'Peach Studio' }).getByRole('button', { name: '撤掉 厂牌 Peach Studio' }).click();
+      await chips(page).filter({ hasText: 'Peach Studio' }).getByRole('button', { name: '제거: 스튜디오 Peach Studio' }).click();
       await page.waitForFunction(() => !new URLSearchParams(location.search).has('studio'));
-      await page.locator(READOUT, { hasText: `${CATALOG.length} 个符合` }).waitFor();
+      await page.locator(READOUT, { hasText: `${CATALOG.length} 개 일치` }).waitFor();
       assert.equal(await chips(page).count(), 0, '撤掉之后交集条上还有东西');
       const after = counts.items.slice(before);
       assert.ok(after.length >= 1 && after.every((url) => !url.searchParams.has('studio')), '撤掉之后没有按新口径重取');
@@ -194,7 +194,7 @@ describe('首页筛选条', () => {
       await tag(page, key).click();
       await page.locator(`${FILTER} [data-catalog-tag="${key}"][aria-pressed="true"]`).waitFor({ timeout: 2_000 });
       await chips(page).filter({ hasText: key }).waitFor();
-      await page.locator(READOUT, { hasText: '3 个符合' }).waitFor();
+      await page.locator(READOUT, { hasText: '3 개 일치' }).waitFor();
       assert.equal(new URL(page.url()).searchParams.get('tag'), key);
       assert.deepEqual(counts.items.slice(items).map((url) => url.searchParams.get('tag')), [key],
         '点一枚标签应当只按新口径取一次列表');
@@ -206,7 +206,7 @@ describe('首页筛选条', () => {
       /* 标签条的成员与次序不动：刚点的那枚还在原位，没被挪到最前面去。 */
       assert.deepEqual(await order(), members, '加一条筛选把标签条重排了');
       await chips(page).filter({ hasText: key }).getByRole('button').click();
-      await page.locator(READOUT, { hasText: `${CATALOG.length} 个符合` }).waitFor();
+      await page.locator(READOUT, { hasText: `${CATALOG.length} 개 일치` }).waitFor();
       await page.locator(`${FILTER} [data-catalog-tag="${key}"][aria-pressed="false"]`).waitFor({ timeout: 2_000 });
       assert.equal(await chips(page).count(), 0);
       assert.deepEqual(withoutPlayer(opened.problems), []);
@@ -292,7 +292,7 @@ describe('首页筛选条', () => {
       if (viewport.mobile) await page.locator('#filterBtn').click();
       await page.locator('button[data-nav="jav"]:visible').first().click();
       await page.waitForFunction(() => location.pathname === '/' && new URLSearchParams(location.search).get('jav') === '1');
-      await page.getByRole('tab', { name: '馆藏', exact: true, selected: true }).waitFor();
+      await page.getByRole('tab', { name: '컬렉션', exact: true, selected: true }).waitFor();
       await page.locator('#grid [data-media-card]').first().waitFor();
       await settle(page);
       assert.ok(counts.items.slice(before).some((url) => url.searchParams.get('jav') === '1'), 'JAV 口径没有重取列表');
@@ -303,7 +303,7 @@ describe('首页筛选条', () => {
       assert.ok(await page.locator(`${FILTER} [data-tier-performer]`).count() > 0, 'JAV 没有女优筛选');
       assert.ok(await page.locator(`${FILTER} [data-tier-studio]`).count() > 0, 'JAV 没有厂牌筛选');
       assert.ok(await page.locator(`${FILTER} [data-catalog-tag]`).count() > 0, 'JAV 没有标签筛选');
-      assert.equal(await page.getByRole('textbox', { name: '搜索作品', exact: true }).count(), 0);
+      assert.equal(await page.getByRole('textbox', { name: '항목 검색', exact: true }).count(), 0);
       const width = await page.evaluate(() => ({
         grid: document.querySelector('#grid')!.getBoundingClientRect().width,
         main: document.querySelector('#main')!.clientWidth,
@@ -321,13 +321,13 @@ describe('首页筛选条', () => {
       assert.equal(new URL(page.url()).searchParams.get('jav'), '1');
       assert.equal(new URL(page.url()).searchParams.get('q'), '演示作品');
       if (viewport.mobile) await page.locator('#searchBack').click();
-      await page.getByRole('tab', { name: '发现', exact: true }).click();
-      await page.getByRole('tab', { name: '发现', exact: true, selected: true }).waitFor();
+      await page.getByRole('tab', { name: '탐색', exact: true }).click();
+      await page.getByRole('tab', { name: '탐색', exact: true, selected: true }).waitFor();
       assert.equal(await page.locator('#javLibraryHeader').isVisible(), false);
-      await page.getByRole('tab', { name: '想要', exact: true }).click();
-      await page.getByRole('tab', { name: '想要', exact: true, selected: true }).waitFor();
-      await page.getByRole('tab', { name: '馆藏', exact: true }).click();
-      await page.getByRole('tab', { name: '馆藏', exact: true, selected: true }).waitFor();
+      await page.getByRole('tab', { name: '위시리스트', exact: true }).click();
+      await page.getByRole('tab', { name: '위시리스트', exact: true, selected: true }).waitFor();
+      await page.getByRole('tab', { name: '컬렉션', exact: true }).click();
+      await page.getByRole('tab', { name: '컬렉션', exact: true, selected: true }).waitFor();
       await page.locator('#grid [data-media-card]').first().waitFor();
       assert.equal(await page.locator(`${FILTER} input[name="jav-layout"][value="big"]`).isChecked(), true);
       const box = await layout(page);
@@ -336,7 +336,7 @@ describe('首页筛选条', () => {
       await page.locator('button[data-nav=""]:visible').first().click();
       await page.waitForFunction(() => location.pathname === '/' && !new URLSearchParams(location.search).has('jav'));
       await page.locator(`${FILTER} input[name="home-layout"]`).first().waitFor({ state: 'attached' });
-      await page.locator(READOUT, { hasText: '个符合' }).waitFor();
+      await page.locator(READOUT, { hasText: '개 일치' }).waitFor();
       await settle(page);
       assert.notEqual(counts.items.at(-1)?.searchParams.get('jav'), '1');
       assert.equal(await page.locator('#javLibraryHeader').isVisible(), false);
@@ -416,7 +416,7 @@ describe('首页筛选条', () => {
       assert.equal(await page.locator(`${FILTER} [data-skeleton], ${FILTER} [aria-busy="true"]`).count(), 0);
       await page.locator('[data-nav=""]:visible').first().click();
       await pathIs(page, '/');
-      await page.locator(READOUT, { hasText: '个符合' }).waitFor();
+      await page.locator(READOUT, { hasText: '개 일치' }).waitFor();
       await settle(page);
       const back = await page.evaluate((filter) => {
         const rect = (node: Element | null) => {

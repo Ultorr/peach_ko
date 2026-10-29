@@ -32,8 +32,8 @@ describe('浏览器添加 JAV 设置', () => {
           } else await route.fulfill({ json: state });
         });
         await page.reload();
-        const region = page.getByRole('region', { name: '浏览器添加 JAV', exact: true });
-        const install = region.getByRole('link', { name: '安装 Peach 用户脚本' });
+        const region = page.getByRole('region', { name: '브라우저에서 JAV 추가', exact: true });
+        const install = region.getByRole('link', { name: 'Peach 사용자 스크립트 설치' });
         await install.waitFor();
         const channel = region.locator('button[aria-haspopup="listbox"]');
         const installBox = await install.locator('span').first().boundingBox();
@@ -42,7 +42,7 @@ describe('浏览器添加 JAV 设置', () => {
           JSON.stringify({ installBox, channelBox }));
         assert.equal(await channel.locator('img').count(), 1);
         const status = region.getByRole('status');
-        assert.equal(await status.innerText(), '未启用');
+        assert.equal(await status.innerText(), '사용 안 함');
         assert.equal(await status.locator('span[aria-hidden="true"]').count(), 1);
         const statusColor = () => status.locator('svg')
           .evaluate(node => getComputedStyle(node).color);
@@ -65,14 +65,14 @@ describe('浏览器添加 JAV 设置', () => {
         const cloud115 = page.getByRole('option', { name: '115', exact: true });
         assert.equal(await cloud115.locator('img').count(), 1);
         await cloud115.click();
-        await region.getByRole('button', { name: '启用并生成令牌', exact: true }).click();
-        const token = region.getByLabel('浏览器添加专用令牌', { exact: true });
+        await region.getByRole('button', { name: '활성화 및 토큰 생성', exact: true }).click();
+        const token = region.getByLabel('브라우저 추가 전용 토큰', { exact: true });
         await token.waitFor();
-        assert.equal(await status.innerText(), '已启用');
+        assert.equal(await status.innerText(), '활성화됨');
         assert.equal(await status.locator('span[aria-hidden="true"]').count(), 1);
         assert.notEqual(await statusColor(), disabledColor);
         assert.equal(await statusColor(), await themeColor('--color-notification-success-foreground'));
-        const channelLabelBox = await region.getByText('浏览器添加的下载渠道', { exact: true }).boundingBox();
+        const channelLabelBox = await region.getByText('브라우저 추가의 다운로드 서비스', { exact: true }).boundingBox();
         const channelFieldBox = await channel.boundingBox();
         assert.ok(channelLabelBox && channelFieldBox);
         const channelGap = channelFieldBox.y - channelLabelBox.y - channelLabelBox.height;
@@ -86,15 +86,15 @@ describe('浏览器添加 JAV 设置', () => {
           JSON.stringify({ channelGap, inputGaps }));
         assert.equal(await token.inputValue(), 'test-issued-token-1');
         assert.equal(await token.getAttribute('type'), 'password');
-        assert.equal(await region.getByRole('link', { name: '安装 Peach 用户脚本' }).getAttribute('href'),
+        assert.equal(await region.getByRole('link', { name: 'Peach 사용자 스크립트 설치' }).getAttribute('href'),
           'https://sleazyfork.org/zh-CN/scripts/600821');
-        assert.equal(await region.getByLabel('Peach 地址', { exact: true }).inputValue(), new URL(page.url()).origin);
-        await region.getByRole('button', { name: '更新渠道与令牌', exact: true }).click();
+        assert.equal(await region.getByLabel('Peach 주소', { exact: true }).inputValue(), new URL(page.url()).origin);
+        await region.getByRole('button', { name: '다운로드 서비스 및 토큰 갱신', exact: true }).click();
         await page.waitForFunction(() => document.querySelector<HTMLInputElement>(
           'input[type="password"][value="test-issued-token-2"]') !== null);
-        await region.getByRole('button', { name: '关闭浏览器添加', exact: true }).click();
+        await region.getByRole('button', { name: '브라우저 추가 기능 끄기', exact: true }).click();
         await token.waitFor({ state: 'detached' });
-        assert.equal(await status.innerText(), '未启用');
+        assert.equal(await status.innerText(), '사용 안 함');
         assert.equal(await status.locator('span[aria-hidden="true"]').count(), 1);
         assert.equal(await statusColor(), disabledColor);
         assert.deepEqual(posted.map(body => body.action), ['enable', 'rotate', 'disable']);

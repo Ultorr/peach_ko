@@ -125,7 +125,7 @@ class LoginTests(_Case):
         with self.assertRaises(dl.DownloadError) as caught:
             self.login()
         self.assertEqual(caught.exception.failure, "config")
-        self.assertIn("登录失败：账号或密码错误", caught.exception.detail)
+        self.assertIn("로그인 실패: 账号或密码错误", caught.exception.detail)
 
     def test_the_captcha_signature_matches_the_reference_algorithm(self):
         self.assertEqual(pk.captcha_sign("abc", "123"), "1.3b6c3d5e08b41cc77d291c082ba26e7d")
@@ -172,7 +172,7 @@ class DriveTests(_Case):
         with self.assertRaises(dl.DownloadError) as caught:
             self.provider().status(self.task())
         self.assertEqual(caught.exception.failure, "config")
-        self.assertIn("重新登录", caught.exception.detail)
+        self.assertIn("다시 로그인", caught.exception.detail)
 
     def test_a_dead_refresh_token_with_a_saved_password_signs_in_again(self):
         self.login(remember=True)
@@ -192,7 +192,7 @@ class DriveTests(_Case):
         self.fake.tasks[0].update(phase="SOMETHING_NEW")
         with self.assertRaises(dl.DownloadError) as caught:
             self.provider().status(self.task())
-        self.assertIn("接口可能已经变了", caught.exception.detail)
+        self.assertIn("API가 변경되었을 수 있습니다", caught.exception.detail)
 
     def test_landed_lists_the_target_folder_and_cancel_keeps_files(self):
         self.assertTrue(self.provider().landed(self.task()))
@@ -255,7 +255,7 @@ class WebClientTests(_Case):
         with self.assertRaises(dl.DownloadError) as caught:
             self.provider().status(self.task())
         self.assertEqual(caught.exception.failure, "config")
-        self.assertIn("用浏览器登录", caught.exception.detail)
+        self.assertIn("브라우저로 로그인", caught.exception.detail)
         self.assertIn("invalid_grant", caught.exception.detail)
         self.assertNotIn("stale", caught.exception.detail)
 
@@ -270,7 +270,7 @@ class WebClientTests(_Case):
                                      transport=httpx.MockTransport(handler))
         with self.assertRaises(dl.DownloadError) as caught:
             provider.submit(MAGNET, TARGET)
-        self.assertIn("网页端的签名常量可能已经更新", caught.exception.detail)
+        self.assertIn("웹 클라이언트의 서명 상수가 변경되었을 수 있습니다", caught.exception.detail)
 
     def test_an_unknown_client_refreshes_but_refuses_to_sign(self):
         self.stored.update(client_id="SomeNewClient", expires_at="9999999999")

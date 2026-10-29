@@ -66,7 +66,7 @@ export function sidebarFacets(facetData,context){
       ...(preferencesState.sourceOffline(row.k)?{offline:preferencesState.OFFLINE_HINT}:{})})),
     regions:rows(facetData.regions,row=>koreanLabel(row.label||tagLabel(row.k))),
     orientations:rows(facetData.orientations,row=>koreanLabel(row.label||tagLabel(row.k))),
-    creators:rows(creators),tags:rows(facetData.tags),tech:rows(facetData.tech),
+    creators:rows(creators,row=>row.label||row.k),tags:rows(facetData.tags,row=>tagLabel(row.label||row.k)),tech:rows(facetData.tech),
     followTags:rows(facetData.follow_tags,row=>tagLabel(row.k)),
     duration:!!facetData.stats?.duration,
   };

@@ -155,6 +155,19 @@ describe('本地文件拉真视频', () => {
     delete scrolling.__scrolling;
   });
 
+  it('does not start local video when selection begins during the hover delay', () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+    const el = card();
+    wireHover(el, { id: 1, location: 'local' });
+    enter(el);
+
+    settings.selecting = true;
+    vi.advanceTimersByTime(340);
+
+    expect(el.querySelector('video.hv')).toBeNull();
+    expect(play).not.toHaveBeenCalled();
+  });
+
   it('遮挡在防抖期间打开，到点也不放', () => {
     const el = card();
     wireHover(el, { id: 1, location: 'local' });

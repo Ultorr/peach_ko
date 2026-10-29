@@ -109,7 +109,7 @@ function tasksFetch(body: unknown = tasks(), { deferred = true } = {}) {
 }
 
 /** 每一批 DOM 变化交付时容器里的样子：骨架还在不在、整页画出来没有。 */
-function watch(stats: Element, skeleton: Element, label = '追更检查') {
+function watch(stats: Element, skeleton: Element, label = '업데이트 확인') {
   const batches: Array<{ skeleton: boolean; painted: boolean }> = [];
   const observer = new MutationObserver(() => {
     batches.push({ skeleton: stats.contains(skeleton), painted: Boolean(stats.textContent?.includes(label)) });
@@ -150,7 +150,7 @@ it('冷启动深链，Router 先挂上：壳画的骨架留到首屏取齐，换
   await act(async () => { expect(await opened).toBe(true) });
   expect(fetch.taskCalls()).toBe(1);
   expect(batches[0], '骨架撤下的那一批变化里整页已经画好，中间没有空白的一帧').toEqual({ skeleton: false, painted: true });
-  expect(stats.querySelector(':scope > .peach-react')?.textContent).toContain('追更检查');
+  expect(stats.querySelector(':scope > .peach-react')?.textContent).toContain('업데이트 확인');
 });
 
 it('冷启动深链，壳先打开、Router 后挂上：包到了才取数，骨架同样留到换成整页', async () => {
@@ -321,7 +321,7 @@ it('配置页打开返回的那一刻，页签条已经在容器里，选中的�
     const open = { section: '网络与访问' };
     expect(await r.openManagedRoute('/settings/library', open, { container: stats, isCurrent: () => true })).toBe(true);
     const tabs = [...stats.querySelectorAll('.ui-configpage > .ui-board-local-nav[role="tablist"] > [role="tab"]')];
-    expect(tabs.map((tab) => tab.textContent)).toEqual(['媒体库与入库', '来源与订阅', '网络与访问', '应用与维护', '系统诊断']);
+    expect(tabs.map((tab) => tab.textContent)).toEqual(['미디어 라이브러리 및 가져오기', '소스 및 구독', '네트워크 및 접속', '앱 및 유지 관리', '시스템 진단']);
     expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual(['false', 'false', 'true', 'false', 'false']);
     const active = stats.querySelector('.ui-board-group-active');
     expect(active?.id).toBe(tabs[2].getAttribute('aria-controls'));
@@ -383,7 +383,7 @@ it('统计页：点标签交壳回目录；「添加媒体文件夹」先交页�
   props.openMediaSettings();
   expect(vi.mocked(actions.openTag).mock.calls).toEqual([['痴女']]);
   expect(order).toEqual(['section 媒体库与入库', 'go /settings/library']);
-  expect([props.configurable, props.tagLabel('JK制服')]).toEqual([false, 'JK制服']);
+  expect([props.configurable, props.tagLabel('JK制服')]).toEqual([false, 'JK 교복']);
 });
 
 it('口味页：总结里的下一步按路径走 go', async () => {
@@ -515,7 +515,7 @@ it('冷启动深链索引页：壳画的骨架留到首屏取齐，换成整页�
   await act(async () => { opened = r.openManagedRoute('/tags', tagsOpen(), { container: index, isCurrent: () => true }) });
   await until(() => fetch.indexCalls() > 0, '首屏取数发出去');
   expect(index.firstElementChild, '取齐之前骨架原样留着').toBe(skeleton);
-  const batches = watch(index, skeleton, '痴女');
+  const batches = watch(index, skeleton, '적극적인 여성');
   fetch.resolve();
   await act(async () => { expect(await opened).toBe(true) });
   expect(fetch.indexCalls()).toBe(1);
@@ -602,7 +602,7 @@ it('索引页：页内写地址、存版式、头像与去处都接到壳的那�
     actions.routeIndex, actions.savePeopleLayout, actions.exitSelectMode, actions.personAvatar, actions.authorAvatar,
     actions.openEntity, actions.showIndexTags, actions.openFollowAuthor, actions.openFollowTag]);
   expect([props.kind, props.layout, props.selectMode, props.configurable]).toEqual(['performers', 'big', false, false]);
-  expect((props.tagLabel as (tag: string) => string)('JK制服')).toBe('JK制服');
+  expect((props.tagLabel as (tag: string) => string)('JK制服')).toBe('JK 교복');
 });
 
 it('索引页的路径不经 React Router 的 navigate：同页换 search 与跨页进来都交壳写地址', async () => {

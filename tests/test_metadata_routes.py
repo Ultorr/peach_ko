@@ -284,11 +284,11 @@ class OverrideTests(unittest.TestCase):
 
     def test_unknown_names_are_refused_instead_of_silently_dropped(self):
         """静默忽略的表现是「设置改了没生效」，比报错难查得多。"""
-        with self.assertRaisesRegex(ValueError, '未知内容类型'):
+        with self.assertRaisesRegex(ValueError, '알 수 없는 콘텐츠 유형'):
             parse_route_overrides('hentai=javdb')
-        with self.assertRaisesRegex(ValueError, '未知来源'):
+        with self.assertRaisesRegex(ValueError, '알 수 없는 소스'):
             parse_route_overrides('censored=kin8')
-        with self.assertRaisesRegex(ValueError, '类型=来源'):
+        with self.assertRaisesRegex(ValueError, '유형=소스'):
             parse_route_overrides('censored')
 
 

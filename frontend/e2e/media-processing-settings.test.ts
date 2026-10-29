@@ -28,14 +28,14 @@ describe('视频预览设置', () => {
       });
       const { page } = opened;
       try {
-        const toggle = page.getByRole('switch', { name: '生成视频预览', exact: true });
+        const toggle = page.getByRole('switch', { name: '동영상 미리보기 생성', exact: true });
         const interval = page.locator('#videoThumbnailSetting button');
         await toggle.waitFor();
         await settle(page);
         assert.equal(await toggle.isChecked(), true);
         assert.equal(await interval.isDisabled(), false);
         await page.locator('label').filter({ has: toggle }).click();
-        await page.getByText('已关闭视频预览生成', { exact: true }).waitFor();
+        await page.getByText('동영상 미리보기 생성을 껐습니다', { exact: true }).waitFor();
         assert.equal(await toggle.isChecked(), false);
         assert.equal(await interval.isDisabled(), true);
         await page.reload();
@@ -43,12 +43,12 @@ describe('视频预览设置', () => {
         await settle(page);
         assert.equal(await toggle.isChecked(), false);
         assert.equal(await interval.isDisabled(), true);
-        assert.match(await interval.innerText(), /关闭/);
+        assert.match(await interval.innerText(), /꺼짐/);
         await toggle.focus();
         await page.keyboard.press('Space');
-        await page.getByText('已开启视频预览生成', { exact: true }).waitFor();
+        await page.getByText('동영상 미리보기 생성을 켰습니다', { exact: true }).waitFor();
         assert.equal(await interval.isDisabled(), false);
-        assert.match(await interval.innerText(), /关闭/);
+        assert.match(await interval.innerText(), /꺼짐/);
         assert.deepEqual(writes, [{ metadata_only: true }, { metadata_only: false }]);
         const measured = await layout(page);
         assert.ok(measured.scrollWidth <= measured.viewportWidth, JSON.stringify(measured));

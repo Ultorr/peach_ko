@@ -188,7 +188,7 @@ describe('顶栏搜索', () => {
         for (let i = 0; i < 21; i++) await page.keyboard.press('ArrowDown');
         const more = page.locator(`${MENU} [data-search-option="more"]`);
         assert.equal(await more.getAttribute('data-active'), '');
-        assert.equal(await more.textContent(), '查看全部 53 个视频');
+        assert.equal(await more.textContent(), '전체 보기: 53 개 동영상');
         await page.keyboard.press('Enter');
         await page.waitForFunction(() => new URLSearchParams(location.search).get('q') === 'abf');
         await page.locator(MENU).waitFor({ state: 'hidden' });
@@ -307,7 +307,7 @@ describe('顶栏搜索', () => {
     const opened = await openSearch(browser, { limit: 3, history: ['甲片', '乙片', '丙片', '丁片'] });
     try {
       const { page, posts, history } = opened;
-      const recent = () => page.locator(`${MENU} [data-search-group]`, { hasText: '搜索记录' })
+      const recent = () => page.locator(`${MENU} [data-search-group]`, { hasText: '검색 기록' })
         .locator('[data-search-option]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-search-value')));
       await page.locator('#q').click();
       await page.locator(`${OPTION}[data-search-value="丙片"]`).waitFor({ timeout: 5_000 });

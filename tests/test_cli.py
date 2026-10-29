@@ -285,7 +285,7 @@ class InteractiveInitTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(len(prompts), 8)
         self.assertEqual(prompts[2], prompts[3], "追加目录问到回车为止")
-        self.assertTrue(prompts[-1].startswith("现在扫描 这 2 个文件夹"))
+        self.assertTrue(prompts[-1].startswith("지금 이 폴더 2개"))
         loaded = self._loaded()
         self.assertTrue(loaded.present)
         self.assertEqual(loaded.locations, {"local": (str(self.media), str(second))})
@@ -315,7 +315,7 @@ class InteractiveInitTests(unittest.TestCase):
         self.assertEqual(loaded.mounts, {"local": (str(self.media),)})
         self.assertEqual((loaded.server.host, loaded.server.port, loaded.server.mdns_name),
                          ("0.0.0.0", 9443, "peach-two"))
-        self.assertIn("本机挂载点", output)
+        self.assertIn("로컬 마운트 지점", output)
         paths = self._ledger_paths()
         self.assertEqual(paths, [r"R:\media\b.jpg", r"R:\media\sub\a.mp4"])
         # 读取侧按同一套规则翻回去：声明根后的层级接到挂载点上。
@@ -328,14 +328,14 @@ class InteractiveInitTests(unittest.TestCase):
         code, output, prompts = self._run(
             ["", str(missing), str(self.media), "", "", "", "", "n"], windows=NATIVE_WINDOWS)
         self.assertEqual(code, 0)
-        self.assertEqual(prompts.count("媒体文件夹（必须已经存在，可以在外置硬盘上）"), 2)
-        self.assertIn("目录不存在", output)
+        self.assertEqual(prompts.count("미디어 폴더(기존 폴더여야 하며 외장 드라이브도 사용 가능)"), 2)
+        self.assertIn("폴더가 없거나 폴더 경로가 아닙니다", output)
         self.assertFalse(missing.exists(), "问答不替人建媒体目录")
 
     def test_three_bad_answers_abort_before_anything_is_written(self):
         with self.assertRaises(SystemExit) as caught:
             self._run(["", "/nope1", "/nope2", "/nope3"], windows=NATIVE_WINDOWS)
-        self.assertIn("3 次", str(caught.exception))
+        self.assertIn("3회", str(caught.exception))
         self.assertIn("没有写任何文件", str(caught.exception))
         self.assertFalse(self.data_root.exists())
 

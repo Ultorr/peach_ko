@@ -46,7 +46,7 @@ describe('播放器字幕', () => {
         const panel = page.locator('.vjs-peach-panel:not(.vjs-peach-panel-leaving)');
         const status = panel.locator('[data-subtitle-status]');
         await status.waitFor({ state: 'visible', timeout: 5_000 });
-        assert.match(await status.textContent() || '', /正在搜索字幕/);
+        assert.match(await status.textContent() || '', /자막 검색 중/);
         assert.equal(await panel.getAttribute('aria-busy'), 'true');
         const spinner = status.locator('.ui-geist-spinner');
         assert.equal(await spinner.count(), 1);
@@ -55,13 +55,13 @@ describe('播放器字幕', () => {
         await page.waitForFunction(() => !document.querySelector('.vjs-peach-popup-animating'));
         await page.screenshot({ path: join(process.cwd(), `../build/subtitles-search-loading-${viewport.name}.png`) });
         release();
-        await status.filter({ hasText: '没有找到当前作品的中文字幕' }).waitFor();
+        await status.filter({ hasText: '현재 항목의 중국어 자막을 찾지 못했습니다' }).waitFor();
         assert.equal(await spinner.count(), 0);
         assert.equal(await panel.getAttribute('aria-busy'), null);
         await page.screenshot({ path: join(process.cwd(), `../build/subtitles-search-empty-${viewport.name}.png`) });
         await page.locator('[data-subtitle-back]').click();
         await page.locator('[data-subtitle-search]').click();
-        await status.filter({ hasText: '没有找到当前作品的中文字幕' }).waitFor();
+        await status.filter({ hasText: '현재 항목의 중국어 자막을 찾지 못했습니다' }).waitFor();
         assert.equal(searches, 1);
         assert.deepEqual(problems, []);
       } finally { release(); await opened.close() }
@@ -86,11 +86,11 @@ describe('播放器字幕', () => {
         assert.equal(appearance.stroke, 'rgb(255, 255, 255)');
         assert.ok(appearance.inset >= 48, JSON.stringify(appearance));
         assert.equal(await page.locator('[data-subtitle-options] use').getAttribute('href'), '#i-settings');
-        assert.equal(await page.locator('[data-subtitle-options]').getAttribute('aria-label'), '字幕选项');
+        assert.equal(await page.locator('[data-subtitle-options]').getAttribute('aria-label'), '자막 옵션');
         const cancelled = page.waitForEvent('filechooser');
         await page.locator('[data-subtitle-file]').click();
         await (await cancelled).setFiles([]);
-        await page.locator('input[type="file"][aria-label="加载字幕文件"]').dispatchEvent('cancel', { bubbles: true });
+        await page.locator('input[type="file"][aria-label="자막 파일 불러오기"]').dispatchEvent('cancel', { bubbles: true });
         assert.equal(await page.locator('#stage').evaluate((dialog: HTMLDialogElement) => dialog.open), true);
         await page.locator('[data-subtitle-file]').focus();
         await page.keyboard.press('Escape');
@@ -119,7 +119,7 @@ describe('播放器字幕', () => {
         assert.ok(bounds.menuTop >= bounds.frameTop && bounds.menuRight <= bounds.frameRight + 1, JSON.stringify(bounds));
         await page.screenshot({ path: join(process.cwd(), `../build/subtitles-${viewport.name}.png`) });
         await page.locator('[data-subtitle-back]').click();
-        await page.getByRole('menuitemradio', { name: '关闭', exact: true }).click();
+        await page.getByRole('menuitemradio', { name: '꺼짐', exact: true }).click();
         await page.locator('.vjs-peach-captions').waitFor({ state: 'hidden' });
         await page.locator('#stage [data-player-quality]>button').click();
         if (viewport.mobile) await page.locator('#stage [data-player-expand]').click();

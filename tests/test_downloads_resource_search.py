@@ -246,6 +246,6 @@ class SettingsTests(unittest.TestCase):
 
     def test_corrupt_configuration_does_not_disclose_file_contents(self):
         self.store.save(CREDENTIAL, {"indexers": 'private-test-key'})
-        with self.assertRaisesRegex(ValueError, "配置读不出来") as error:
+        with self.assertRaisesRegex(ValueError, "설정을 읽을 수 없습니다") as error:
             self.settings.public()
         self.assertNotIn(ROW["api_key"], str(error.exception))

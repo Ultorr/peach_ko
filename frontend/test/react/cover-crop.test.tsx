@@ -58,7 +58,7 @@ async function openCrop(props: Record<string, unknown> = {}) {
 it('详情页那枚键说得出它要裁的是哪一张', async () => {
   const { host } = await openCrop();
   expect(host.querySelector('[data-cover-crop]')?.getAttribute('aria-label'))
-    .toBe('裁剪 ABW-232 的封面');
+    .toBe('자르기: ABW-232 표지');
   expect(document.querySelector('[role="dialog"]')).toBeTruthy();
 });
 
@@ -66,7 +66,7 @@ it('没有生效的框时默认框满高贴右缘，按正封比例取宽', asyn
   const calls = server();
   const { saved } = await openCrop();
   await reportSize(800, 540);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(calls[0]?.[0]).toContain('/api/cover-crop');
   // 540×0.704≈380，从右缘量回去就是 420；纵向一个像素都不裁。
@@ -79,7 +79,7 @@ it('已经有框就摆在那个框上，人改的是现状不是从头来过', a
   const calls = server();
   await openCrop({ box: { x0: 300, y0: 20, x1: 700, y1: 500, method: 'manual', px: [800, 540] } });
   await reportSize(800, 540);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(sentBox(calls)).toEqual({ x0: 300, y0: 20, x1: 700, y1: 500 });
 });
@@ -88,7 +88,7 @@ it('框是按另一张封面算的就不认，退回默认', async () => {
   const calls = server();
   await openCrop({ box: { x0: 300, y0: 20, x1: 700, y1: 500, method: 'fold', px: [1600, 1080] } });
   await reportSize(800, 540);
-  await click(buttonNamed('用这一块'));
+  await click(buttonNamed('이 영역 사용'));
   await settle();
   expect(sentBox(calls).x1).toBe(800);
 });
@@ -97,7 +97,7 @@ it('恢复默认发的是空框，由后端按折痕判据重算', async () => {
   const calls = server();
   const { saved } = await openCrop();
   await reportSize(800, 540);
-  await click(buttonNamed('恢复默认'));
+  await click(buttonNamed('기본값 복원'));
   await settle();
   expect(sentBox(calls)).toBeNull();
   expect(saved).toHaveBeenCalledTimes(1);

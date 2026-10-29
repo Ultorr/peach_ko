@@ -177,7 +177,7 @@ describe('设置面板与壳的接缝', () => {
     current.host.openConfiguration = openConfiguration;
     const panel = await open(current, 'JAV 与新作');
     expect([...panel.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent))
-      .toEqual(['外观与导航', '浏览与播放', 'JAV 与新作', '搜索与推荐', '内容显示']);
+      .toEqual(['외관 및 탐색', '탐색 및 재생', 'JAV 및 신작', '검색 및 추천', '콘텐츠 표시']);
     expect(panel.querySelector('#javImageSetting')?.closest('section')?.hidden).toBe(false);
     expect(panel.querySelector('#detailAutoplaySetting')?.closest('section')?.hidden).toBe(true);
     expect(panel.querySelector('#videoThumbnailSetting')).toBeNull();
@@ -226,7 +226,7 @@ describe('设置面板与壳的接缝', () => {
     const panel = await open(current);
     const contrast = panel.querySelector<HTMLInputElement>('#glassContrastSetting')!;
     expect([contrast.getAttribute('role'), panel.querySelector('label[for="glassContrastSetting"] b')?.textContent])
-      .toEqual(['switch', '增加对比度']);
+      .toEqual(['switch', '대비 높이기']);
     await click(contrast);
     expect(current.setHighContrast.mock.calls).toEqual([[true]]);
     await close(current);
@@ -308,7 +308,7 @@ describe('常驻面', () => {
     current.api.open('浏览与播放');
     const panel = document.querySelector<HTMLElement>('#settingsPanel')!;
     expect([panel.hidden, panel.querySelector('#settingsTitle')?.textContent, current.api.isOpen()])
-      .toEqual([false, '浏览与播放', true]);
+      .toEqual([false, '탐색 및 재생', true]);
     expect([document.documentElement.style.overflow, document.body.classList.contains('settings-open')])
       .toEqual(['hidden', true]);
     expect(document.activeElement).toBe(trigger);
@@ -343,7 +343,7 @@ describe('常驻面', () => {
     expect(current.r.managedTaken(host)).toBe(false);
     expect(current.r.managedEntries().map((entry) => entry.path), '别的面照画').toEqual(['batch-dock']);
     await act(async () => { dock.render({ count: 2, context: 'catalog', junkDismissed: false }) });
-    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('已选 2 项');
+    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('선택됨 2 개');
 
     /* 壳照旧经 Escape 收、经齿轮开：不抛、不重开、不再上报。 */
     await act(async () => { expect(() => current.api.close()).not.toThrow() });

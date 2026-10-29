@@ -263,7 +263,7 @@ class SettingsBlockTests(_App):
     def test_checking_without_a_token_reports_the_problem_without_calling_out(self):
         report = web_downloads.check_clouddrive(self.service, {"clouddrive_address": "127.0.0.1:1"})
         self.assertFalse(report["ok"])
-        self.assertIn("API 令牌", report["problems"][0])
+        self.assertIn("API 토큰", report["problems"][0])
         self.assertEqual((report["suggested_target"], report["suggested_pikpak_root"]), (None, ""))
 
     def test_the_check_takes_the_push_prefixes_and_the_blanks_on_the_form(self):
@@ -295,11 +295,11 @@ class SettingsBlockTests(_App):
         with self.assertRaises(ValueError) as caught:
             web_downloads.create_clouddrive_folder(self.service, {
                 "clouddrive_address": "127.0.0.1:1", "path": "/115open/云下载"})
-        self.assertIn("API 令牌", str(caught.exception))
+        self.assertIn("API 토큰", str(caught.exception))
         with self.assertRaises(ValueError) as caught:
             web_downloads.create_clouddrive_folder(self.service, {
                 "clouddrive_address": "127.0.0.1:1", "token": "t", "path": "/"})
-        self.assertIn("根目录", str(caught.exception))
+        self.assertIn("루트 폴더", str(caught.exception))
 
     def test_a_pikpak_captcha_comes_back_as_a_page_to_open(self):
         def handler(request: httpx.Request) -> httpx.Response:

@@ -43,21 +43,21 @@ it('JAV 分区导航保留三个入口，馆藏使用目录搜索', async () => 
   const navigate = vi.fn(), find = vi.fn();
   const host = await mount(<JavHeader tab="library" navigate={navigate} find={find} />);
   const tabs = [...host.querySelectorAll('[role="tab"]')];
-  expect(tabs.map(tab => tab.textContent?.trim())).toEqual(['馆藏', '发现', '想要']);
+  expect(tabs.map(tab => tab.textContent?.trim())).toEqual(['컬렉션', '탐색', '위시리스트']);
   expect(tabs[0]?.getAttribute('aria-selected')).toBe('true');
   expect(host.querySelector('input')).toBeNull();
   await click(tabs[1]);
   expect(navigate).toHaveBeenLastCalledWith('/jav?tab=discover');
   await click(tabs[2]);
   expect(navigate).toHaveBeenLastCalledWith('/jav?tab=wants');
-  await click(buttonNamed('查找资源', host));
+  await click(buttonNamed('리소스 찾기', host));
   expect(find).toHaveBeenCalledOnce();
 });
 
 it('从想要分区返回馆藏时打开 JAV 目录', async () => {
   const navigate = vi.fn();
   const host = await mount(<JavHeader tab="wants" navigate={navigate} find={vi.fn()} />);
-  expect(host.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()).toBe('想要');
+  expect(host.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim()).toBe('위시리스트');
   await click(host.querySelector('[role="tab"]'));
   expect(navigate).toHaveBeenCalledWith('/?jav=1');
 });
@@ -78,7 +78,7 @@ it('发现按范围读取，清除文字和标签恢复列表，卡片打开对�
   expect(host.querySelector('[data-jav-card] h3')?.textContent).toContain('ABC-001');
   await click(host.querySelector('[data-jav-card] [data-media-tag]'));
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(1);
-  await click(buttonNamed('清除筛选', host));
+  await click(buttonNamed('필터 지우기', host));
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(2);
   await type(host.querySelector('input[type="search"]'), 'ABC-001');
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(1);
@@ -86,10 +86,10 @@ it('发现按范围读取，清除文字和标签恢复列表，卡片打开对�
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(2);
   await click(host.querySelector('[data-jav-card] h3'));
   expect(navigate).toHaveBeenLastCalledWith('/works/ABC-001');
-  await click(buttonNamed('馆藏探索', host));
+  await click(buttonNamed('컬렉션 탐색', host));
   await settle();
   expect(fetcher.mock.calls.some(([url]) => url.includes('scope=library'))).toBe(true);
   await click(host.querySelector('[data-jav-card] h3'));
   expect(navigate).toHaveBeenLastCalledWith('/assets/22');
-  expect(buttonNamed('已入库', host)?.disabled).toBe(true);
+  expect(buttonNamed('라이브러리에 추가됨', host)?.disabled).toBe(true);
 });

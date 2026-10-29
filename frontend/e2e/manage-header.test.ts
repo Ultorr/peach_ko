@@ -23,18 +23,18 @@ const unrelated = (problems: string[]) => problems.filter((line) => !line.includ
 
 /** `[路径, 标题, 面包屑当前项, 窄屏收档]`。数据管理之下的子页标题让给子页自己的名字。 */
 const HEADS = [
-  ['/stats', '统计', '', false],
-  ['/taste', '口味', '', false],
-  ['/review', '人工复核', '人工复核', false],
-  ['/data-cleanup', '数据管理', '', true],
-  ['/junk-files', '垃圾文件', '垃圾文件', false],
-  ['/duplicates', '重复文件', '重复文件', false],
-  ['/quality-goals', '高清版', '高清版', false],
-  ['/sources', '来源和凭证', '来源和凭证', true],
-  ['/trash', '回收站', '回收站', false],
-  ['/subscriptions', '关注管理', '', false],
-  ['/tasks', '任务中心', '', false],
-  ['/settings/library', 'Peach 配置', '', true],
+  ['/stats', '통계', '', false],
+  ['/taste', '취향', '', false],
+  ['/review', '수동 검토', '수동 검토', false],
+  ['/data-cleanup', '데이터 관리', '', true],
+  ['/junk-files', '불필요한 파일', '불필요한 파일', false],
+  ['/duplicates', '중복 파일', '중복 파일', false],
+  ['/quality-goals', '고화질 버전', '고화질 버전', false],
+  ['/sources', '소스 및 인증 정보', '소스 및 인증 정보', true],
+  ['/trash', '휴지통', '휴지통', false],
+  ['/subscriptions', '팔로우 관리', '', false],
+  ['/tasks', '작업 센터', '', false],
+  ['/settings/library', 'Peach 설정', '', true],
 ] as const;
 
 const BLOCKS = '[data-manage-header] > :is([data-manage-bar], [data-manage-crumb], [data-manage-title])';
@@ -130,7 +130,7 @@ describe('管理区页头', () => {
         assert.equal(await link.getAttribute('href'), '/data-cleanup');
         await link.click();
         await page.waitForFunction(() => location.pathname === '/data-cleanup');
-        await page.waitForFunction(() => document.querySelector('[data-manage-title]')?.textContent === '数据管理');
+        await page.waitForFunction(() => document.querySelector('[data-manage-title]')?.textContent === '데이터 관리');
         assert.equal(await page.evaluate(() => (window as unknown as { stayed?: boolean }).stayed), true, '面包屑整页重载了');
         const head = await readHead(page);
         assert.deepEqual([head.crumb, head.pressed], ['', ['cleanup']]);
@@ -197,7 +197,7 @@ describe('批量条', () => {
         assert.equal(await page.locator(DOCK).count(), 0, '没选中时批量条就画出来了');
         await pickTwo(cards);
         assert.deepEqual(await readDock(page),
-          { count: '已选 2 项', buttons: ['喜欢', '看过', '稍后看', '判定产地', '移入回收站', '取消'] });
+          { count: '선택됨 2 개', buttons: ['별점 지정', '좋아요', '시청함', '나중에 보기', '제작 국가 판별', '휴지통으로 이동', '취소'] });
         await page.locator(`${DOCK} [data-batch-group="clear"]`).click();
         await page.locator(DOCK).waitFor({ state: 'detached', timeout: 10_000 });
 
@@ -209,16 +209,16 @@ describe('批量条', () => {
         const empty = await page.locator('[data-manage-lede] [data-empty-trash]').boundingBox();
         assert.equal(Math.round(empty!.height), viewport.mobile ? 44 : 32, '清空回收站的键高');
         await pickTwo(cards);
-        assert.deepEqual(await readDock(page), { count: '已选 2 项', buttons: ['还原', '彻底删除', '取消'] });
+        assert.deepEqual(await readDock(page), { count: '선택됨 2 개', buttons: ['복원', '영구 삭제', '취소'] });
 
         await stubJunk(page);
         const junk = page.locator('#grid [data-junk-card]');
-        for (const [path, first] of [['/junk-files', '不是垃圾'], ['/junk-files?view=dismissed', '重新判断']] as const) {
+        for (const [path, first] of [['/junk-files', '정크 아님'], ['/junk-files?view=dismissed', '다시 판별']] as const) {
           await page.goto(new URL(path, page.url()).href, { waitUntil: 'load' });
           await junk.first().waitFor({ timeout: 15_000 });
           await settle(page);
           await pickTwo(junk);
-          assert.deepEqual(await readDock(page), { count: '已选 2 项', buttons: [first, '移入回收站', '取消'] }, path);
+          assert.deepEqual(await readDock(page), { count: '선택됨 2 개', buttons: [first, '휴지통으로 이동', '취소'] }, path);
         }
         assert.deepEqual(opened.problems, []);
       } finally {
@@ -230,7 +230,7 @@ describe('批量条', () => {
       const opened = await openFollowFeed(browser, '/follow', viewport);
       try {
         await pickTwo(opened.page.locator('[data-follow-list] > [data-follow-item]'));
-        assert.deepEqual(await readDock(opened.page), { count: '已选 2 项', buttons: ['保存到账本', '标记已看', '忽略', '取消'] });
+        assert.deepEqual(await readDock(opened.page), { count: '선택됨 2 개', buttons: ['원장에 저장', '시청 완료로 표시', '무시', '취소'] });
         assert.deepEqual(opened.stub.writes.filter((write) => write.url !== '/api/follow/check'), []);
       } finally {
         await opened.close();

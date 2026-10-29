@@ -228,7 +228,7 @@ describe('关注详情岛', () => {
         { id: 5102, current: 'false', icon: null },
         { id: 5103, current: 'false', icon: 'Rule34.xxx' },
       ]);
-      assert.match(await queue.locator('[data-mix-queue-head]').innerText(), /视频合集[\s\S]*3 个视频/);
+      assert.match(await queue.locator('[data-mix-queue-head]').innerText(), /동영상 모음[\s\S]*3 개 영상/);
       assert.equal(await queue.locator('[data-queue-close]').isVisible(), false, '并排布局的队列头不该有关闭键');
       /* 桌面上媒体在左、详情在右，底部队列横向排开。 */
       const grid = await page.evaluate(() => {
@@ -276,10 +276,10 @@ describe('关注详情岛', () => {
       await page.locator('#stage [data-follow-detail-status="seen"][aria-pressed="true"]').waitFor();
       assert.equal(await page.locator('#stage [data-follow-detail-status="new"]').count(), 1, '已看之后没有「恢复未看」');
       // 回执栈在 body 下，舞台是模态 dialog，外面整页惰性，鼠标点不到撤销键；这里量的是撤销本身。
-      await page.locator('#toasts').getByRole('button', { name: '撤销' }).dispatchEvent('click');
+      await page.locator('#toasts').getByRole('button', { name: '실행 취소' }).dispatchEvent('click');
       await page.locator('#stage [data-follow-detail-status="seen"][aria-pressed="false"]').waitFor();
       await page.locator('#stage [data-follow-detail-save]').click();
-      await page.locator('#stage [data-follow-detail-save][aria-label="已保存"]').waitFor();
+      await page.locator('#stage [data-follow-detail-save][aria-label="저장됨"]').waitFor();
       assert.deepEqual(opened.stub.writes, [
         { url: '/api/follow/status', body: { item: 5001, to: 'seen' } },
         { url: '/api/follow/status', body: { item: 5001, to: 'new' } },
@@ -363,7 +363,7 @@ describe('关注详情岛', () => {
       await page.waitForFunction(() => document.querySelectorAll('#stage [data-follow-media-restore]').length === 3);
       assert.deepEqual(await restores(), [0, 3, 4]);
       assert.equal(await dots(), 2);
-      assert.match(await page.locator('#stage [data-follow-hidden-label]').innerText(), /已隐藏 3 张/);
+      assert.match(await page.locator('#stage [data-follow-hidden-label]').innerText(), /숨김 3 장/);
       await page.locator('#stage [data-follow-media-restore="0"]').click();
       await page.waitForFunction(() => document.querySelectorAll('#stage [data-follow-media-restore]').length === 2);
       assert.equal(await page.locator('#stage [data-follow-detail-poster]').getAttribute('src'),
@@ -456,7 +456,7 @@ describe('关注详情岛', () => {
         assert.ok(folded.lines >= 7.5 && folded.lines <= 8.5, `收起的摘要不是八行：${JSON.stringify(folded)}`);
         assert.ok(folded.inside && folded.scroll <= folded.width, `侧栏被撑宽：${JSON.stringify(folded)}`);
         const toggle = page.locator('#stage [data-follow-summary-toggle]');
-        assert.equal((await toggle.innerText()).trim(), '展开');
+        assert.equal((await toggle.innerText()).trim(), '펼치기');
         await toggle.click();
         const open = await measure();
         assert.ok(open.lines > 20, `展开后摘要没有全部露出：${JSON.stringify(open)}`);

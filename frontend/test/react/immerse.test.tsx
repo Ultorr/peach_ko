@@ -300,7 +300,7 @@ describe('片单与起播', () => {
     serve({ draws: [[1, 2, 3].map((id) => row(id))] });
     host.displayName.mockImplementation(() => '');
     await open(1);
-    expect(q('[data-immerse-title]')!.textContent).toBe('未命名视频');
+    expect(q('[data-immerse-title]')!.textContent).toBe('이름 없는 영상');
   });
 
   it('深链的那一条不在这一批里：取它的详情插到最前，地址栏落回同一条', async () => {
@@ -352,7 +352,7 @@ describe('片单与起播', () => {
     serve({ draws: [[row(1, { cost: 'metered' })]] });
     await open();
     expect(api.isOpen()).toBe(false);
-    expect(host.warn).toHaveBeenCalledWith('当前筛选下没有可直接播放的内容');
+    expect(host.warn).toHaveBeenCalledWith('현재 필터에 바로 재생할 수 있는 콘텐츠가 없습니다');
     expect(player.mounted).toEqual([]);
   });
 
@@ -363,7 +363,7 @@ describe('片单与起播', () => {
     await act(async () => { opening = api.open(null) });
     await until(() => !!q('[data-immerse-loader]') && !q('[data-immerse-loader]')!.hidden);
     expect(root().hasAttribute('data-idle')).toBe(true);
-    expect(q('[data-immerse-loader]')!.textContent).toContain('加载中…');
+    expect(q('[data-immerse-loader]')!.textContent).toContain('불러오는 중…');
     expect(document.body.hasAttribute('data-immerse-open')).toBe(true);
     await hold.release();
     await act(async () => { await opening });
@@ -422,32 +422,32 @@ describe('动作键', () => {
     const fetcher = serve({ draws: [[row(1), row(2)]] });
     queryClient.setQueryData(catalogKey('q=', 0), { pages: [grid()], pageParams: [0] });
     await open();
-    expect(action('标为看过').getAttribute('aria-pressed')).toBe('false');
-    expect(action('记一次高潮').hasAttribute('aria-pressed')).toBe(false);
-    await click(action('标为看过'));
-    await until(() => action('标为看过').getAttribute('aria-pressed') === 'true');
+    expect(action('본 항목으로 표시').getAttribute('aria-pressed')).toBe('false');
+    expect(action('오르가슴 1회 기록').hasAttribute('aria-pressed')).toBe(false);
+    await click(action('본 항목으로 표시'));
+    await until(() => action('본 항목으로 표시').getAttribute('aria-pressed') === 'true');
     expect(posts(fetcher).filter(([url]) => url === '/api/feedback')).toEqual([['/api/feedback', { id: 1, kind: 'seen' }]]);
     expect(queryClient.getQueryData<DetailItem>(itemKey(1))!.feedback).toBe('seen');
     expect(card()).toMatchObject({ feedback: 'seen' });
-    expect(action('标为看过').closest('[data-immerse-action]')!.textContent).toBe('已看');
-    expect(host.toast).toHaveBeenCalledWith('已标记看过', expect.objectContaining({ undo: expect.any(Function) }));
+    expect(action('본 항목으로 표시').closest('[data-immerse-action]')!.textContent).toBe('봄');
+    expect(host.toast).toHaveBeenCalledWith('본 항목으로 표시했습니다', expect.objectContaining({ undo: expect.any(Function) }));
   });
 
   it('高潮计数随回执换，目录卡同一个数', async () => {
     serve({ draws: [[row(1), row(2)]] });
     queryClient.setQueryData(catalogKey('q=', 0), { pages: [grid()], pageParams: [0] });
     await open();
-    expect(action('记一次高潮').closest('[data-immerse-action]')!.textContent).toBe('高潮 2');
-    await click(action('记一次高潮'));
-    await until(() => action('记一次高潮').closest('[data-immerse-action]')!.textContent === '高潮 3');
+    expect(action('오르가슴 1회 기록').closest('[data-immerse-action]')!.textContent).toBe('오르가슴 2');
+    await click(action('오르가슴 1회 기록'));
+    await until(() => action('오르가슴 1회 기록').closest('[data-immerse-action]')!.textContent === '오르가슴 3');
     expect(card()).toMatchObject({ o_count: 3 });
-    expect(host.toast).toHaveBeenCalledWith('已记录一次高潮', expect.anything());
+    expect(host.toast).toHaveBeenCalledWith('오르가슴 1회를 기록했습니다', expect.anything());
   });
 
   it('撤销高潮只发一次 o-undo，不去改看过与不喜欢那一档', async () => {
     const fetcher = serve({ draws: [[row(1), row(2)]], details: { 1: { feedback: 'seen' } } });
     await open();
-    await click(action('记一次高潮'));
+    await click(action('오르가슴 1회 기록'));
     await until(() => host.toast.mock.calls.length === 1);
     const { undo } = host.toast.mock.calls[0]![1] as { undo: () => Promise<void> };
     await act(async () => { await undo() });
@@ -458,7 +458,7 @@ describe('动作键', () => {
   it('撤销看过：先撤掉这一次，再写回原来那一档', async () => {
     const fetcher = serve({ draws: [[row(1), row(2)]], details: { 1: { feedback: 'dislike' } } });
     await open();
-    await click(action('标为看过'));
+    await click(action('본 항목으로 표시'));
     await until(() => host.toast.mock.calls.length === 1);
     const { undo } = host.toast.mock.calls[0]![1] as { undo: () => Promise<void> };
     await act(async () => { await undo() });
@@ -469,19 +469,19 @@ describe('动作键', () => {
   it('不喜欢落地之后停一下换下一条', async () => {
     serve({ draws: [[1, 2, 3, 4, 5, 6].map((id) => row(id))] });
     await open();
-    await click(action('标为不喜欢'));
+    await click(action('싫어요로 표시'));
     await shown(2);
-    expect(host.toast).toHaveBeenCalledWith('已标记不合口味', expect.anything());
+    expect(host.toast).toHaveBeenCalledWith('취향에 맞지 않음으로 표시했습니다', expect.anything());
   });
 
   it('写失败交给壳报错，按键不卡在忙态', async () => {
     serve({ draws: [[row(1), row(2)]] });
     await open();
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({ error: '写不进去' }) })));
-    await click(action('标为看过'));
+    await click(action('본 항목으로 표시'));
     await until(() => host.failure.mock.calls.length === 1);
-    expect(host.failure.mock.calls[0]![0]).toBe('更新反馈');
-    expect(action('标为看过').hasAttribute('aria-busy')).toBe(false);
+    expect(host.failure.mock.calls[0]![0]).toBe('피드백 업데이트');
+    expect(action('본 항목으로 표시').hasAttribute('aria-busy')).toBe(false);
   });
 });
 
@@ -490,7 +490,7 @@ describe('作者与标题', () => {
     serve({ draws: [[row(1), row(2)]], details: { 1: { performers: ['甲', '乙', '丙', '丁'] } } });
     await open();
     const author = q<HTMLAnchorElement>('[data-immerse-author]>a')!;
-    expect(author.textContent).toBe('甲、乙、丙 等 4 人');
+    expect(author.textContent).toBe('甲、乙、丙 등 4 명');
     expect(q('[data-immerse-avatar] .ini')!.textContent).toBe('甲');
     expect(q('[data-immerse-avatar] img')!.getAttribute('src')).toBe('/entity-image?kind=performer&id=91');
     await click(author);
@@ -502,7 +502,7 @@ describe('作者与标题', () => {
     serve({ draws: [[row(1), row(2)]], details: { 1: { performers: [], creator: '', entity_refs: {} } } });
     await open();
     const author = q<HTMLAnchorElement>('[data-immerse-author]>a')!;
-    expect(author.textContent).toBe('未归属');
+    expect(author.textContent).toBe('소속 없음');
     await click(author);
     expect(host.closed).toHaveBeenCalledTimes(1);
     expect(host.openEntity).not.toHaveBeenCalled();
@@ -511,7 +511,7 @@ describe('作者与标题', () => {
 
   it('没有演员就念创作者，再没有就是未归属', () => {
     expect(ownerOf({ performers: [], creator: '某人', entity_refs: {} })).toEqual({ who: '某人', kind: 'creator', name: '某人', ref: null });
-    expect(ownerOf({ performers: [], creator: '', entity_refs: {} })).toEqual({ who: '未归属', kind: '', name: '未归属', ref: null });
+    expect(ownerOf({ performers: [], creator: '', entity_refs: {} })).toEqual({ who: '소속 없음', kind: '', name: '소속 없음', ref: null });
   });
 
   it('点标题先关掉再进详情页', async () => {
@@ -716,7 +716,7 @@ describe('常驻面', () => {
     expect(root().hidden, '同步段里外框已经显出来').toBe(false);
     expect(root().hasAttribute('data-idle')).toBe(true);
     expect(q('[data-immerse-loader]')!.hidden).toBe(false);
-    expect(q('[data-immerse-loader]')!.textContent).toContain('加载内容…');
+    expect(q('[data-immerse-loader]')!.textContent).toContain('콘텐츠 불러오는 중…');
     expect(document.body.hasAttribute('data-immerse-open')).toBe(true);
     await opening;
     expect(root().hasAttribute('data-idle'), '返回时已经画完，不等下一次渲染').toBe(false);
@@ -769,6 +769,6 @@ describe('常驻面', () => {
     expect(reported, '确定性抛错只报那一次').toHaveBeenCalledTimes(1);
     /* 批量条放在最后画：它的进场动画跑在 motion 的帧循环上，画完就收尾，卸树时不留进行中的动画。 */
     await act(async () => { dock.render({ count: 2, context: 'catalog', junkDismissed: false }) });
-    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('已选 2 项');
+    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('선택됨 2 개');
   });
 });

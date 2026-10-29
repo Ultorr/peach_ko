@@ -20,9 +20,9 @@ describe('配置表单与行间距', () => {
             update_job: { state: 'idle', progress: 0 } } });
         });
         await page.reload();
-        const region = page.getByRole('region', { name: '检查更新', exact: true });
-        await region.getByText('应用更新包 · 12.0 MB', { exact: true }).waitFor();
-        assert.ok((await region.innerText()).includes('工具缺失、损坏或版本变化时会另行下载'));
+        const region = page.getByRole('region', { name: '업데이트 확인', exact: true });
+        await region.getByText('앱 업데이트 패키지 · 12.0 MB', { exact: true }).waitFor();
+        assert.ok((await region.innerText()).includes('도구가 없거나 손상되었거나 버전이 바뀌면 필요한 도구 패키지를 별도로 다운로드합니다.'));
         assert.equal(await region.getByRole('link', { name: '完整安装包', exact: true }).count(), 0);
         await settle(page);
         assert.ok((await layout(page)).scrollWidth <= viewport.width + 1);
@@ -45,7 +45,7 @@ describe('配置表单与行间距', () => {
           ] } });
         });
         await page.reload();
-        const form = page.getByRole('form', { name: '媒体文件夹', exact: true });
+        const form = page.getByRole('form', { name: '미디어 폴더', exact: true });
         const protectedFolder = form.locator('[data-media-read-policy="0"] [aria-haspopup="listbox"]');
         await protectedFolder.waitFor();
         await page.waitForFunction(() => {
@@ -59,12 +59,12 @@ describe('配置表单与行间距', () => {
         }));
         assert.deepEqual(marks, Array.from({ length: 8 }, () => ({ inline: true, width: 16, height: 16 })));
         assert.ok(!(await form.innerText()).includes('（只读）'));
-        assert.ok((await protectedFolder.textContent())?.includes('代理流量保护'));
-        assert.ok((await form.locator('[data-media-read-policy="1"]').textContent())?.includes('正常读取'));
+        assert.ok((await protectedFolder.textContent())?.includes('프록시 트래픽 보호'));
+        assert.ok((await form.locator('[data-media-read-policy="1"]').textContent())?.includes('일반 읽기'));
         await protectedFolder.click();
-        await page.getByRole('option', { name: '正常读取', exact: true }).click();
+        await page.getByRole('option', { name: '일반 읽기', exact: true }).click();
         await settle(page);
-        assert.ok((await protectedFolder.textContent())?.includes('正常读取'));
+        assert.ok((await protectedFolder.textContent())?.includes('일반 읽기'));
         assert.deepEqual((await layout(page)).offenders, []);
         await form.screenshot({ path: `../build/cloud-source-icons-${viewport.name}.png` });
         assert.deepEqual(opened.problems, []);
@@ -81,11 +81,11 @@ describe('配置表单与行间距', () => {
             pikpak_browser: { available: true, state: 'idle', message: '' } } });
         });
         await page.reload();
-        const form = page.getByRole('form', { name: 'PikPak 账号', exact: true });
-        await form.getByLabel('账号', { exact: true }).waitFor();
+        const form = page.getByRole('form', { name: 'PikPak 계정', exact: true });
+        await form.getByLabel('계정', { exact: true }).waitFor();
         assert.equal(await form.locator('details').count(), 0);
-        const password = await form.getByRole('button', { name: '登录', exact: true }).boundingBox();
-        const browserLogin = await form.getByRole('button', { name: '用浏览器登录', exact: true }).boundingBox();
+        const password = await form.getByRole('button', { name: '로그인', exact: true }).boundingBox();
+        const browserLogin = await form.getByRole('button', { name: '브라우저로 로그인', exact: true }).boundingBox();
         assert.ok(password && browserLogin && Math.abs(password.y - browserLogin.y) <= 1);
         assert.ok((await layout(page)).scrollWidth <= viewport.width + 1);
         await form.screenshot({ path: `../build/pikpak-form-${viewport.name}.png` });
@@ -101,12 +101,12 @@ describe('配置表单与行间距', () => {
           await route.fulfill({ json: { ...data, uninstall: { ...data.uninstall, available: false } } });
         });
         await page.reload();
-        const region = page.getByRole('region', { name: '卸载 Peach', exact: true });
-        await region.getByText('完全卸载', { exact: true }).waitFor();
+        const region = page.getByRole('region', { name: 'Peach 제거', exact: true });
+        await region.getByText('완전히 제거', { exact: true }).waitFor();
         await settle(page);
         const geometry = await region.evaluate(node => {
           const card = node.lastElementChild!.getBoundingClientRect();
-          const label = [...node.querySelectorAll('p')].find(item => item.textContent === '完全卸载')!.getBoundingClientRect();
+          const label = [...node.querySelectorAll('p')].find(item => item.textContent === '완전히 제거')!.getBoundingClientRect();
           return { top: label.top - card.top, left: label.left - card.left };
         });
         assert.ok(geometry.top <= 12 && geometry.top >= 9, JSON.stringify(geometry));

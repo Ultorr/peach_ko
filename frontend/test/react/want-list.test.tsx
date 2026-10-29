@@ -67,13 +67,13 @@ it('按待找、未发售、暂时放弃、已入库分段，段名带条数；�
   const { host } = await open();
   const sections = [...host.querySelectorAll<HTMLElement>('section[data-want-phase]')];
   expect(sections.map((one) => [one.dataset.wantPhase, one.querySelector('h3')?.textContent]))
-    .toEqual([['searching', '待找2'], ['unreleased', '未发售1'], ['given_up', '暂时放弃1'], ['acquired', '已入库1']]);
+    .toEqual([['searching', '검색 대기2'], ['unreleased', '출시 전1'], ['given_up', '잠시 포기1'], ['acquired', '라이브러리에 추가됨1']]);
   const note = (id: number) => host.querySelector(`[data-want-id="${id}"] [data-want-note]`)?.textContent;
   expect([note(2), note(5), note(4), note(3), note(1)]).toEqual([
-    undefined, undefined, '2026-12-01 发售', undefined, '入库于 2026-09-30',
+    undefined, undefined, '2026-12-01 출시', undefined, '등록일: 2026-09-30',
   ]);
-  expect(buttonNamed('重新查找', host.querySelector('[data-want-id="3"]')!)).not.toBeNull();
-  expect(buttonNamed('重新查找', host.querySelector('[data-want-id="2"]')!)).toBeNull();
+  expect(buttonNamed('다시 찾기', host.querySelector('[data-want-id="3"]')!)).not.toBeNull();
+  expect(buttonNamed('다시 찾기', host.querySelector('[data-want-id="2"]')!)).toBeNull();
 });
 
 it('待找与暂时放弃两段每行有查找资源，原地打开带番号与标题的云下载弹层；未发售与已入库没有', async () => {
@@ -83,7 +83,7 @@ it('待找与暂时放弃两段每行有查找资源，原地打开带番号与�
     want(6, { code: null, origin: 'follow', title: '关注里的一条', follow_item_id: 9 }),
   ]));
   const { host } = await open();
-  const key = (id: number) => buttonNamed('查找资源', host.querySelector(`[data-want-id="${id}"]`)!);
+  const key = (id: number) => buttonNamed('리소스 찾기', host.querySelector(`[data-want-id="${id}"]`)!);
   expect([2, 3, 4, 1, 6].map((id) => !!key(id))).toEqual([true, true, false, false, true]);
   expect(key(2)!.className).toContain('bg-background-primary-default');
   await click(key(2));
@@ -94,7 +94,7 @@ it('待找与暂时放弃两段每行有查找资源，原地打开带番号与�
 it('一条都没有就是空态，不画空的分段', async () => {
   serve(listed([]));
   const { host } = await open();
-  expect(host.textContent).toContain('还没有想要的作品');
+  expect(host.textContent).toContain('위시리스트에 항목이 아직 없습니다');
   expect(host.querySelector('section[data-want-phase]')).toBeNull();
 });
 
@@ -104,7 +104,7 @@ it('待找按已有磁链状态切换，切换不发查询并重置分页', asyn
     want(index + 1, { has_magnets: index < 2 }))));
   const { host } = await open();
   const calls = fetcher.mock.calls.length;
-  await click(buttonNamed('下一页', host));
+  await click(buttonNamed('다음 페이지', host));
   await click(host.querySelector('input[value="available"]'));
   await settle();
   expect([...host.querySelectorAll('[data-want-id]')].map(node => node.getAttribute('data-want-id'))).toEqual(['1', '2']);
@@ -118,9 +118,9 @@ it('待找按已有磁链状态切换，切换不发查询并重置分页', asyn
 it('添加键是蓝色主按钮：输入框空着时是主按钮的禁用形态，填了番号就能点', async () => {
   serve(listed([]));
   const { host } = await open();
-  const addKey = () => buttonNamed('添加', host)!;
+  const addKey = () => buttonNamed('추가', host)!;
   expect([addKey().classList.contains('bg-button-primary'), addKey().disabled]).toEqual([true, true]);
-  await type(host.querySelector<HTMLInputElement>('input[aria-label="番号"]'), 'SSIS-950');
+  await type(host.querySelector<HTMLInputElement>('input[aria-label="품번"]'), 'SSIS-950');
   await settle();
   expect([addKey().classList.contains('bg-button-primary'), addKey().disabled]).toEqual([true, false]);
 });
@@ -128,7 +128,7 @@ it('添加键是蓝色主按钮：输入框空着时是主按钮的禁用形态�
 it('按番号添加：回车就发，回执报番号，输入框清空、清单重取', async () => {
   const fetcher = serve(listed([]), listed([want(99, { code: 'SSIS-950' })]));
   const { host, toast } = await open();
-  const input = host.querySelector<HTMLInputElement>('input[aria-label="番号"]')!;
+  const input = host.querySelector<HTMLInputElement>('input[aria-label="품번"]')!;
   await type(input, ' ssis-950 ');
   await settle();
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
@@ -137,7 +137,7 @@ it('按番号添加：回车就发，回执报番号，输入框清空、清单�
     expect(host.querySelector('[data-want-id="99"]')).not.toBeNull();
   });
   expect(posts(fetcher)).toEqual([['/api/wants', { action: 'add', code: 'ssis-950' }]]);
-  expect(toast).toHaveBeenCalledWith('已加入想要：SSIS-950');
+  expect(toast).toHaveBeenCalledWith('위시리스트에 추가했습니다:SSIS-950');
   expect(input.value).toBe('');
   expect(reads(fetcher)).toHaveLength(2);
 });
@@ -146,23 +146,23 @@ it('移除与重新查找按这一条的 id 发', async () => {
   const fetcher = serve(listed([want(3, { phase: 'given_up', search_count: 3 })]));
   const { host, toast } = await open();
   const row = () => host.querySelector('[data-want-id="3"]')!;
-  await click(buttonNamed('重新查找', row()));
+  await click(buttonNamed('다시 찾기', row()));
   await settle();
-  await click(buttonNamed('移除', row()));
+  await click(buttonNamed('제거', row()));
   await settle();
   expect(posts(fetcher)).toEqual([
     ['/api/wants', { action: 'reset', ids: [3] }], ['/api/wants', { action: 'remove', ids: [3] }],
   ]);
-  expect(toast.mock.calls.map(([message]) => message)).toEqual(['ABC-3 回到待找', '已移除：ABC-3']);
+  expect(toast.mock.calls.map(([message]) => message)).toEqual(['ABC-3 항목을 검색 대기로 되돌렸습니다', '제거했습니다:ABC-3']);
 });
 
 it('只读的机器：输入框、添加与每行的键都禁用', async () => {
   serve(listed([want(2)]));
   const { host } = await open(true);
-  expect(host.querySelector<HTMLInputElement>('input[aria-label="番号"]')!.disabled).toBe(true);
-  expect(buttonNamed('添加', host)!.disabled).toBe(true);
-  expect(buttonNamed('移除', host)!.disabled).toBe(true);
-  expect(buttonNamed('查找资源', host)!.disabled).toBe(false);
+  expect(host.querySelector<HTMLInputElement>('input[aria-label="품번"]')!.disabled).toBe(true);
+  expect(buttonNamed('추가', host)!.disabled).toBe(true);
+  expect(buttonNamed('제거', host)!.disabled).toBe(true);
+  expect(buttonNamed('리소스 찾기', host)!.disabled).toBe(false);
 });
 
 it(`一段多于 ${WANT_PAGE_SIZE} 条时分页，页码各段各记各的；报错只露一行`, async () => {
@@ -172,11 +172,11 @@ it(`一段多于 ${WANT_PAGE_SIZE} 条时分页，页码各段各记各的；报
   serve(listed(many));
   const { host } = await open();
   const unreleased = host.querySelector('[data-want-phase="unreleased"]')!;
-  expect(unreleased.querySelector('h3')?.textContent).toBe('未发售42');
+  expect(unreleased.querySelector('h3')?.textContent).toBe('출시 전42');
   expect(unreleased.querySelectorAll('li[data-want-id]')).toHaveLength(WANT_PAGE_SIZE);
-  expect(unreleased.querySelector('[data-want-pager]')?.textContent).toContain('1–20 / 42 条');
-  expect(unreleased.querySelector('[data-error-line]')?.textContent).toBe('资料未取得：第一行');
-  await click(unreleased.querySelector('button[aria-label="第 3 页"]'));
+  expect(unreleased.querySelector('[data-want-pager]')?.textContent).toContain('1–20 / 42 개');
+  expect(unreleased.querySelector('[data-error-line]')?.textContent).toBe('정보를 가져오지 못했습니다:第一行');
+  await click(unreleased.querySelector('button[aria-label="제 3 페이지"]'));
   expect([...unreleased.querySelectorAll<HTMLElement>('li[data-want-id]')].map((row) => row.dataset.wantId)).toEqual(['41', '42']);
   const acquired = host.querySelector('[data-want-phase="acquired"]')!;
   expect(acquired.querySelectorAll('li[data-want-id]')).toHaveLength(3);

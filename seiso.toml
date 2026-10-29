@@ -22,6 +22,14 @@ path = "**/CHANGELOG.md"
 kind = "changelog"
 
 [[kinds]]
+path = "KOREAN_CHANGES.md"
+kind = "changelog"
+
+[[kinds]]
+path = "LOCALIZATION_LICENSE.md"
+kind = "reference"
+
+[[kinds]]
 path = "docs/adr/**"
 kind = "adr"
 

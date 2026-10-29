@@ -3,7 +3,7 @@ import { after, before, describe, it } from 'node:test';
 import type { Browser, Page } from 'playwright-core';
 import { configurationBody, expectBody, launch, layout, settle, visit, VIEWPORTS } from './harness.ts';
 
-const measure = (page: Page, names = ['媒体文件夹']) => page.locator('.ui-configpage').evaluate((root, names) => {
+const measure = (page: Page, names = ['미디어 폴더']) => page.locator('.ui-configpage').evaluate((root, names) => {
   const rect = (el: Element) => {
     const r = el.getBoundingClientRect();
     return { x: r.x, y: r.y, width: r.width, height: r.height };
@@ -51,22 +51,22 @@ describe('配置页等待态', () => {
         const { page } = opened;
         await expectBody(page, '/settings/library', configurationBody(page));
         await settle(page);
-        const nav = page.getByRole('tablist', { name: '配置分区' });
+        const nav = page.getByRole('tablist', { name: '설정 섹션' });
         assert.equal(await nav.getAttribute('aria-orientation'), viewport.mobile ? 'horizontal' : 'vertical');
         const geometry = await measure(page);
         assert.ok(viewport.mobile
           ? geometry.nav.y + geometry.nav.height <= geometry.sections[0].label.y
           : geometry.nav.x + geometry.nav.width <= geometry.sections[0].label.x);
-        await nav.getByRole('tab', { name: '来源与订阅', exact: true }).click();
+        await nav.getByRole('tab', { name: '소스 및 구독', exact: true }).click();
         // 切到别的页签后这一栏所在的面板隐藏，值仍要留在原处。
-        const input = page.getByRole('textbox', { name: 'JavDB 地址', exact: true, includeHidden: true });
+        const input = page.getByRole('textbox', { name: 'JavDB 주소', exact: true, includeHidden: true });
         await input.fill('example.invalid');
-        const general = nav.getByRole('tab', { name: '媒体库与入库', exact: true });
+        const general = nav.getByRole('tab', { name: '미디어 라이브러리 및 가져오기', exact: true });
         await general.click();
         await page.keyboard.press('ArrowRight');
-        assert.equal(await nav.getByRole('tab', { name: '来源与订阅', exact: true }).getAttribute('aria-selected'), 'true');
+        assert.equal(await nav.getByRole('tab', { name: '소스 및 구독', exact: true }).getAttribute('aria-selected'), 'true');
         await page.keyboard.press('End');
-        assert.equal(await nav.getByRole('tab', { name: '系统诊断' }).getAttribute('aria-selected'), 'true');
+        assert.equal(await nav.getByRole('tab', { name: '시스템 진단' }).getAttribute('aria-selected'), 'true');
         await page.keyboard.press('Home');
         assert.equal(await input.inputValue(), 'example.invalid');
         const bounds = await layout(page);
@@ -126,7 +126,7 @@ describe('配置页等待态', () => {
         await nav.locator('[aria-selected=true]').waitFor();
         await settle(page);
         if (path === '/review') {
-          assert.equal(await nav.getByRole('heading', { name: '复核分类' }).count(), 1);
+          assert.equal(await nav.getByRole('heading', { name: '검토 분류' }).count(), 1);
           assert.equal(await nav.getByRole('tablist').getAttribute('aria-orientation'), 'vertical');
         }
         for (const dark of [false, true]) {

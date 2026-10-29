@@ -2896,7 +2896,7 @@ class LibraryPreviewCompletionTests(unittest.TestCase):
         self.assertIn('Invalid data', detail['stderr'])
         self.assertNotIn(str(self.media), detail['stderr'])
         self.assertNotIn('private-token', detail['stderr'])
-        self.assertIn('导出诊断报告', issue['message'])
+        self.assertIn("导出诊断报告", issue['message'])
         with patch.object(support_bundle.error_reporting, 'log_directories', return_value=[]):
             payload = support_bundle.bundle_bytes(config=self.config)
         with zipfile.ZipFile(io.BytesIO(payload)) as archive:

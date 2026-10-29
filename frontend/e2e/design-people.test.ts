@@ -61,7 +61,7 @@ describe('设计决定：人物与厂牌资料页', () => {
             edges: [Math.round(menuBox.left), Math.round(innerWidth - menuBox.right)],
           };
         });
-        assert.deepEqual(shown.tabs, ['全部', '女优2', '厂牌1', '视频12'], '页签不是「全部」加各类命中数');
+        assert.deepEqual(shown.tabs, ['전체', '女优2', '厂牌1', '视频12'], '页签不是「全部」加各类命中数');
         assert.equal(shown.tracks, split ? 2 : 0, split ? '宽屏下拉没有分两栏' : '窄屏下拉不该分栏');
         assert.equal(shown.divider, split ? '""' : 'none', split ? '宽屏两栏之间没有分隔线' : '窄屏一栏不该有分隔线');
         if (split) {
@@ -72,7 +72,7 @@ describe('设计决定：人物与厂牌资料页', () => {
         assert.equal(shown.videoGrid, split ? 'grid' : 'block', split ? '宽屏视频没排成封面格' : '窄屏视频该一行一部');
         assert.equal(shown.peeks, split ? 'flex' : 'none', split ? '宽屏人名一行没摆近作' : '窄屏人名一行不摆近作');
         assert.equal(shown.peekCount, 4);
-        assert.equal(shown.sub, '128 个视频 · Capsule Agency');
+        assert.equal(shown.sub, '128 개 영상 · Capsule Agency');
         assert.equal(shown.face, '/entity-image?kind=performer&id=90301&thumb=1');
         for (const [name, note] of [['别名', shown.matched], ['作品数', shown.count]] as const) {
           assert.ok(note.smaller && note.quieter, `${name}没有退成注脚：${JSON.stringify(note)}`);
@@ -166,14 +166,14 @@ describe('设计决定：人物与厂牌资料页', () => {
         const style = getComputedStyle(node);
         return `${style.height} ${style.borderRadius} ${style.fontSize} ${style.fontWeight}`;
       }), '36px 10px 14px 500', '载入更多是 36px 高、10px 圆角的 secondary 按钮');
-      await page.locator('[data-entity-layout][aria-label="图片布局"] label:has(input[value="fixed"])').click();
+      await page.locator('[data-entity-layout][aria-label="이미지 레이아웃"] label:has(input[value="fixed"])').click();
       await page.waitForFunction(() => document.querySelector('[data-local-wall]')?.getAttribute('data-layout') === 'fixed');
       assert.deepEqual(await photoWallFaces(page), { display: 'grid', columns: 4, gap: '10px', square: true });
       // 顶栏那枚大小键在照片档里换的是照片的大小档，一次请求都不发。
       await page.locator('#density').click();
       await page.waitForFunction(() => document.querySelector('[data-local-wall]')?.getAttribute('data-size') === 'big');
       assert.deepEqual(await photoWallFaces(page), { display: 'grid', columns: 2, gap: '10px', square: true });
-      assert.equal(await page.locator('#density').getAttribute('title'), '当前：大图');
+      assert.equal(await page.locator('#density').getAttribute('title'), '현재: 큰 이미지');
       assert.deepEqual(opened.problems, []);
     } finally {
       await opened.close();
@@ -182,7 +182,7 @@ describe('设计决定：人物与厂牌资料页', () => {
     try {
       const { page } = phone;
       assert.deepEqual(await photoWallFaces(page), { display: 'block', columns: 2, gap: '10px', square: true });
-      await page.locator('[data-entity-layout][aria-label="图片布局"] label:has(input[value="fixed"])').click();
+      await page.locator('[data-entity-layout][aria-label="이미지 레이아웃"] label:has(input[value="fixed"])').click();
       await page.waitForFunction(() => document.querySelector('[data-local-wall]')?.getAttribute('data-layout') === 'fixed');
       assert.deepEqual(await photoWallFaces(page), { display: 'grid', columns: 2, gap: '8px', square: true });
       assert.deepEqual(phone.problems, []);
@@ -251,7 +251,7 @@ describe('设计决定：人物与厂牌资料页', () => {
       });
       assert.equal(shown.topLayer, true, '标签浮层没进顶层，会被资料卡的 overflow:hidden 裁掉');
       assert.ok(shown.inView, '标签浮层越出了视口');
-      assert.equal(shown.title, '9 个标签');
+      assert.equal(shown.title, '9 개 태그');
       assert.deepEqual(shown.tags, PROFILED.profile.tags);
       await page.mouse.move(1, 1);
       await pop.waitFor({ state: 'hidden', timeout: 5_000 });
@@ -659,7 +659,7 @@ describe('设计决定：人物与厂牌资料页', () => {
         mark: a.querySelector('[data-link-icon] img')?.getAttribute('src') ?? '',
         referrer: a.querySelector('[data-link-icon] img')?.getAttribute('referrerpolicy') ?? '',
       }));
-      assert.equal(site.text, '官方网站');
+      assert.equal(site.text, '공식 웹사이트');
       assert.ok(Math.abs(site.spacing - 0.02) < 0.001, `官网那一格的字距是 ${site.spacing}em`);
       assert.deepEqual([site.mark, site.referrer], ['/link-mark?id=90602', 'no-referrer'], '官网没带本机合成的站点圆标');
       assert.deepEqual(opened.problems, []);
@@ -998,12 +998,12 @@ describe('设计决定：人物与厂牌资料页', () => {
           })),
         } }));
         await page.reload({ waitUntil: 'load' });
-        await page.getByRole('tab', { name: 'JAV 订阅源', exact: true }).click();
-        const card = page.getByRole('region', { name: 'JAV 订阅列表', exact: true });
-        await card.getByText('1–20 / 25 个订阅源', { exact: true }).waitFor();
+        await page.getByRole('tab', { name: 'JAV 구독 소스', exact: true }).click();
+        const card = page.getByRole('region', { name: 'JAV 구독 목록', exact: true });
+        await card.getByText('1–20 / 25 개 구독 출처', { exact: true }).waitFor();
         assert.equal(await card.locator('[role="row"][data-key]').count(), 20);
-        await card.getByRole('button', { name: '下一页', exact: true }).click();
-        await card.getByText('21–25 / 25 个订阅源', { exact: true }).waitFor();
+        await card.getByRole('button', { name: '다음 페이지', exact: true }).click();
+        await card.getByText('21–25 / 25 개 구독 출처', { exact: true }).waitFor();
         assert.equal(await card.locator('[role="row"][data-key]').count(), 5);
         for (const theme of ['light', 'dark']) {
           await page.evaluate(value => {
@@ -1032,13 +1032,13 @@ describe('设计决定：人物与厂牌资料页', () => {
       const opened = await openFollowManage(browser, viewport);
       try {
         const page = opened.page;
-        const tabs = page.getByRole('tablist', { name: '关注管理区域' });
+        const tabs = page.getByRole('tablist', { name: '팔로우 관리 영역' });
         for (const theme of ['light', 'dark']) {
           await page.evaluate((value) => {
             document.documentElement.dataset.theme = value;
             document.documentElement.classList.toggle('dark', value === 'dark');
           }, theme);
-          await tabs.getByRole('tab', { name: 'JAV 订阅源', exact: true }).click();
+          await tabs.getByRole('tab', { name: 'JAV 구독 소스', exact: true }).click();
           const face = await tabs.evaluate((element) => {
             const selected = element.querySelector('[aria-selected=true]')!;
             return { track: getComputedStyle(element).backgroundColor,
@@ -1048,10 +1048,10 @@ describe('设计决定：人物与厂牌资料页', () => {
           assert.equal(face.track, 'rgba(0, 0, 0, 0)', 'Pills 容器应透明');
           assert.notEqual(face.selected, face.track, '当前分类应有独立底色');
           assert.equal(face.shadow, 'none', 'Pills 不使用浮起滑块');
-          await tabs.getByRole('tab', { name: 'JAV 订阅源', exact: true }).focus();
+          await tabs.getByRole('tab', { name: 'JAV 구독 소스', exact: true }).focus();
           await page.keyboard.press('Home');
           await page.keyboard.press('Enter');
-          assert.equal(await tabs.getByRole('tab', { name: '关注列表', exact: true }).getAttribute('aria-selected'), 'true');
+          assert.equal(await tabs.getByRole('tab', { name: '팔로우 목록', exact: true }).getAttribute('aria-selected'), 'true');
           const dimensions = await layout(page);
           assert.ok(dimensions.scrollWidth <= dimensions.viewportWidth + 1, JSON.stringify(dimensions));
         }
@@ -1062,9 +1062,9 @@ describe('设计决定：人物与厂牌资料页', () => {
             }] }],
           }),
         }));
-        await tabs.getByRole('tab', { name: '添加关注', exact: true }).click();
-        await page.getByRole('textbox', { name: '来源链接、名字或 id' }).fill('主题测试来源');
-        await page.getByRole('button', { name: '查找', exact: true }).click();
+        await tabs.getByRole('tab', { name: '팔로우 추가', exact: true }).click();
+        await page.getByRole('textbox', { name: '출처 링크, 이름 또는 ID' }).fill('主题测试来源');
+        await page.getByRole('button', { name: '찾기', exact: true }).click();
         const result = page.getByText('主题测试来源', { exact: true }).locator('..');
         await result.waitFor();
         for (const theme of ['light', 'dark']) {
@@ -1087,16 +1087,16 @@ describe('设计决定：人物与厂牌资料页', () => {
       const opened = await openFollowManage(browser, viewport);
       try {
         const page = opened.page;
-        await page.getByRole('button', { name: /^来源与订阅设置/ }).click();
-        await page.getByRole('tab', { name: '来源与订阅', exact: true, selected: true }).waitFor();
-        await page.getByRole('region', { name: '可配置凭据', exact: true }).waitFor();
+        await page.getByRole('button', { name: /^출처 및 구독 설정/ }).click();
+        await page.getByRole('tab', { name: '소스 및 구독', exact: true, selected: true }).waitFor();
+        await page.getByRole('region', { name: '인증 정보 설정 가능', exact: true }).waitFor();
         await settle(page);
         for (const theme of ['light', 'dark']) {
           await page.evaluate(value => {
             document.documentElement.dataset.theme = value;
             document.documentElement.classList.toggle('dark', value === 'dark');
           }, theme);
-          for (const name of ['可配置凭据', '不需要凭据', '暂不支持']) {
+          for (const name of ['인증 정보 설정 가능', '인증 정보 불필요', '현재 지원하지 않음']) {
             const group = page.getByRole('region', { name, exact: true });
             const rows = await group.evaluate(element => {
               const style = getComputedStyle(element.lastElementChild!);
@@ -1107,8 +1107,8 @@ describe('设计决定：人物与厂牌资料页', () => {
             assert.equal(rows.width, '1px');
             assert.notEqual(rows.border, rows.background);
           }
-          assert.match(await page.getByRole('region', { name: '不需要凭据', exact: true }).innerText(), /Kemono/);
-          assert.match(await page.getByRole('region', { name: '暂不支持', exact: true }).innerText(), /OnlyFans/);
+          assert.match(await page.getByRole('region', { name: '인증 정보 불필요', exact: true }).innerText(), /Kemono/);
+          assert.match(await page.getByRole('region', { name: '현재 지원하지 않음', exact: true }).innerText(), /OnlyFans/);
           const dimensions = await layout(page);
           assert.ok(dimensions.scrollWidth <= dimensions.viewportWidth + 1, JSON.stringify(dimensions));
         }

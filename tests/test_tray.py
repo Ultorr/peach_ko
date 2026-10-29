@@ -193,13 +193,13 @@ class ServiceStatusTests(unittest.TestCase):
     def test_all_healthy(self):
         self.assertEqual(
             self.manager({"http": (True, ""), "https": (True, "")}).status(),
-            "HTTP 正常 · HTTPS 正常",
+            "HTTP 정상 · HTTPS 정상",
         )
 
     def test_none_healthy(self):
         self.assertEqual(
             self.manager({"http": (False, "无响应"), "https": (False, "无响应")}).status(),
-            "HTTP 异常（无响应） · HTTPS 异常（无响应）",
+            "HTTP 오류(无响应) · HTTPS 오류(无响应)",
         )
 
     def test_mount_failure_names_the_source_without_restarting_the_healthy_service(self):
@@ -210,17 +210,17 @@ class ServiceStatusTests(unittest.TestCase):
         popen = Mock()
         manager = ServiceManager((spec,), popen=popen, health_get=lambda *a, **k: response)
         manager.start_missing()
-        self.assertEqual(manager.status(), "HTTPS 正常（CloudDrive · 115：没有权限读取）")
+        self.assertEqual(manager.status(), "HTTPS 정상(CloudDrive · 115：没有权限读取)")
         popen.assert_not_called()
 
     def test_partial_names_the_broken_one_with_reason(self):
         self.assertEqual(
             self.manager({"http": (True, ""), "https": (False, "状态码 503")}).status(),
-            "HTTP 正常 · HTTPS 异常（状态码 503）",
+            "HTTP 정상 · HTTPS 오류(状态码 503)",
         )
         self.assertEqual(
             self.manager({"http": (False, "状态码 503"), "https": (True, "")}).status(),
-            "HTTP 异常（状态码 503） · HTTPS 正常",
+            "HTTP 오류(状态码 503) · HTTPS 정상",
         )
 
     def test_health_check_never_goes_through_a_proxy(self):
@@ -289,7 +289,7 @@ class ServiceStatusTests(unittest.TestCase):
         )
         ok, message = manager.sync_ledger(Path("/venv/peach"))
         self.assertFalse(ok)
-        self.assertIn("不归本托盘管理", message)
+        self.assertIn("이 트레이에서 관리하지 않습니다", message)
         runner.assert_not_called()
 
     def test_an_unreachable_share_never_stops_the_services(self):
@@ -355,7 +355,7 @@ class ServiceStatusTests(unittest.TestCase):
         )
         ok, message = manager.sync_ledger(Path("/venv/peach"), take_ownership=True)
         self.assertFalse(ok)
-        self.assertIn("先挂上共享副本所在的盘", message)
+        self.assertIn("공유 사본이 있는 드라이브를 먼저 마운트하세요", message)
         runner.assert_not_called()
 
     def test_an_unmounted_share_is_mounted_once_and_then_synced(self):
@@ -453,7 +453,7 @@ class ReplicationSwitchTests(unittest.TestCase):
 
     def test_menu_items_are_assembled_when_replication_is_on(self):
         labels = [label for label, _ in self.items(True)]
-        self.assertEqual(labels, ["同步 Ledger", "接管 Ledger 写入"])
+        self.assertEqual(labels, ["기록 데이터베이스 동기화", "기록 데이터베이스 쓰기 권한 인계"])
 
     def test_sync_ledger_refuses_instead_of_probing_a_share(self):
         """菜单项没了，但托盘还有别的入口；这条路径会去探一个不存在的共享。"""
@@ -525,8 +525,8 @@ class SetupGateTests(unittest.TestCase):
         gate = SetupGate(manager, config, waiting=True, load=self._config)
         self.assertTrue(gate.waiting)
         self.assertEqual(gate.open_url(), "http://127.0.0.1:8900/")
-        self.assertEqual(gate.open_label(), "重新打开设置页")
-        self.assertIn("等待完成首次设置", gate.status_line())
+        self.assertEqual(gate.open_label(), "설정 페이지 다시 열기")
+        self.assertIn("초기 설정 완료 대기 중", gate.status_line())
         self.assertFalse(gate.poll(), "设置还没做完，轮询不动任何东西")
         self.assertEqual([spec.name for spec in manager.specs], ["setup"])
 
@@ -569,7 +569,7 @@ class SetupGateTests(unittest.TestCase):
         self.assertTrue(manager.specs, "切换之后必须有正常服务规格")
         self.assertEqual(manager.log_dir, self.data_root / "logs")
         self.assertEqual(manager.child_environment()["PEACH_DATA_ROOT"], str(self.data_root))
-        self.assertEqual(gate.open_label(), "打开 Peach")
+        self.assertEqual(gate.open_label(), "Peach 열기")
         self.assertEqual(gate.open_url(), "https://peach-writer.local/")
 
         scan = scan_popen.call_args
@@ -716,19 +716,19 @@ class SourceSyncTests(unittest.TestCase):
             for line in source.splitlines()
             if line.strip().startswith('("') and '",' in line
         ]
-        self.assertIn("同步开发进度", labels)
+        self.assertIn("개발 버전 동기화", labels)
         # 两个 Ledger 项由 `ledger_menu_items` 统一给出（复制关掉时为空），
         # 位置契约因此变成「同步开发进度 紧挨着那次调用之前」。
-        self.assertLess(source.index("同步开发进度"), source.index("ledger_menu_items"))
-        self.assertLess(source.index("ledger_menu_items"), source.index("重启服务"))
+        self.assertLess(source.index("개발 버전 동기화"), source.index("ledger_menu_items"))
+        self.assertLess(source.index("ledger_menu_items"), source.index("서비스 재시작"))
         self.assertIn("sync_source", source)
 
     def test_windows_tray_lists_source_sync_next_to_ledger(self):
         source = inspect.getsource(PeachTray.__init__)
-        self.assertIn('MenuItem("同步开发进度", self.sync_source,', source)
+        self.assertIn('MenuItem("개발 버전 동기화", self.sync_source,', source)
         self.assertIn('visible=lambda _: not standalone()', source)
-        self.assertLess(source.index("同步开发进度"), source.index("ledger_menu_items"))
-        self.assertLess(source.index("ledger_menu_items"), source.index("重启服务"))
+        self.assertLess(source.index("개발 버전 동기화"), source.index("ledger_menu_items"))
+        self.assertLess(source.index("ledger_menu_items"), source.index("서비스 재시작"))
 
     def test_windows_source_sync_tests_then_restarts_services(self):
         snapshot = VersionSnapshot("0.6.4", "master", "abc12345", False, True, "origin/master")
@@ -926,7 +926,7 @@ class LocalRebuildTests(unittest.TestCase):
             tray.sync_source(icon)
             self.drain(tray)
         self.assertEqual(updates.prepared, [])
-        self.assertIn("托盘无需重建", self.messages(icon))
+        self.assertIn("트레이를 다시 빌드할 필요가 없습니다", self.messages(icon))
 
     def test_a_tray_built_from_the_current_head_reports_that_it_matches(self):
         versions = FakeVersions(self.snapshot(behind=0))
@@ -938,7 +938,7 @@ class LocalRebuildTests(unittest.TestCase):
             tray.sync_source(icon)
             self.drain(tray)
         self.assertEqual(updates.prepared, [])
-        self.assertIn("托盘构建与检出一致", self.messages(icon))
+        self.assertIn("트레이 빌드와 체크아웃된 코드가 일치합니다", self.messages(icon))
 
     def test_a_source_checkout_has_nothing_to_rebuild(self):
         versions = FakeVersions(self.snapshot(behind=5))
@@ -950,7 +950,7 @@ class LocalRebuildTests(unittest.TestCase):
             tray.sync_source(icon)
             self.drain(tray)
         self.assertEqual(updates.prepared, [])
-        self.assertIn("当前不是打包托盘", self.messages(icon))
+        self.assertIn("현재 트레이는 패키지 버전이 아니며", self.messages(icon))
 
     def test_a_standalone_test_package_is_replaced_by_hand_not_rebuilt(self):
         versions = FakeVersions(self.snapshot(behind=5))
@@ -962,7 +962,7 @@ class LocalRebuildTests(unittest.TestCase):
             tray.sync_source(icon)
             self.drain(tray)
         self.assertEqual(updates.prepared, [])
-        self.assertIn("独立测试包", self.messages(icon))
+        self.assertIn("독립 테스트 패키지", self.messages(icon))
 
     def test_a_fast_forward_from_the_channel_still_uses_the_paths_it_pulled(self):
         """`updated` 那条路不变：远端真有新提交时，重建范围就是这次快进带来的改动。"""
@@ -1282,7 +1282,7 @@ class TrayCommandLineTests(unittest.TestCase):
         code, stdout, _ = self._run(["--help"])
         self.assertEqual(code, 0)
         self.assertIn("peach-tray", stdout)
-        self.assertIn("托盘", stdout)
+        self.assertIn("트레이", stdout)
         self._assert_nothing_touched()
 
     def test_unknown_argument_exits_two_and_leaves_the_state_directory_alone(self):
@@ -1522,7 +1522,7 @@ class TrayPreparationTests(unittest.TestCase):
         icon = self.press_restart(tray)
         self.assertEqual(self.spawned, [True])
         manager.restart.assert_not_called()
-        self.assertIn("整体重启托盘", icon.notify.call_args_list[0].args[0])
+        self.assertIn("트레이 전체를 다시 시작합니다", icon.notify.call_args_list[0].args[0])
 
     def test_a_refused_whole_tray_restart_falls_back_to_the_services(self):
         log = self.root / "logs" / "tray-restart.out.log"
@@ -1577,7 +1577,7 @@ class TrayPreparationTests(unittest.TestCase):
         specs = (ServiceSpec("http", "http://127.0.0.1/healthz", ("peach",), True),
                  ServiceSpec("https", "https://192.0.2.10/healthz", ("peach",), "ca.crt"))
         manager = ServiceManager(specs, health_get=get, log_dir=self.root)
-        self.assertEqual(manager.readiness_problems(), ["HTTPS 未就绪：账本结构与迁移不一致"])
+        self.assertEqual(manager.readiness_problems(), ["HTTPS 준비되지 않음: 기록 데이터베이스 구조와 마이그레이션 불일치"])
         self.assertEqual(asked, [("http://127.0.0.1/healthz?ready=1", True),
                                  ("https://192.0.2.10/healthz?ready=1", "ca.crt")])
 

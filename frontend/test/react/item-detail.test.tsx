@@ -90,6 +90,8 @@ describe('标签身份', () => {
     const { host } = await show(item(1, { tags: [{ k: 'OL制服' }, { k: '秘书OL' }] }),
       { helpers: helpers({ tagLabel }) });
     expect([...host.querySelectorAll('[data-detail-tag] [data-tag]')].map((node) => node.textContent))
+      .toEqual(['OL 유니폼', '비서·사무직']);
+    expect([...host.querySelectorAll('[data-detail-tag] [data-tag]')].map((node) => node.getAttribute('data-tag')))
       .toEqual(['OL制服', '秘书OL']);
   });
 
@@ -173,8 +175,8 @@ describe('停在队列哪一条', () => {
     expect(host.querySelector('.partlabel')?.textContent).toBe('特典 1');
     expect(host.querySelector('[data-queue-item="1"]')?.textContent).toContain('本篇');
     expect(host.querySelector('[data-queue-item="2"]')?.textContent).toContain('特典 1');
-    expect(host.querySelector('[data-queue-item="3"]')?.textContent).toContain('第 0 卷');
-    expect(host.textContent).not.toContain('第 特典');
+    expect(host.querySelector('[data-queue-item="3"]')?.textContent).toContain('제 0 편');
+    expect(host.textContent).not.toContain('제 特典');
   });
 
   it('字母分卷照番号后缀大写成「A 卷」', async () => {
@@ -184,24 +186,24 @@ describe('停在队列哪一条', () => {
       items: [row(1, { part_label: 'a' }), row(2, { part_label: 'B' })],
     }));
     const { host } = await show(item(1), { queue: ref });
-    expect(host.querySelector('[data-queue-item="1"]')?.textContent).toContain('A 卷');
-    expect(host.querySelector('[data-queue-item="2"]')?.textContent).toContain('B 卷');
-    expect(host.textContent).not.toContain('第 a 卷');
+    expect(host.querySelector('[data-queue-item="1"]')?.textContent).toContain('A 편');
+    expect(host.querySelector('[data-queue-item="2"]')?.textContent).toContain('B 편');
+    expect(host.textContent).not.toContain('제 a 편');
   });
 
   it('队列头：版次队列只写数量，其余带上标题', () => {
-    expect(queueCopy(queue('editions', [1, 2]))).toEqual({ title: '版本', summary: '2 个版本' });
+    expect(queueCopy(queue('editions', [1, 2]))).toEqual({ title: '버전', summary: '2 개 버전' });
     const versions = queue('editions', [1, 2, 3], {
       versionCount: 2,
       items: [row(1, { version_id: 1 }), row(2, { version_id: 2, part_label: '1' }),
         row(3, { version_id: 2, part_label: '2' })],
     });
-    expect(queueCopy(versions).summary).toBe('2 个版本');
+    expect(queueCopy(versions).summary).toBe('2 개 버전');
     expect(withPartLabel(item(3), versions).part_label).toBe('2');
-    expect(queueCopy(queue('parts', [1, 2, 3], { title: '分卷 · PCH-021' }))).toEqual({ title: '分卷', summary: '分卷 · PCH-021 · 3 卷' });
-    expect(queueCopy(queue('playlist', [1], { title: '周末片单' }))).toEqual({ title: '播放列表', summary: '周末片单 · 1 个视频' });
+    expect(queueCopy(queue('parts', [1, 2, 3], { title: '分卷 · PCH-021' }))).toEqual({ title: '분할 파일', summary: '分卷 · PCH-021 · 3 편' });
+    expect(queueCopy(queue('playlist', [1], { title: '周末片单' }))).toEqual({ title: '재생목록', summary: '周末片单 · 1 개 영상' });
     const many = Array.from({ length: 1284 }, (_, i) => i + 1);
-    expect(queueCopy(queue('parts', many, { title: '分卷' })).summary).toBe('分卷 · 1,284 卷');
+    expect(queueCopy(queue('parts', many, { title: '分卷' })).summary).toBe('分卷 · 1,284 편');
   });
 
   it('拖动之后的新顺序：挪到目标前面或后面', () => {
@@ -240,7 +242,7 @@ describe('身份与标签', () => {
 
   it('评分：第 n 颗送 n×20，再点当前那一颗送 0', () => {
     expect([nextRating(60, 3), nextRating(60, 4), nextRating(null, 1)]).toEqual([0, 80, 20]);
-    expect([ratingText(60), ratingText(0), ratingText(null)]).toEqual(['3 星', '未评分', '未评分']);
+    expect([ratingText(60), ratingText(0), ratingText(null)]).toEqual(['3 점', '별점 없음', '별점 없음']);
   });
 
   it('播放区挡在前面的说明：没挂载、在线资产反查不到、计费来源', () => {
@@ -340,7 +342,7 @@ describe('交给壳的', () => {
     const gone = host.querySelector<HTMLButtonElement>('[data-queue-item="3"]');
     expect(gone?.disabled).toBe(true);
     expect(gone?.hasAttribute('data-queue-vanished')).toBe(true);
-    expect(gone?.textContent).toContain('已消失 · 文件已不在盘上');
+    expect(gone?.textContent).toContain('파일 없음 · 디스크에 파일이 없습니다');
     expect(host.querySelector<HTMLButtonElement>('[data-queue-item="2"]')?.disabled).toBe(false);
     await click(gone);
     expect(done.openQueueItem).not.toHaveBeenCalled();
@@ -355,14 +357,14 @@ describe('写完之后', () => {
     const { host, actions: done } = await show(item(1));
     await click(host.querySelector('[data-rate="3"]'));
     await settle();
-    expect(host.querySelector('[data-rating-value]')?.textContent).toBe('未评分');
+    expect(host.querySelector('[data-rating-value]')?.textContent).toBe('별점 없음');
     expect(queryClient.getQueryData<DetailItem>(itemKey(1))?.rating).toBeNull();
     expect(queryClient.getQueryData<InfiniteData<GridPage>>(['catalog-grid', 'catalog', '', 0])?.pages[0]?.items[0]?.rating).toBeNull();
     const [message, options] = done.toast.mock.calls[0]!;
-    expect(message).toBe('已取消评分');
+    expect(message).toBe('별점을 취소했습니다');
     await options!.undo!();
     await settle();
-    expect(host.querySelector('[data-rating-value]')?.textContent).toBe('3 星');
+    expect(host.querySelector('[data-rating-value]')?.textContent).toBe('3 점');
     expect(posts(fetcher).map(([, body]) => body.value)).toEqual([0, 60]);
   });
 
@@ -372,7 +374,7 @@ describe('写完之后', () => {
     await click(host.querySelector('[data-kind="dislike"]'));
     await settle();
     expect(host.querySelector('[data-kind="dislike"]')?.getAttribute('aria-pressed')).toBe('true');
-    expect(done.toast.mock.calls[0]![0]).toBe('已标记不合口味');
+    expect(done.toast.mock.calls[0]![0]).toBe('취향에 맞지 않음으로 표시했습니다');
     await done.toast.mock.calls[0]![1]!.undo!();
     expect(posts(fetcher).map(([, body]) => body.kind)).toEqual(['dislike', 'dislike']);
     expect(done.trashChanged).toHaveBeenCalledWith(null, true);
@@ -384,7 +386,7 @@ describe('写完之后', () => {
     await click(host.querySelector('[data-kind="dispose"]'));
     await settle();
     expect(done.trashChanged).toHaveBeenCalledWith('trash', false);
-    expect(done.toast.mock.calls[0]![0]).toBe('已移入回收站');
+    expect(done.toast.mock.calls[0]![0]).toBe('휴지통으로 옮겼습니다');
   });
 
   it('删标签写进缓存；撤销加回来', async () => {
@@ -393,7 +395,7 @@ describe('写完之后', () => {
     await click(host.querySelector('[data-remove-tag="剧情"]'));
     await settle();
     expect(host.querySelector('[data-tag="剧情"]')).toBeNull();
-    expect(done.toast.mock.calls[0]![0]).toBe('已删除标签「剧情」');
+    expect(done.toast.mock.calls[0]![0]).toBe('삭제한 태그: 「剧情」');
     await done.toast.mock.calls[0]![1]!.undo!();
     await settle();
     expect(host.querySelector('[data-tag="剧情"]')).not.toBeNull();
@@ -405,7 +407,7 @@ describe('写完之后', () => {
     const { host, actions: done } = await show(item(1));
     await click(host.querySelector('#stageLater'));
     await settle();
-    expect(done.failure).toHaveBeenCalledWith('更新稍后看', expect.anything());
+    expect(done.failure).toHaveBeenCalledWith('나중에 보기 업데이트', expect.anything());
     expect(host.querySelector('#stageLater')?.getAttribute('aria-pressed')).toBe('false');
   });
 
@@ -417,7 +419,7 @@ describe('写完之后', () => {
     await click(host.querySelector('#betterVersion'));
     await settle();
     expect(host.querySelector('#betterVersion')?.getAttribute('aria-pressed')).toBe('true');
-    expect(done.toast.mock.calls[0]![0]).toBe('已标记寻找更好版本');
+    expect(done.toast.mock.calls[0]![0]).toBe('더 나은 버전 찾기로 표시했습니다');
     await done.toast.mock.calls[0]![1]!.undo!();
     await settle();
     expect(host.querySelector('#betterVersion')?.getAttribute('aria-pressed')).toBe('false');
@@ -447,12 +449,12 @@ describe('写完之后', () => {
     await click(host.querySelector('#savePreference'));
     const save = host.querySelector('#savePreference')!;
     expect(save.getAttribute('aria-busy')).toBe('true');
-    expect(save.querySelector('[role="status"]')?.getAttribute('aria-label')).toBe('正在提交喜爱理由');
+    expect(save.querySelector('[role="status"]')?.getAttribute('aria-label')).toBe('좋아하는 이유 제출 중');
     await reply.release({ liked: true, like_reason: '镜头好' });
     await settle();
     expect(save.getAttribute('aria-busy')).toBeNull();
-    expect(save.textContent).toBe('提交');
-    expect(done.toast.mock.calls[0]![0]).toBe('已保存喜欢偏好');
+    expect(save.textContent).toBe('제출');
+    expect(done.toast.mock.calls[0]![0]).toBe('선호도를 저장했습니다');
     expect(posts(fetcher)).toEqual([['/api/preference', { id: 1, liked: true, reason: '镜头好' }]]);
     await click(toggle);
     expect(panel.hidden).toBe(true);
@@ -479,10 +481,10 @@ describe('侧栏怎么读', () => {
     const rating = host.querySelector('#detailRating');
     expect(before(host.querySelector('[data-detail-title]'), rating)).toBe(true);
     expect(before(rating, host.querySelector('[data-stage-meta]'))).toBe(true);
-    expect(host.querySelector('[data-rate="3"]')?.getAttribute('aria-label')).toBe('取消评分（当前 3 星）');
-    expect(host.querySelector('[data-rate="4"]')?.getAttribute('aria-label')).toBe('评为 4 星');
+    expect(host.querySelector('[data-rate="3"]')?.getAttribute('aria-label')).toBe('별점 취소（현재 3 점）');
+    expect(host.querySelector('[data-rate="4"]')?.getAttribute('aria-label')).toBe('별점 주기: 4 점');
     expect([...host.querySelectorAll('[data-stage-meta] [data-spec-item]')].map(glyph)).toEqual(['#i-monitor', '#i-hard-drive', '#i-calendar']);
-    expect(host.querySelector('[data-stage-meta]')?.textContent).not.toContain('发行');
+    expect(host.querySelector('[data-stage-meta]')?.textContent).not.toContain('출시');
     expect(host.querySelector('#ratioTxt')?.textContent).toBe('0%');
   });
 
@@ -490,7 +492,7 @@ describe('侧栏怎么读', () => {
     serve();
     const { host } = await show(item(1, { width: null, height: null, size: 0 } as Partial<DetailItem>));
     expect([...host.querySelectorAll('[data-stage-meta] [data-spec-item]')].map(glyph)).toEqual(['#i-hard-drive']);
-    expect(host.querySelector('[data-stage-meta]')?.textContent).toBe('大小未知');
+    expect(host.querySelector('[data-stage-meta]')?.textContent).toBe('크기 알 수 없음');
   });
 
   it('身份按类分组、组标题在上；没有实体 id 的只写名字；厂牌装了标识才要 icon 变体；系列是带图标的链接', async () => {
@@ -504,7 +506,7 @@ describe('侧栏怎么读', () => {
       },
     } as Partial<DetailItem>));
     const groups = [...host.querySelectorAll('[data-item-identity] [data-id-group]')];
-    expect(groups.map((group) => group.querySelector('[data-id-label]')?.textContent)).toEqual(['女优', '厂牌', '系列']);
+    expect(groups.map((group) => group.querySelector('[data-id-label]')?.textContent)).toEqual(['배우', '스튜디오', '시리즈']);
     expect(host.querySelector('[data-entity-name="七海ひな"]')?.tagName).toBe('BUTTON');
     const bare = [...host.querySelectorAll('[data-id-cell]')].find((cell) => cell.textContent?.includes('桜井まい'));
     expect(bare?.tagName).toBe('SPAN');
@@ -524,7 +526,7 @@ describe('侧栏怎么读', () => {
         { id: 3, name: '甲', has_image: true, image_version: '9', avatar_focus: { axis: 'x', pct: 30 } }, { id: 4, name: '乙' },
       ] },
     } as Partial<DetailItem>));
-    expect(host.querySelector('[data-id-group="performer"] [data-id-label]')?.textContent).toBe('艺人');
+    expect(host.querySelector('[data-id-group="performer"] [data-id-label]')?.textContent).toBe('아티스트');
     const framed = host.querySelector<HTMLImageElement>('[data-entity-name="甲"] img');
     expect([framed?.getAttribute('src'), framed?.style.objectPosition]).toEqual(['/entity-image?kind=performer&id=3&v=9', '30% 50%']);
     expect(framed?.parentElement).toBe(host.querySelector('[data-entity-name="甲"] [data-id-face]'));
@@ -536,7 +538,7 @@ describe('侧栏怎么读', () => {
     serve();
     const { host, actions: done } = await show(item(1, { performers: [], creator: '', entity_refs: {} } as Partial<DetailItem>));
     const group = host.querySelector('[data-id-group="unowned"]');
-    expect(group?.querySelector('[data-id-label]')?.textContent).toBe('归属');
+    expect(group?.querySelector('[data-id-label]')?.textContent).toBe('소속');
     await click(group?.querySelector('[data-open-unowned]'));
     expect(done.openUnowned).toHaveBeenCalled();
   });
@@ -546,7 +548,7 @@ describe('侧栏怎么读', () => {
     const shown = item(1, { code: 'ABC-123' } as Partial<DetailItem>);
     const { host } = await show(shown);
     expect(host.querySelector('[data-fb="cloud-download"]')).toBeNull();
-    expect(host.querySelector('#addPlaylist')?.getAttribute('aria-label')).toBe('加入播放列表');
+    expect(host.querySelector('#addPlaylist')?.getAttribute('aria-label')).toBe('재생 목록에 추가');
   });
 
   it('每一枚键的字形只说它旁边那件事', async () => {
@@ -554,7 +556,7 @@ describe('侧栏怎么读', () => {
     queryClient.setQueryData(queueKey({ kind: 'mix', seedId: 1 }), queue('mix', [1, 2]));
     const mix = await show(item(1, { liked: true }), { queue: { kind: 'mix', seedId: 1 } });
     expect(glyph(mix.host.querySelector('#preferenceToggle'))).toBe('#i-notebook-pen');
-    expect(mix.host.querySelector('#likeBtn')?.getAttribute('aria-label')).toBe('取消喜欢');
+    expect(mix.host.querySelector('#likeBtn')?.getAttribute('aria-label')).toBe('좋아요 취소');
     expect(glyph(mix.host.querySelector('#addPlaylist'))).toBe('#i-playlist');
     expect(glyph(mix.host.querySelector('[data-save-mix]'))).toBe('#i-playlist');
     expect(glyph(mix.host.querySelector('[data-kind="o"]'))).toBe('#i-sperm');
@@ -585,8 +587,8 @@ describe('侧栏怎么读', () => {
     expect(queued.host.querySelector('[data-item-related]')).toBeNull();
     const empty = await show(item(3), { relatedLimit: 12 });
     await settle();
-    expect(empty.host.querySelector('[data-item-related] [data-empty-state] h3')?.textContent).toBe('暂无接着看的内容');
-    expect(empty.host.querySelector('[data-item-related] [data-empty-state] p')?.textContent).toBe('可以回到列表挑选其他作品。');
+    expect(empty.host.querySelector('[data-item-related] [data-empty-state] h3')?.textContent).toBe('이어서 볼 콘텐츠 없음');
+    expect(empty.host.querySelector('[data-item-related] [data-empty-state] p')?.textContent).toBe('목록으로 돌아가 다른 항목을 선택할 수 있습니다.');
   });
 
   it('标签选择器：组字过程中不筛；上下键挑、回车加；Escape 收起；点外面也收起', async () => {

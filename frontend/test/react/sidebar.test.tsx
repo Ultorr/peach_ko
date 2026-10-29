@@ -253,7 +253,7 @@ describe('导航', () => {
       store.save();
     });
     expect(navKeys(scroll).slice(0, 2)).toEqual(['follow', 'immerse']);
-    expect(scroll.querySelector('[data-nav="immerse"]')?.textContent).toContain('沉浸模式');
+    expect(scroll.querySelector('[data-nav="immerse"]')?.textContent).toContain('몰입 모드');
   });
 
   it('store 里的顺序一变（设置面板或另一台机器同步回来），这一列当场重排', async () => {
@@ -344,15 +344,15 @@ describe('筛选分组', async () => {
   it('一进来只展开正在生效的组；人自己开合过的组按会话记住，换一份聚合也不改', async () => {
     const { scroll, render } = await setup();
     render({ content: { kind: 'catalog', key: '1', facets: facets() }, filters: { tag: 'a' } });
-    expect(group(scroll, '内容标签')!.open).toBe(true);
-    expect(group(scroll, '来源')!.open).toBe(false);
-    const toggle = group(scroll, '来源')!.querySelector<HTMLElement>('[data-sidebar-toggle]')!;
+    expect(group(scroll, '콘텐츠 태그')!.open).toBe(true);
+    expect(group(scroll, '소스')!.open).toBe(false);
+    const toggle = group(scroll, '소스')!.querySelector<HTMLElement>('[data-sidebar-toggle]')!;
     expect(document.getElementById(toggle.getAttribute('aria-controls')!)).not.toBeNull();
     await click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     render({ content: { kind: 'catalog', key: '2', facets: facets() }, filters: {} });
-    expect(group(scroll, '来源')!.open).toBe(true);
-    expect(group(scroll, '内容标签')!.open).toBe(false);
+    expect(group(scroll, '소스')!.open).toBe(true);
+    expect(group(scroll, '콘텐츠 태그')!.open).toBe(false);
   });
 
   it('「展开全部」接在名单末尾，摊开照最新那一份聚合', async () => {
@@ -360,20 +360,20 @@ describe('筛选分组', async () => {
     const tags = Array.from({ length: 32 }, (_, index) => chip(`t${index}`, 40 - index));
     const content = { kind: 'catalog' as const, key: '1', facets: facets({ tags }) };
     render({ content, latest: facets({ tags: [...tags, chip('late', 1)] }) });
-    await click(group(scroll, '内容标签')!.querySelector('[data-sidebar-toggle]'));
-    const body = group(scroll, '内容标签')!.querySelector('[data-sidebar-body]')!;
+    await click(group(scroll, '콘텐츠 태그')!.querySelector('[data-sidebar-toggle]'));
+    const body = group(scroll, '콘텐츠 태그')!.querySelector('[data-sidebar-body]')!;
     expect(body.querySelectorAll('[data-sidebar-chip]')).toHaveLength(30);
     const more = body.lastElementChild as HTMLButtonElement;
     expect(more.getAttribute('data-sidebar-more')).toBe('tag');
-    expect(more.getAttribute('aria-label')).toBe('展开全部内容标签');
+    expect(more.getAttribute('aria-label')).toBe('모두 펼치기콘텐츠 태그');
     await click(more);
     expect(body.querySelectorAll('[data-sidebar-chip]')).toHaveLength(33);
     expect(more.getAttribute('aria-expanded')).toBe('true');
-    expect(more.getAttribute('aria-label')).toBe('收起内容标签');
+    expect(more.getAttribute('aria-label')).toBe('접기콘텐츠 태그');
     /* 收起收的是整组：组标题当场报收起、正文不再可聚焦；`details.open` 等高度过渡走完才摘。 */
     await click(more);
-    expect(group(scroll, '内容标签')!.querySelector('[data-sidebar-toggle]')!.getAttribute('aria-expanded')).toBe('false');
-    expect(group(scroll, '内容标签')!.querySelector<HTMLElement>('[data-sidebar-collapse]')!.inert).toBe(true);
+    expect(group(scroll, '콘텐츠 태그')!.querySelector('[data-sidebar-toggle]')!.getAttribute('aria-expanded')).toBe('false');
+    expect(group(scroll, '콘텐츠 태그')!.querySelector<HTMLElement>('[data-sidebar-collapse]')!.inert).toBe(true);
     expect(body.querySelectorAll('[data-sidebar-chip]')).toHaveLength(30);
   });
 
@@ -400,7 +400,7 @@ describe('筛选分组', async () => {
     await click(scroll.querySelector('[data-follow-drawer-tag="x"]'));
     expect(host.openFollowTag).toHaveBeenCalledWith('x');
     render({ content: { kind: 'follow', tags: [chip('y', 3), chip('z', 1)], selected: ['z'] } });
-    expect(group(scroll, '来源')).toBeNull();
+    expect(group(scroll, '소스')).toBeNull();
     const z = scroll.querySelector('[data-follow-drawer-tag="z"]')!;
     expect(z.getAttribute('aria-pressed')).toBe('true');
     expect(z.querySelector('[data-sidebar-count]')!.textContent).toBe('1');
@@ -416,11 +416,11 @@ describe('筛选分组', async () => {
       filters: { provider: 'fanbox', dur_min: 600, dur_max: '' },
     });
     expect([...scroll.querySelectorAll('[data-sidebar-group]')].map((node) => node.getAttribute('data-sidebar-group')))
-      .toEqual(['来源', '时长', '内容标签']);
+      .toEqual(['소스', '재생 시간', '콘텐츠 태그']);
     expect(chipOf(scroll, 'provider', 'fanbox')!.getAttribute('aria-pressed')).toBe('true');
     expect(chipOf(scroll, 'provider', 'kemono')!.querySelector('[data-sidebar-count]')).toBeNull();
     expect(chipOf(scroll, 'provider', 'kemono')!.querySelector('img')!.getAttribute('src')).toBe('/source-icon?provider=kemono');
-    expect(scroll.querySelector(`[data-range-end="min"]`)!.textContent).toBe('10 分钟');
+    expect(scroll.querySelector(`[data-range-end="min"]`)!.textContent).toBe('10 분');
     await click(chipOf(scroll, 'provider', 'kemono'));
     expect(host.selectFollowProvider).toHaveBeenCalledWith('kemono');
     expect(host.toggleChip).not.toHaveBeenCalled();
@@ -435,21 +435,21 @@ describe('筛选分组', async () => {
 
     render({ content: { kind: 'follow', tags: [chip('y', 1)], selected: [] } });
     expect([...scroll.querySelectorAll('[data-sidebar-group]')].map((node) => node.getAttribute('data-sidebar-group')))
-      .toEqual(['内容标签']);
+      .toEqual(['콘텐츠 태그']);
   });
 
   it('时长两端各有一枚读数，右端拉到头是「不限」；松手才提交', async () => {
     const { scroll, host, render } = await setup();
     render({ content: { kind: 'catalog', key: '1', facets: facets({ duration: true }) }, filters: { dur_min: '1200' } });
     const tip = (end: string) => scroll.querySelector(`[data-range-end="${end}"]`)!.textContent;
-    expect(tip('min')).toBe('20 分钟');
-    expect(tip('max')).toBe('不限');
+    expect(tip('min')).toBe('20 분');
+    expect(tip('max')).toBe('제한 없음');
     const max = scroll.querySelector<HTMLInputElement>('#durMax')!;
     act(() => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(max, '60');
       max.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    expect(tip('max')).toBe('60 分钟');
+    expect(tip('max')).toBe('60 분');
     expect(host.setDuration).not.toHaveBeenCalled();
     act(() => { max.dispatchEvent(new Event('change', { bubbles: true })) });
     expect(host.setDuration).toHaveBeenCalledWith(20, 60);
@@ -513,7 +513,7 @@ describe('常驻面', () => {
     expect(r.managedTaken(scroll)).toBe(false);
     expect(r.managedEntries().map((entry) => entry.path), '别的面照画').toEqual(['batch-dock']);
     await act(async () => { dock.render({ count: 2, context: 'catalog', junkDismissed: false }) });
-    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('已选 2 项');
+    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('선택됨 2 개');
 
     /* 壳照旧每次换页都推一份、换按下态：不抛、不重开、不再上报。 */
     await act(async () => {

@@ -97,7 +97,7 @@ describe('首页新作那一行', () => {
       assert.equal(await host!.evaluate((node) => node.isConnected && node.id === 'feedNew'), true);
 
       feed.items = [4];
-      await openPanel(page, 'JAV 与新作');
+      await openPanel(page, 'JAV 및 신작');
       const toggle = page.locator('#feedHideGroupSetting');
       const was = await toggle.isChecked();
       await toggle.click();

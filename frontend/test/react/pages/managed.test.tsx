@@ -135,7 +135,7 @@ it('挂上就打开：先报换页，骨架与冷启动那张同键不重画，�
   api.resolve();
   await until(() => painted(stats) !== null, '整页画上');
   expect(stats.firstElementChild).not.toBe(skeleton);
-  expect(stats.textContent).toContain('追更检查');
+  expect(stats.textContent).toContain('업데이트 확인');
 });
 
 it('没人认领的写地址一次就是打开一次：认领的写地址不重开，同一路径不认领再写就重取、重挂', async () => {

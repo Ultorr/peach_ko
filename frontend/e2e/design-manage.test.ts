@@ -27,7 +27,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       const expected = await disabledTokens(page);
       const waiting = await waitingActionFaces(page, '[data-skeleton="cleanup"] [data-skeleton-action]');
       assert.deepEqual(waiting.map((face) => face.name),
-        ['同步媒体库', '更多同步方式', '开始修复', '预览', '检查死链', '检查文件']);
+        ['미디어 라이브러리 동기화', '다른 동기화 방식', '복구 시작', '미리보기', '끊어진 링크 확인', '파일 확인']);
       for (const face of waiting) assertDisabledFace(face, expected);
       const ring = await page.locator('[data-skeleton="cleanup"] [data-split-button]')
         .evaluate((element) => getComputedStyle(element).boxShadow);
@@ -40,21 +40,21 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       release();
       await page.locator('[data-skeleton="cleanup"]').waitFor({ state: 'detached', timeout: 15_000 });
       // 正式页面先摆一份同样的骨架卡，等 React 岛接管；键上没了 `data-skeleton-action` 才算接管完。
-      await page.locator('section[aria-label="扫描与采集"] [data-split-button] > button:first-child:not([data-skeleton-action])')
+      await page.locator('section[aria-label="스캔 및 수집"] [data-split-button] > button:first-child:not([data-skeleton-action])')
         .waitFor({ timeout: 15_000 });
-      await page.locator('section[aria-label="媒体修复"] footer > button:not([data-skeleton-action])')
+      await page.locator('section[aria-label="미디어 복구"] footer > button:not([data-skeleton-action])')
         .waitFor({ timeout: 15_000 });
       await settle(page);
       const final = await controlFaces(page, {
-        同步媒体库: 'section[aria-label="扫描与采集"] [data-split-button] > button:first-child',
-        更多方式: 'section[aria-label="扫描与采集"] [data-split-button] > button:last-child',
-        开始修复: 'section[aria-label="媒体修复"] footer > button',
+        同步媒体库: 'section[aria-label="스캔 및 수집"] [data-split-button] > button:first-child',
+        更多方式: 'section[aria-label="스캔 및 수집"] [data-split-button] > button:last-child',
+        开始修复: 'section[aria-label="미디어 복구"] footer > button',
       });
       for (const name of Object.keys(sizes)) {
         assert.equal(sizes[name]!.size, final[name]!.size, `${name} 接管时尺寸跳了`);
         assert.match(final[name]!.face, /gradient/, `${name} 接管后没换回蓝色主按钮`);
       }
-      const enabled = await page.locator('section[aria-label="扫描与采集"] [data-split-button] > button')
+      const enabled = await page.locator('section[aria-label="스캔 및 수집"] [data-split-button] > button')
         .evaluateAll((buttons) => buttons.map((button) => (button as HTMLButtonElement).disabled));
       assert.deepEqual(enabled, [false, false], '数据到了扫描键还是禁用的');
     } finally {
@@ -257,7 +257,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       assert.deepEqual(lifted, ['matrix(1.05, 0, 0, 1.05, 0, -4)', 'matrix(1, 0, 0, 1, 10, -1.8)']);
       // 点点点菜单外宽 172px，同旧卡片菜单。
       await page.locator('#stats [data-playlist-card="1"] [data-playlist-menu]').click();
-      const panel = page.locator(':has(> [role="dialog"][aria-label="播放列表操作：列表1"])');
+      const panel = page.locator(':has(> [role="dialog"][aria-label="재생목록 작업:列表1"])');
       await panel.waitFor({ timeout: 5_000 });
       assert.equal(await panel.evaluate((element) => getComputedStyle(element).width), '172px');
       assert.deepEqual(opened.problems, []);
@@ -356,7 +356,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
     try {
       const form = page.locator('[data-playlist-create]');
       const resting = await form.locator('[data-input-size] > div[data-rac]').evaluate((node) => getComputedStyle(node).backgroundColor);
-      await form.getByRole('button', { name: '新建' }).click();
+      await form.getByRole('button', { name: '만들기' }).click();
       await form.locator('[data-input-size] > div[data-rac][data-invalid]').waitFor();
       const looks = await form.locator('[data-input-size]').evaluate((root) => {
         const probe = (token: string) => {
@@ -386,11 +386,11 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       const trigger = page.locator('[data-playlist-card="1"] [data-playlist-menu]');
       await trigger.click();
-      const menu = page.getByRole('dialog', { name: '播放列表操作：列表1' });
-      await menu.getByRole('button', { name: '编辑名称' }).hover();
+      const menu = page.getByRole('dialog', { name: '재생목록 작업:列表1' });
+      await menu.getByRole('button', { name: '이름 편집' }).hover();
       const pane = menu.locator('[data-moving-surface]');
       await pane.waitFor();
-      await menu.getByRole('button', { name: '删除播放列表' }).hover();
+      await menu.getByRole('button', { name: '재생목록 삭제' }).hover();
       await page.waitForFunction(() => {
         const host = document.querySelector('[data-surface-host="hover"]')!;
         const pane = host.querySelector('[data-moving-surface]')!.getBoundingClientRect();
@@ -399,16 +399,16 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       });
       await page.keyboard.press('Tab');
       assert.equal(await pane.isVisible(), false);
-      await menu.getByRole('button', { name: '编辑名称' }).click();
+      await menu.getByRole('button', { name: '이름 편집' }).click();
       const modal = page.locator('[data-modal-motion]');
       await modal.waitFor();
-      await modal.getByRole('textbox', { name: '名称' }).waitFor();
+      await modal.getByRole('textbox', { name: '이름' }).waitFor();
       assert.equal(await modal.locator('[data-modal-surface]').evaluate((node) =>
         getComputedStyle(node).transitionProperty.includes('transform')), true);
-      await modal.locator('form').getByRole('button', { name: '取消', exact: true }).click();
+      await modal.locator('form').getByRole('button', { name: '취소', exact: true }).click();
       await modal.waitFor({ state: 'detached' });
       await trigger.click();
-      await menu.getByRole('button', { name: '编辑名称' }).focus();
+      await menu.getByRole('button', { name: '이름 편집' }).focus();
       await page.keyboard.press('Enter');
       await modal.waitFor();
       assert.equal(await modal.getAttribute('data-motion-instant'), 'true');
@@ -434,8 +434,8 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       await dock.evaluate((node) => node.setAttribute('data-test-identity', 'retained'));
       await tags.nth(1).click();
       assert.equal(await dock.getAttribute('data-test-identity'), 'retained');
-      assert.match(await dock.textContent() ?? '', /已选 2 个标签/);
-      await dock.getByRole('button', { name: '清空', exact: true }).click();
+      assert.match(await dock.textContent() ?? '', /선택됨 2 개 태그/);
+      await dock.getByRole('button', { name: '비우기', exact: true }).click();
       await page.waitForFunction(() => {
         const dock = document.querySelector<HTMLElement>('[data-selection-dock]');
         return !dock || (dock.inert && dock.getAttribute('aria-hidden') === 'true');
@@ -444,7 +444,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       await tags.nth(0).click();
       await dock.waitFor();
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await dock.getByRole('button', { name: '清空', exact: true }).click();
+      await dock.getByRole('button', { name: '비우기', exact: true }).click();
       await dock.waitFor({ state: 'detached' });
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close(); }
@@ -663,13 +663,13 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
     try {
       const page = opened.page;
       const selected = await tokenColor(page, '.peach-react', '--color-background-secondary-default');
-      await page.getByRole('checkbox', { name: '选择 kou · Kemono' }).check({ force: true, timeout: 5_000 });
+      await page.getByRole('checkbox', { name: '선택: kou · Kemono' }).check({ force: true, timeout: 5_000 });
       const cardRow = page.locator('[data-source-divider] > [data-selected]');
       assert.equal(await cardRow.count(), 1);
       assert.equal(await cardRow.evaluate((row) => getComputedStyle(row).backgroundColor), selected,
         '卡片里的选中行没有铺选中底色');
 
-      await page.locator('button[aria-label="表格视图"]').click({ timeout: 5_000 });
+      await page.locator('button[aria-label="표 보기"]').click({ timeout: 5_000 });
       const tableRow = page.locator('[data-follow-selected]');
       await tableRow.waitFor({ timeout: 5_000 });
       assert.equal(await tableRow.evaluate((row) => getComputedStyle(row).backgroundColor), selected,
@@ -683,8 +683,8 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
   it('别名的组数是次要字色的读数，不借提醒或主按钮的颜色', { timeout: 60_000 }, async () => {
     const opened = await openFollowManage(browser);
     try {
-      await followTab(opened, '添加关注');
-      const count = opened.page.getByText('1 组', { exact: true });
+      await followTab(opened, '팔로우 추가');
+      const count = opened.page.getByText('1 그룹', { exact: true });
       const look = await count.evaluate((node) => ({
         ink: getComputedStyle(node).color, face: getComputedStyle(node).backgroundColor,
       }));
@@ -712,17 +712,17 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
             })),
           })),
         } }));
-        await followTab(opened, '添加关注');
+        await followTab(opened, '팔로우 추가');
         const before = await page.evaluate(() => document.documentElement.scrollHeight);
-        const input = page.getByRole('textbox', { name: '来源链接、名字或 id' });
+        const input = page.getByRole('textbox', { name: '출처 링크, 이름 또는 ID' });
         await input.click({ timeout: 5_000 });
         await input.fill('bulging');
-        const menu = page.locator('[aria-label="来源建议"]');
+        const menu = page.locator('[aria-label="추천 출처"]');
         await menu.locator('button').nth(29).waitFor({ state: 'attached', timeout: 10_000 });
         const measure = () => menu.evaluate((element) => {
           for (const animation of element.getAnimations({ subtree: true })) animation.finish();
           const box = element.getBoundingClientRect();
-          const field = element.ownerDocument.querySelector('input[aria-label="来源链接、名字或 id"]')!
+          const field = element.ownerDocument.querySelector('input[aria-label="출처 링크, 이름 또는 ID"]')!
             .getBoundingClientRect();
           const row = element.querySelector('[aria-current="true"]')?.getBoundingClientRect();
           return {
@@ -811,12 +811,12 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
   it('凭据的四种处境四副底色：待办和完成一眼分得开', { timeout: 60_000 }, async () => {
     const opened = await openFollowManage(browser);
     try {
-      await opened.page.getByRole('button', { name: /^来源与订阅设置/ }).click();
-      await opened.page.getByRole('tab', { name: '来源与订阅', exact: true, selected: true }).waitFor();
-      await opened.page.getByRole('region', { name: '可配置凭据', exact: true }).waitFor();
+      await opened.page.getByRole('button', { name: /^출처 및 구독 설정/ }).click();
+      await opened.page.getByRole('tab', { name: '소스 및 구독', exact: true, selected: true }).waitFor();
+      await opened.page.getByRole('region', { name: '인증 정보 설정 가능', exact: true }).waitFor();
       await settle(opened.page);
       const faces: Record<string, string> = {};
-      for (const state of ['需要', '已配置', '接不进来', '不需要']) {
+      for (const state of ['필수', '설정됨', '연결 불가', '불필요']) {
         faces[state] = await opened.page.getByText(state, { exact: true }).first()
           .evaluate((chip) => getComputedStyle(chip).backgroundColor);
       }
@@ -858,7 +858,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       }));
       assert.notEqual(faces.mark, 'rgba(0, 0, 0, 0)', '悬停没有垫底');
       assert.notEqual(faces.mark, faces.card, '悬停底色和资料卡同色，看不出来');
-      const toggle = opened.page.getByRole('switch', { name: '订阅新作' });
+      const toggle = opened.page.getByRole('switch', { name: '새 항목 구독' });
       assert.equal(await toggle.count(), 1, '资料卡上没有订阅新作开关');
       assert.equal(await toggle.isChecked(), false);
       const feed = opened.page.locator('[data-entry-feed]');
@@ -869,7 +869,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       assert.equal(await tip.isVisible(), false);
       await feed.hover();
       assert.equal(await tip.isVisible(), true, '悬停没有说明这枚图标是干嘛的');
-      assert.equal(await tip.innerText(), '订阅新作');
+      assert.equal(await tip.innerText(), '새 항목 구독');
       const placed = await tip.evaluate((element) => {
         const box = element.getBoundingClientRect();
         return box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
@@ -937,7 +937,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       const opened = await openProfiledPerformer(browser, viewport);
       try {
         const geometry = await heroGeometry(opened.page);
-        assert.deepEqual(geometry.labels, ['生日', '身材', '出道', '生涯', '标签'], '资料表不是那五项');
+        assert.deepEqual(geometry.labels, ['생일', '신체 치수', '데뷔', '활동 기간', '태그'], '资料表不是那五项');
         assert.ok(geometry.facts && geometry.identity && geometry.hero, '页头缺了资料表');
         assert.ok(geometry.identity.right - geometry.identity.left >= 240, '身份那一栏被挤窄了');
         if (stacked) {
@@ -979,7 +979,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
         await opened.page.locator('[data-entity-facts]').waitFor();
         await settle(opened.page);
         const geometry = await heroGeometry(opened.page);
-        assert.deepEqual(geometry.labels, ['公司名称', '公司成立', '品牌启动', '所在地', '运营公司']);
+        assert.deepEqual(geometry.labels, ['회사명', '회사 설립일', '브랜드 출범일', '소재지', '운영 회사']);
         assert.equal(geometry.heroScrolls, false);
         assert.ok(geometry.hero && geometry.facts && geometry.facts.right <= geometry.hero.right + 1);
         assert.equal(await opened.page.locator('[data-entity-facts] [title]').count(), 0);
@@ -1014,7 +1014,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
         assert.deepEqual([link.size, link.kind, link.visibleText], ['36x36', 'icon', false], `${link.title} 不是纯图标方块`);
         assert.equal(link.name, link.title, `${link.title} 给读屏的名字和悬停提示不一致`);
       }
-      assert.deepEqual(links.map((link) => link.title), ['みんなのAV', 'New Actor eXperience 官方资料', 'X @shinoda_yu']);
+      assert.deepEqual(links.map((link) => link.title), ['みんなのAV', 'New Actor eXperience 공식 정보', 'X @shinoda_yu']);
       assert.deepEqual(opened.problems, []);
     } finally {
       await opened.close();
@@ -1046,7 +1046,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
         assert.equal(shown.shadow, await popmenuShadow(page), '别名浮层的落影和 .popmenu 不是同一副');
         assert.equal(shown.topLayer, true, '别名浮层没进顶层，会被资料卡的 overflow:hidden 裁掉');
         assert.ok(shown.inView, '别名浮层越出了视口');
-        assert.equal(shown.title, '7 个别名');
+        assert.equal(shown.title, '7 개 별칭');
         assert.deepEqual(shown.groups, ['旧名义', '舞ワイフ', 'ラグジュTV', '其它']);
         assert.notEqual(shown.face, 'rgba(0, 0, 0, 0)', '别名浮层没有底色');
         // 指针从按钮挪到浮层上读名字，浮层不能在半路收起。

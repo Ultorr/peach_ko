@@ -80,7 +80,7 @@ describe('首页加载结构',()=>{
     assert.equal(await tiers!.evaluate(node=>node.isConnected),true);
     assert.equal(await page.evaluate(()=>(window as any).__firstCard?.isConnected&&(window as any).__firstTier?.isConnected),true);
     assert.equal(await page.locator('#feedNew [data-skeleton]').count(),0);
-    assert.equal(await page.locator('#feedNew').getAttribute('aria-label'),'未入库的新作');
+    assert.equal(await page.locator('#feedNew').getAttribute('aria-label'),'아직 등록하지 않은 신작');
     assert.ok(scopes.length>0);
     assert.deepEqual([...new Set(scopes)],['local'],'默认筛选始终排除离线来源');
    }finally{release();await context.close()}

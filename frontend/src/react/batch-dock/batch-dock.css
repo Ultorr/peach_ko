@@ -9,6 +9,12 @@
 
 [data-batch-dock],[data-batch-scope]{display:contents}
 
+[data-bulk-rating] [data-rating-options]{border:0;padding:0;margin:0}
+[data-bulk-rating] [data-rating-choices]{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+[data-bulk-rating] [data-rating-choices] label{display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer}
+[data-bulk-rating] [data-rating-progress]{width:100%;margin-top:20px;accent-color:var(--tungsten)}
+[data-bulk-rating] p{word-break:keep-all;overflow-wrap:anywhere}
+
 [data-batch-scope] [data-selection-dock]{color:var(--ink);font:var(--board-body)}
 [data-batch-scope] [data-selection-dock]>[role="status"]{padding:0 8px;color:var(--ink-2);font:inherit;white-space:nowrap}
 [data-batch-scope] [data-selection-dock]>button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:4px;height:36px;min-height:36px;padding:8px 12px;border-radius:10px;font:var(--board-body-medium);white-space:nowrap;cursor:pointer}
@@ -19,8 +25,8 @@
 [data-batch-scope] [data-selection-dock]>button svg{flex:none;width:17px;height:17px;margin-right:6px;fill:none;stroke:currentColor;stroke-width:2}
 [data-batch-scope] [data-selection-dock]>button[data-danger] svg{margin-right:0}
 
-/* 浮条出来时，作品详情那一层（`<dialog data-stage>`）的底部让出它的高度。 */
-body:has([data-batch-dock] [data-selection-dock]) [data-stage]{padding-bottom:180px}
+/* 作品列表与详情底部按浮条实测高度让位，兼容翻译和操作增加后的换行。 */
+body:has([data-batch-dock] [data-selection-dock]) :is([data-stage],[data-catalog-table]){padding-bottom:var(--batch-dock-space,0px)}
 
 /* 窄屏垃圾文件：三颗键一行等分、计数单占一行居中，横跨整行贴底。浮条的水平居中靠 SelectionDock 自己
    内联的 `translate(-50%)`，所以这里用「宽 = 视口减两边 12px」配 `left: 50%`，落点与贴边写法一样。 */

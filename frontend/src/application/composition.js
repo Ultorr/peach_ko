@@ -13,7 +13,7 @@ import { reopenPostSetupTutorial } from './tutorial.js';
 import { runtimeConfigurable, selectMode, state, writeShell } from './../shell/index';
 import { indexPath, indexState, onlineAuthorRingHtml, openFollowAuthorFromIndex, openFollowTagFromIndex, routeFollowManage, showIndexContainer, showIndexTags } from './index.js';
 import { censorOn, loadSourceStatus, preferencesState, wireAllDrag } from './preferences.js';
-import { mountBatchDock, setSelectMode } from './selection.js';
+import { mountBatchDock, selectCatalogItems, setSelectMode } from './selection.js';
 import { releaseHoverPreviews } from './../card-art/hover';
 import { bootEntry, peachHistory } from './../history/index';
 import { $ } from '../core';
@@ -139,6 +139,7 @@ compositionState.shellActions = {
 
   // 目录用。
   catalog:{
+    selectItems:selectCatalogItems,
     /* 地址上没写来源时的缺省：本地加 115，离线的那一处摘掉。 */
     defaultLoc:()=>onlineDefaultLoc('local,115'),
     /* 整页打开：筛选已由目录元素照地址写进 `state`。`retitle` 是首页 `?state=ads` 改写成垃圾文件地址的那一下：

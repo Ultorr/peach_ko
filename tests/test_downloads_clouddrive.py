@@ -221,7 +221,7 @@ class TrackingTests(_Server):
 class CheckTests(_Server):
     def test_the_check_reports_permissions_folder_and_quota(self):
         report = cd.check(self.address, TOKEN, TARGET)
-        self.assertEqual(report["missing"], ["取消离线任务"])
+        self.assertEqual(report["missing"], ["오프라인 작업 취소"])
         self.assertEqual(report["folder"], {"path": TARGET, "can_offline": True, "cloud": "115open"})
         self.assertEqual(report["quota"], {"total": 1500, "used": 3, "left": 1497})
         self.assertEqual(report["problems"], [])
@@ -232,7 +232,7 @@ class CheckTests(_Server):
     def test_without_a_token_nothing_is_called(self):
         report = cd.check(self.address, "", TARGET)
         self.assertFalse(report["ok"])
-        self.assertIn("API 令牌", report["problems"][0])
+        self.assertIn("API 토큰", report["problems"][0])
         self.assertEqual(self.fake.calls, [])
 
     def test_a_blank_address_takes_the_first_local_address_that_answers(self):
@@ -315,10 +315,10 @@ class SuggestionTests(_Server):
         report = cd.check(self.address, TOKEN, "", hints=self.hints(prefixes=only_pikpak, pikpak_root="A:\\"))
         self.assertIsNone(report["suggested_target"])
         self.assertEqual(len(report["problems"]), 1)
-        self.assertIn("「推送发现」", report["problems"][0])
+        self.assertIn("‘푸시 검색’", report["problems"][0])
         self.assertIn("/115假", report["problems"][0])
         report = cd.check(self.address, TOKEN, "", hints=self.hints(prefixes=(), pikpak_root="A:\\"))
-        self.assertIn("没有登记云端路径前缀", report["problems"][0])
+        self.assertIn("클라우드 경로 접두어가 아직 등록되지 않았습니다", report["problems"][0])
 
     def test_a_pikpak_prefix_below_the_cloud_root_is_not_the_pikpak_root(self):
         self.fake.folders["/115假/影视"] = False
@@ -327,7 +327,7 @@ class SuggestionTests(_Server):
         report = cd.check(self.address, TOKEN, "/115/云下载", hints=self.hints(prefixes=prefixes, roots=roots))
         self.assertEqual(report["suggested_pikpak_root"], "")
         self.assertEqual(len(report["problems"]), 1)
-        self.assertIn("PikPak 根目录对应的媒体文件夹", report["problems"][0])
+        self.assertIn("PikPak 루트에 대응하는 미디어 폴더", report["problems"][0])
 
     def test_without_a_pikpak_account_the_pikpak_root_is_left_alone(self):
         report = cd.check(self.address, TOKEN, TARGET, hints=self.hints(prefixes=(), pikpak_account=False))

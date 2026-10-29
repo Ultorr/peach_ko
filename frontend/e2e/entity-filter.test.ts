@@ -74,7 +74,7 @@ async function openPerformer(browser: Browser, viewport = DESKTOP, search = '', 
   await opened.page.locator('[data-entity-filter-glass] [data-entity-readout]', { hasText: /\S/ })
     .waitFor({ timeout: 15_000 });
   await settle(opened.page);
-  assert.equal(await opened.page.locator('[data-entity-filter-glass]').getByRole('button', { name: '我的收藏', exact: true }).count(), 1);
+  assert.equal(await opened.page.locator('[data-entity-filter-glass]').getByRole('button', { name: '내 즐겨찾기', exact: true }).count(), 1);
   return { ...opened, stubs };
 }
 
@@ -150,7 +150,7 @@ describe('实体页筛选浮层', () => {
       const skeleton = await measure('#index [data-skeleton] .entityhero', '#index [data-skeleton] .board-filter-frame',
         '#index [data-skeleton] .entitysection');
       release();
-      await page.locator('[data-entity-filter-glass] [data-entity-readout]', { hasText: '视频' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-filter-glass] [data-entity-readout]', { hasText: '동영상' }).waitFor({ timeout: 15_000 });
       await settle(page);
       const live = await measure('#index [data-entity-card]', '#index [data-entity-filter-glass]', '#index [data-entity-body]');
       for (const key of ['gap', 'left', 'width', 'height', 'grid'] as const) {
@@ -179,7 +179,7 @@ describe('实体页筛选浮层', () => {
       assert.deepEqual(pressed, { state: 'true', busy: 'true', shimmer: true }, '按下态要等请求回来才到位');
       assertCovers(await glideOver(page, '[data-view-glide=""]', '[data-entity-state="fresh"]'), '换过去的观看状态');
       stubs.release();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24' }).waitFor({ timeout: 15_000 });
       assert.match(page.url(), /[?&]state=fresh/);
       assert.match(stubs.itemQueries.at(-1)!, /state=fresh/);
       assert.deepEqual(unexpected(opened), []);
@@ -198,18 +198,18 @@ describe('实体页筛选浮层', () => {
       assert.equal(await page.locator('[data-entity-sort="new"]').getAttribute('aria-pressed'), 'false');
       assert.equal(await page.locator('[data-entity-sort="rating"] svg').count(), 1, '选中的排序键没有方向箭头');
       stubs.release();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24' }).waitFor({ timeout: 15_000 });
-      assert.equal(await page.locator('[data-entity-sort="rating"]').getAttribute('aria-label'), '按评分从低到高排序');
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24' }).waitFor({ timeout: 15_000 });
+      assert.equal(await page.locator('[data-entity-sort="rating"]').getAttribute('aria-label'), '평점낮은순 기준 정렬');
       await page.locator('[data-entity-sort="rating"]').click();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24' }).waitFor({ timeout: 15_000 });
       assert.match(page.url(), /[?&]dir=asc/);
       const before = stubs.itemQueries.length;
-      const small = segment(page, 'JAV 卡片版式', 'small');
+      const small = segment(page, 'JAV 카드 형식', 'small');
       assert.equal(await small.getAttribute('data-selected'), null);
       await small.click();
       await page.waitForFunction(() => document.querySelector(
-        '[data-entity-layout][aria-label="JAV 卡片版式"] label:has(input[value="small"])')?.hasAttribute('data-selected'));
-      await segment(page, 'JAV 卡片版式', 'big').click();
+        '[data-entity-layout][aria-label="JAV 카드 형식"] label:has(input[value="small"])')?.hasAttribute('data-selected'));
+      await segment(page, 'JAV 카드 형식', 'big').click();
       assert.equal(stubs.itemQueries.length, before, '切版式重新取了一次作品');
       assert.deepEqual(unexpected(opened), []);
     } finally {
@@ -231,10 +231,10 @@ describe('实体页筛选浮层', () => {
       await page.locator('[data-entity-tag="中出"]').click();
       assert.equal(await page.locator('[data-entity-tag="中出"]').getAttribute('aria-pressed'), 'true');
       await page.locator('[data-entity-combo] [data-combo-chip]', { hasText: '中出' }).waitFor();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24 · 已选 1 个标签' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24 · 선택됨 1 개 태그' }).waitFor({ timeout: 15_000 });
       assert.match(decodeURIComponent(page.url()), /[?&]tag=中出/);
-      await page.getByRole('button', { name: '撤掉 中出' }).click();
-      await page.locator('[data-entity-readout]', { hasText: /^视频 · 24$/ }).waitFor({ timeout: 15_000 });
+      await page.getByRole('button', { name: '제거: 中出' }).click();
+      await page.locator('[data-entity-readout]', { hasText: /^동영상 · 24$/ }).waitFor({ timeout: 15_000 });
       assert.equal(await page.locator('[data-entity-tag="中出"]').getAttribute('aria-pressed'), 'false');
       assert.equal(await page.locator('[data-entity-combo] [data-combo-chip]').count(), 0);
       assert.doesNotMatch(page.url(), /[?&]tag=/);
@@ -249,7 +249,7 @@ describe('实体页筛选浮层', () => {
     try {
       const { page } = opened;
       await page.locator('[data-media-view="photos"]').click();
-      await page.locator('[data-entity-readout]', { hasText: /^照片/ }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: /^사진/ }).waitFor({ timeout: 15_000 });
       const photos = await page.evaluate(() => ({
         pressed: document.querySelector('[data-media-view="photos"]')?.getAttribute('aria-pressed'),
         states: (document.querySelector('[data-entity-states]') as HTMLElement | null)?.hidden,
@@ -262,11 +262,11 @@ describe('实体页筛选浮层', () => {
       assertCovers(await glideOver(page, '[data-view-glide="round"]', '[data-media-view="photos"]'), '照片键');
       assert.equal(await page.locator('[data-view-glide=""]').evaluate((node) => (node as HTMLElement).hidden), true,
         '观看状态收起了，那块玻璃还亮着');
-      await segment(page, '图片布局', 'fixed').click();
+      await segment(page, '이미지 레이아웃', 'fixed').click();
       await page.waitForFunction(() => document.querySelector('[data-local-wall]')?.getAttribute('data-layout') === 'fixed');
-      await segment(page, '图片布局', 'masonry').click();
+      await segment(page, '이미지 레이아웃', 'masonry').click();
       await page.locator('[data-media-view="videos"]').click();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24 · 已选 1 个标签' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24 · 선택됨 1 개 태그' }).waitFor({ timeout: 15_000 });
       assert.equal(await page.locator('[data-entity-tag]').count(), TAGS.length);
       assert.equal(await page.locator('[data-entity-combo] [data-combo-chip]').count(), 1);
       assert.deepEqual(unexpected(opened), []);
@@ -309,15 +309,15 @@ describe('实体页筛选浮层', () => {
         tags: document.querySelectorAll('[data-entity-tag]').length,
         cards: document.querySelectorAll('#index [data-entity-body] [data-index-grid] > [data-index-cell]').length,
       }));
-      assert.deepEqual(roster, { readout: '艺人 · 3', pressed: 'people', views: ['people', 'videos'], sorts: 0, tags: 0, cards: 3 });
+      assert.deepEqual(roster, { readout: '아티스트 · 3', pressed: 'people', views: ['people', 'videos'], sorts: 0, tags: 0, cards: 3 });
       await page.locator('[data-media-view="videos"]').click();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24' }).waitFor({ timeout: 15_000 });
       assert.equal(await page.locator('[data-entity-tag]').count(), AGENCY.tags.length);
       assert.ok(await page.locator('[data-entity-sort]').count() > 0);
-      assert.equal(await page.locator('[data-entity-layout][aria-label="JAV 卡片版式"]').count(), 0);
+      assert.equal(await page.locator('[data-entity-layout][aria-label="JAV 카드 형식"]').count(), 0);
       assertCovers(await glideOver(page, '[data-view-glide="round"]', '[data-media-view="videos"]'), '视频键');
       await page.locator('[data-media-view="people"]').click();
-      await page.locator('[data-entity-readout]', { hasText: '艺人 · 3' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '아티스트 · 3' }).waitFor({ timeout: 15_000 });
       assert.deepEqual(unexpected(opened), []);
     } finally {
       await opened.close();
@@ -375,21 +375,21 @@ describe('实体页筛选浮层', () => {
     const opened = await openPerformer(browser, DESKTOP, '?media=photos');
     try {
       const { page, stubs } = opened;
-      await page.locator('[data-entity-readout]', { hasText: /^照片/ }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: /^사진/ }).waitFor({ timeout: 15_000 });
       assert.equal(await page.locator('[data-media-view="photos"]').getAttribute('aria-pressed'), 'true');
       assert.equal(await page.locator('[data-local-wall] [data-photo-index]').count(), PHOTOS.items.length);
       await page.locator('[data-media-view="videos"]').click();
-      await page.locator('[data-entity-readout]', { hasText: /^视频 · 24$/ }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: /^동영상 · 24$/ }).waitFor({ timeout: 15_000 });
       assert.doesNotMatch(page.url(), /[?&]media=/);
       const before = stubs.itemQueries.length;
       await page.locator('[data-entity-tag="中出"]').click();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24 · 已选 1 个标签' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24 · 선택됨 1 개 태그' }).waitFor({ timeout: 15_000 });
       await settle(page);
       assert.equal(stubs.itemQueries.length - before, 1, `加一枚标签发了 ${stubs.itemQueries.length - before} 次作品请求`);
       await page.locator('[data-media-view="photos"]').click();
-      await page.locator('[data-entity-readout]', { hasText: /^照片/ }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: /^사진/ }).waitFor({ timeout: 15_000 });
       await page.locator('[data-media-view="videos"]').click();
-      await page.locator('[data-entity-readout]', { hasText: '视频 · 24 · 已选 1 个标签' }).waitFor({ timeout: 15_000 });
+      await page.locator('[data-entity-readout]', { hasText: '동영상 · 24 · 선택됨 1 개 태그' }).waitFor({ timeout: 15_000 });
       await settle(page);
       assert.equal(stubs.itemQueries.length - before, 1, '切照片再切回视频又取了一遍作品');
       assert.deepEqual(unexpected(opened), []);
@@ -404,7 +404,7 @@ describe('实体页筛选浮层', () => {
       const opened = await openPerformer(browser, viewport, `?tag=${encodeURIComponent(long.join(','))}`);
       try {
         const { page } = opened;
-        await page.locator('[data-entity-readout]', { hasText: '视频 · 24 · 已选 6 个标签' }).waitFor({ timeout: 15_000 });
+        await page.locator('[data-entity-readout]', { hasText: '동영상 · 24 · 선택됨 6 개 태그' }).waitFor({ timeout: 15_000 });
         const width = await page.evaluate(() => ({
           page: document.documentElement.scrollWidth, view: window.innerWidth,
           readout: document.querySelector('[data-entity-filter-glass] [data-entity-readout]')!.textContent,

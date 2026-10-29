@@ -47,16 +47,16 @@ it('系统口令可直接转为可选密码且关闭需要明确提交', async (
   vi.stubGlobal('fetch', fetcher);
   const host = await mount({ mode: 'legacy', revision: 'legacy' }, receipt);
   expect(host.querySelector('[autocomplete="current-password"]')).toBeNull();
-  expect(host.querySelector('button[type="submit"]')?.textContent).toBe('保存配置');
+  expect(host.querySelector('button[type="submit"]')?.textContent).toBe('설정 저장');
   await click(checkbox(host));
   expect(newPasswords(host)).toHaveLength(2);
   expect(newPasswords(host).every((input) => input.disabled)).toBe(true);
-  expect(host.querySelector('[role="note"]')?.textContent).toContain('直接访问馆藏');
+  expect(host.querySelector('[role="note"]')?.textContent).toContain('저장하면 Peach에 연결할 수 있는 기기에서 컬렉션에 바로 접속할 수 있습니다.');
   expect(fetcher).not.toHaveBeenCalled();
   await submit(host);
   expect(sentBody(fetcher)).toMatchObject({ action: 'disable', confirm_disable: true });
-  expect(receipt).toHaveBeenCalledWith('已关闭访问密码');
-  expect(host.querySelector('[role="note"]')?.textContent).toContain('未设置访问密码');
+  expect(receipt).toHaveBeenCalledWith('접속 비밀번호 사용이 해제되었습니다');
+  expect(host.querySelector('[role="note"]')?.textContent).toContain('접속 비밀번호가 설정되지 않았습니다');
 });
 
 it('关闭选项位于输入上方且保留草稿并要求当前密码验证', async () => {
@@ -101,15 +101,15 @@ it('没有密码时画成警示，提交不合法内容变为字段错误且不�
   const fetcher = vi.fn();
   vi.stubGlobal('fetch', fetcher);
   const host = await mount({ mode: 'open', revision: 'one' });
-  expect(host.querySelector('[role="note"]')?.textContent).toContain('未设置访问密码');
-  expect(host.textContent).toContain('至少 8 个字符');
+  expect(host.querySelector('[role="note"]')?.textContent).toContain('접속 비밀번호가 설정되지 않았습니다');
+  expect(host.textContent).toContain('8자 이상이어야 합니다. 저장하면 다른 기기는 다시 로그인해야 합니다.');
   const [password, confirm] = newPasswords(host) as [HTMLInputElement, HTMLInputElement];
   await type(password, 'short');
   await type(confirm, 'other');
   await submit(host);
   expect(password.getAttribute('aria-invalid')).toBe('true');
   expect(confirm.getAttribute('aria-invalid')).toBe('true');
-  expect(host.textContent).toContain('访问密码需为 8–256 个字符');
-  expect(host.textContent).toContain('两次输入的密码不一致');
+  expect(host.textContent).toContain('접속 비밀번호는 8~256자여야 합니다');
+  expect(host.textContent).toContain('입력한 두 비밀번호가 일치하지 않습니다');
   expect(fetcher).not.toHaveBeenCalled();
 });

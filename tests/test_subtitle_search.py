@@ -29,13 +29,13 @@ class SubtitleSearchTests(unittest.TestCase):
             payload = source.search('ABP-758')
         self.assertEqual(payload['source'], 'SubtitleCat')
         self.assertFalse(payload['more'])
-        self.assertEqual([(row['title'], row['language']) for row in payload['results']], [('ABP-758', '简体中文 / 繁体中文')])
+        self.assertEqual([(row['title'], row['language']) for row in payload['results']], [('ABP-758', '중국어 간체 / 중국어 번체')])
         self.assertEqual(source._detail(payload['results'][0]['id']), source.SITE + '/subs/42/ABP-758.html')
 
     def test_files_expose_language_choices_without_download_urls(self):
         with self.client(lambda request: httpx.Response(200, text=DETAIL)):
             rows = source.files(source._id('/subs/42/ABP-758.html'))['files']
-        self.assertEqual([row['language'] for row in rows], ['简体中文', '繁体中文'])
+        self.assertEqual([row['language'] for row in rows], ["중국어 간체", "중국어 번체"])
         self.assertEqual([row['index'] for row in rows], [0, 1])
         self.assertTrue(all(row['playable'] and 'url' not in row for row in rows))
 
@@ -91,11 +91,11 @@ class SubtitleSearchTests(unittest.TestCase):
 
     def test_missing_chinese_does_not_fall_back_to_other_languages(self):
         with self.client(lambda request: httpx.Response(200, text='<a href="/subs/42/test-en.srt">English</a>')):
-            with self.assertRaisesRegex(source.SubtitleSearchError, '不存在'):
+            with self.assertRaisesRegex(source.SubtitleSearchError, '자막 파일이 없습니다'):
                 source.load(source._id('/subs/42/ABP-758.html'), 0)
 
     def test_provider_errors_and_changed_pages_are_actionable(self):
-        for response, message in ((httpx.Response(403), '无法连接'), (httpx.Response(200, text='captcha'), '页面未取得')):
+        for response, message in ((httpx.Response(403), '연결할 수 없습니다'), (httpx.Response(200, text='captcha'), '검색 페이지를 가져오지 못했습니다')):
             with self.subTest(message=message), self.client(lambda request, response=response: response):
                 with self.assertRaisesRegex(source.SubtitleSearchError, message):
                     source.search('ABP-758')
@@ -110,9 +110,9 @@ class SubtitleSearchTests(unittest.TestCase):
             with self.subTest(url=url), self.assertRaises(source.SubtitleSearchError):
                 source._url(url, '.html')
         with self.client(lambda request: httpx.Response(302, headers={'Location': 'https://127.0.0.1/private'})):
-            with self.assertRaisesRegex(source.SubtitleSearchError, '地址不受支持'):
+            with self.assertRaisesRegex(source.SubtitleSearchError, '지원하지 않는 자막 다운로드 주소'):
                 source.files(source._id('/subs/42/a.html'))
-        with self.assertRaisesRegex(source.SubtitleSearchError, '编号无效'):
+        with self.assertRaisesRegex(source.SubtitleSearchError, '번호가 유효하지 않습니다'):
             source.files('invalid!')
 
     def test_conversion_rejects_invalid_timeline_graphics_and_oversized_input(self):
@@ -120,7 +120,7 @@ class SubtitleSearchTests(unittest.TestCase):
             with self.subTest(fmt=fmt), self.assertRaises(source.SubtitleSearchError):
                 source.convert(data, fmt)
         with self.client(lambda request: httpx.Response(200, content=b'x' * (source.MAX_BYTES + 1))):
-            with self.assertRaisesRegex(source.SubtitleSearchError, '4 MiB'):
+            with self.assertRaisesRegex(source.SubtitleSearchError, '4MiB'):
                 source.files(source._id('/subs/42/a.html'))
 
 

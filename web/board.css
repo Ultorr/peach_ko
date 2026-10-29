@@ -272,7 +272,7 @@ body #stats [data-section-nav]{background:none;border-radius:0;padding:0;box-sha
 body #stats [data-section-nav] h2{margin:0 0 12px;padding:0;font:var(--board-body-medium);color:var(--color-text-primary)}
 body #stats [data-section-items]{gap:4px;border:0;overflow:visible}
 body #stats [data-section-items]>[aria-selected]{flex:none;min-height:40px;height:auto;padding:10px 12px;border:0;border-radius:var(--control-radius);background:none;box-shadow:none;text-align:left;font:var(--board-body-medium);color:var(--color-text-secondary)}
-body #stats [data-section-items]>[aria-selected]:hover{background:var(--color-background-primary-hover);color:var(--color-text-primary)}
+body #stats [data-section-items]>[aria-selected]:hover{color:var(--color-text-primary)}
 body #stats [data-section-items]>[aria-selected=true]{background:var(--color-background-tertiary-default);color:var(--color-text-primary)}
 body #stats :is([aria-label="配置分区"],[aria-labelledby="reviewcategories"])>[aria-selected=false]:hover{background:none;color:var(--color-text-primary)}
 body #stats [data-section-items]>[aria-selected]:focus-visible{outline:2px solid var(--color-border-focus-ring);outline-offset:-2px}
@@ -837,9 +837,10 @@ html.board-high-contrast :is(.card .badge,[data-glass-pane]){background:var(--gr
 /* 安装后教程：BoardUI NotificationViewport 把教程固定在右下角，内部任务沿用 RareUI
    Task List 的真实状态、完成项后移与打勾，不占当前页面正文的布局空间。
    右下角还住着 Toast 栈和窄屏居中的批量选择条。教程贴着角落放，不为它们留白：层级
-   100 压在批量条（180）与 Toast（`--layer-popover`）之下，重叠时它们盖在教程上面。
-   Toast 几秒就消失，批量条只在选中时出现，为它们常年空出一截反倒让教程悬在半空。 */
+   100 压在批量条（180）与 Toast（`--layer-popover`）之下，批量条可盖在教程上面。
+   仅有可见 Toast 时压缩任务列表，为 receipts.js 的 160px 安全线留出空间；消失后恢复高度。 */
 #postSetupTutorial{position:fixed;right:12px;bottom:12px;z-index:100;display:block;width:min(400px,calc(100vw - 24px));max-height:calc(100dvh - 24px);pointer-events:none}
+body:has(#toasts [data-sonner-toast][data-visible=true][data-removed=false]) #postSetupTutorial{max-height:calc(100dvh - 24px - 160px)}
 #postSetupTutorial[hidden]{display:none}
 .post-setup-notification{pointer-events:auto;display:flex;flex-direction:column;max-height:inherit;overflow:hidden;border:1px solid var(--color-border-button-default);border-radius:16px;background:var(--color-background-primary-default);box-shadow:var(--elevation-dropdown);animation:post-setup-notification-in .15s ease-out}
 .post-setup-notification-head{display:grid;grid-template-columns:40px minmax(0,1fr) 32px;align-items:center;gap:12px;padding:16px}
@@ -876,7 +877,7 @@ html.board-high-contrast :is(.card .badge,[data-glass-pane]){background:var(--gr
 .post-setup-error{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;padding:16px}
 .post-setup-error-actions{display:flex;gap:8px;margin-top:12px}
 @keyframes post-setup-notification-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
-@media(min-width:640px){#postSetupTutorial{right:24px;bottom:24px;max-height:calc(100dvh - 48px)}}
+@media(min-width:640px){#postSetupTutorial{right:24px;bottom:24px;max-height:calc(100dvh - 48px)}body:has(#toasts [data-sonner-toast][data-visible=true][data-removed=false]) #postSetupTutorial{max-height:calc(100dvh - 48px - 160px)}}
 @media(max-width:720px){.post-setup-task>a{min-height:58px;padding-left:10px}}
 @media(prefers-reduced-motion:reduce){.post-setup-notification{animation:none}.post-setup-task,.post-setup-task>a{transition:none}}
 /* ── Board 第三批：主按钮尺寸、配置页白底、通知与提醒、批量条、关注行图标 ── */

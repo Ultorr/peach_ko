@@ -20,6 +20,7 @@ import { Chip } from '@/components/base/badges/chip';
 import { Button } from '@/components/base/buttons/button';
 
 import { errorMessage } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import { cardClass } from '../components/card';
 import { EmptyState } from '../components/empty-state';
 import { LoadingDots } from '../components/loading-dots';
@@ -59,7 +60,7 @@ function FollowupList({ rows }: { rows: TaskRunPayload[] }) {
           <li key={row.id} data-status={row.status} data-followup-key={row.followup_key}
             className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-t border-separator-border px-5 py-2.5">
             <span className="min-w-0 break-words text-caption-1-regular text-text-primary">
-              {row.task_label}
+              {koreanLabel(row.task_label)}
             </span>
             <StatusBadge status={row.status} />
             {detail
@@ -88,7 +89,7 @@ function RunCard(
       })}>
       <div className="flex flex-col gap-1.5 px-5 pt-5 pb-4">
         <div className="flex flex-wrap items-center gap-2">
-          <strong className="min-w-0 break-words text-title-1-medium text-text-primary">{run.task_label}</strong>
+          <strong className="min-w-0 break-words text-title-1-medium text-text-primary">{koreanLabel(run.task_label)}</strong>
           <StatusBadge status={run.status} />
         </div>
         <p className="text-caption-1-regular text-text-secondary">{meta}</p>
@@ -112,7 +113,7 @@ function RunCard(
 function RunningRun({ run, followups }: { run: TaskRunPayload; followups?: TaskRunPayload[] }) {
   const total = run.progress_total || 0;
   const current = run.progress_current || 0;
-  const label = run.progress_label || "진행 중";
+  const label = koreanLabel(run.progress_label) || "진행 중";
   const elapsed = elapsedText(run.elapsed_seconds);
   const meta = [TRIGGER_LABELS[run.trigger] || run.trigger, elapsed && `실행 시간 ${elapsed}`]
     .filter(Boolean).join(' · ');

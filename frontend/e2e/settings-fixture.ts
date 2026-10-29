@@ -52,10 +52,10 @@ export async function stubServer(page: Page): Promise<Server> {
 }
 
 /** 齿轮打开面板并停在 `section` 那一格。窄屏下齿轮收在抽屉底部，直接派发点击，两种宽度走同一条入口。 */
-export async function openPanel(page: Page, section = '外观与导航'): Promise<void> {
+export async function openPanel(page: Page, section = '외관 및 탐색'): Promise<void> {
   await page.locator('#settingsBtn').evaluate((button: HTMLElement) => button.click());
   await page.locator(`${PANEL}:not([hidden])`).waitFor({ timeout: 10_000 });
-  if (section !== '外观与导航') await page.locator(PANEL).getByRole('tab', { name: section, exact: true }).click();
+  if (section !== '외관 및 탐색') await page.locator(PANEL).getByRole('tab', { name: section, exact: true }).click();
   await page.locator(PANEL).getByRole('tab', { name: section, exact: true })
     .and(page.locator('[aria-selected="true"]')).waitFor({ timeout: 5_000 });
 }

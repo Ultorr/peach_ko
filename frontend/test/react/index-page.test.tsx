@@ -89,7 +89,7 @@ describe('名册', () => {
     const given = props();
     const host = await open(given);
     const marker = host.querySelector('[data-index-feed]');
-    expect(marker?.getAttribute('aria-label')).toBe('已订阅新作');
+    expect(marker?.getAttribute('aria-label')).toBe('새 항목 구독 중');
     expect(host.querySelectorAll('[data-index-feed]')).toHaveLength(1);
     await click(marker);
     expect(given.openEntity).toHaveBeenCalledWith('performer', '甲');
@@ -102,10 +102,10 @@ describe('名册', () => {
     const fetcher = serve(() => ({ items: [person('动画作者', { entity_kind:'creator', identity_labels: ['动画作者'] })], categories:{ animation:1 }, has_more: false }));
     const given = props();
     const host = await open(given);
-    expect(host.querySelector('[data-index-title]')?.textContent).toBe('艺人');
+    expect(host.querySelector('[data-index-title]')?.textContent).toBe('아티스트');
     expect(cells(host)[0]?.textContent).toContain('动画作者');
-    expect(host.querySelector('[aria-label="身份分类"]')?.textContent).toBe('全部动画作者');
-    await click(buttonNamed('动画作者', host));
+    expect(host.querySelector('[aria-label="인물 분류"]')?.textContent).toBe('전체애니메이션 작가');
+    await click(buttonNamed('애니메이션 작가', host));
     await settle();
     expect(given.route).toHaveBeenLastCalledWith(expect.objectContaining({ category: 'animation' }), { replace: false });
     expect(urls(fetcher)[0]).toContain('category=animation');
@@ -115,7 +115,7 @@ describe('名册', () => {
   it('艺人分类显示有内容的分类，卖家地址不接受女优筛选', async () => {
     seed(indexKey('performers', ''), [person('女优', { identity_labels:['女优','西方'] })], false, { japanese_av:1, western:1 });
     const host = await open(props());
-    expect(host.querySelector('[aria-label="身份分类"]')?.textContent).toBe('全部女优西方');
+    expect(host.querySelector('[aria-label="인물 분류"]')?.textContent).toBe('전체배우서양');
     expect(indexRoute({ kind:'creators', q:'', scope:'local', view:'alphabet', category:'japanese_av' }).category).toBe('all');
   });
   it('换分类等新一页时，分类按钮行沿用上一份计数，不塌缩', async () => {
@@ -123,21 +123,21 @@ describe('名册', () => {
     const answer = pending<unknown>();
     serve(() => answer.answer);
     const host = await open(props());
-    const row = () => host.querySelector('[aria-label="身份分类"]')?.textContent;
-    expect(row()).toBe('全部女优素人西方');
-    await click(buttonNamed('素人', host));
+    const row = () => host.querySelector('[aria-label="인물 분류"]')?.textContent;
+    expect(row()).toBe('전체배우아마추어서양');
+    await click(buttonNamed('아마추어', host));
     await settle();
-    expect(row()).toBe('全部女优素人西方');
-    expect(buttonNamed('素人', host)?.getAttribute('aria-pressed')).toBe('true');
+    expect(row()).toBe('전체배우아마추어서양');
+    expect(buttonNamed('아마추어', host)?.getAttribute('aria-pressed')).toBe('true');
     await answer.release({ items: [person('素人')], categories: { japanese_av:1, amateur:2 }, has_more: false });
     await settle();
-    expect(row()).toBe('全部女优素人');
+    expect(row()).toBe('전체배우아마추어');
   });
   it('旧的卖家动画作者链接规范成艺人分类后，用 replace 改写地址', async () => {
     seed(indexKey('performers', '', 'animation'), [person('动画作者')], false, { animation:1 });
     const given = props({ kind: 'creators', category: 'animation' });
     const host = await open(given);
-    expect(host.querySelector('[data-index-title]')?.textContent).toBe('艺人');
+    expect(host.querySelector('[data-index-title]')?.textContent).toBe('아티스트');
     expect(given.route).toHaveBeenCalledTimes(1);
     expect(given.route).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'performers', scope: 'local', category: 'animation' }), { replace: true });
@@ -155,12 +155,12 @@ describe('名册', () => {
     serve(() => ({items:[],has_more:false}));
     const given = props();
     const host = await open(given);
-    expect([...host.querySelectorAll('[role="tab"]')].map(item => item.textContent?.trim())).toEqual(['艺人','卖家','在线']);
+    expect([...host.querySelectorAll('[role="tab"]')].map(item => item.textContent?.trim())).toEqual(['아티스트','판매자','온라인']);
     expect(host.querySelectorAll('[role="tablist"]')).toHaveLength(1);
     await click(tab(host,'creators'));
     await settle();
-    expect(host.querySelector('[data-index-title]')?.textContent).toBe('卖家');
-    expect(host.querySelector('[aria-label="身份分类"]')).toBeNull();
+    expect(host.querySelector('[data-index-title]')?.textContent).toBe('판매자');
+    expect(host.querySelector('[aria-label="인물 분류"]')).toBeNull();
     await click(tab(host,'online'));
     await settle();
     expect(given.route).toHaveBeenLastCalledWith(expect.objectContaining({kind:'performers',scope:'online',category:'all'}),{replace:false});
@@ -176,14 +176,14 @@ describe('名册', () => {
     expect(given.personAvatar).toHaveBeenCalledWith(expect.objectContaining({k:'真人账号'}),'creator',true);
     await click(cells(host)[0]);
     expect(given.openEntity).toHaveBeenCalledWith('creator','真人账号');
-    expect(host.querySelector('[aria-label="身份分类"]')?.textContent).toBe('全部网黄博主');
+    expect(host.querySelector('[aria-label="인물 분류"]')?.textContent).toBe('전체성인 크리에이터');
   });
   it('首屏读缓存，读数带加号，大图版式按大格取头像', async () => {
     seed(indexKey('performers', ''), [person('甲'), person('乙')], true);
     const given = props();
     const host = await open(given);
     expect(cells(host)).toHaveLength(2);
-    expect(host.querySelector('[data-index-count]')?.textContent).toBe('2+ 项');
+    expect(host.querySelector('[data-index-count]')?.textContent).toBe('2+ 개');
     expect(given.personAvatar).toHaveBeenCalledWith(expect.objectContaining({ k: '甲' }), 'performer', true);
     await click(cells(host)[0]);
     expect(given.openEntity).toHaveBeenCalledWith('performer', '甲');
@@ -192,17 +192,17 @@ describe('名册', () => {
   it('格子底下的作品数带单位、按千分位写；页头读数同样分位', async () => {
     seed(indexKey('performers', ''), [person('甲', { n: 128400 }), person('乙', { n: 0 })]);
     const host = await open(props());
-    expect(cells(host)[0]?.textContent).toContain('128,400 个视频');
-    expect(cells(host)[1]?.textContent).toContain('0 个视频');
+    expect(cells(host)[0]?.textContent).toContain('128,400 개 영상');
+    expect(cells(host)[1]?.textContent).toContain('0 개 영상');
   });
 
   it('名册没读到时页头不写「0 项」，空态配出错的字形', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({ error: '读不出来' }) })));
     const host = await open(props());
     await settle();
-    expect(host.textContent).toContain('没能读取');
+    expect(host.textContent).toContain('불러오기 실패：');
     expect(host.querySelector('[data-index-count]')?.textContent ?? '').toBe('');
-    expect(host.textContent).not.toContain('0 项');
+    expect(host.textContent).not.toContain('0 개');
   });
 
   it('字母表里截断的标签名悬停看得到全名', async () => {
@@ -248,8 +248,8 @@ describe('名册', () => {
     await settle();
     expect(given.route).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'agencies' }), { replace: false });
     expect(urls(fetcher)[0]).toContain('kind=agencies');
-    expect(host.querySelector('[data-index-title]')?.textContent).toBe('事务所');
-    expect(cells(host)[0]?.textContent).toContain('13 人');
+    expect(host.querySelector('[data-index-title]')?.textContent).toBe('소속사');
+    expect(cells(host)[0]?.textContent).toContain('13 명');
   });
 
   it('艺人切到在线名册：先退出选择模式，没建档的点开去关注页', async () => {
@@ -266,7 +266,7 @@ describe('名册', () => {
     expect(given.route).toHaveBeenLastCalledWith(expect.objectContaining({ scope: 'online' }), { replace: false });
     expect(urls(fetcher)[0]).toContain('/api/follow/authors?');
     const cell = host.querySelector('[data-follow-author="x:alice"]');
-    expect(cell?.textContent).toContain('4 项更新');
+    expect(cell?.textContent).toContain('4 개 업데이트');
     await click(cell);
     expect(given.openFollowAuthor).toHaveBeenCalledWith('x:alice');
     expect(given.openEntity).not.toHaveBeenCalled();
@@ -286,7 +286,7 @@ describe('名册', () => {
     await click(host.querySelector('[data-follow-author="entity:9"]'));
     expect(given.openEntity).toHaveBeenLastCalledWith('creator', 'Jul3D');
     const pending = host.querySelector('[data-follow-author="name:initiala"]');
-    expect(pending?.textContent).toContain('8 项更新 · 待确认');
+    expect(pending?.textContent).toContain('8 개 업데이트 · 확인 대기');
     await click(pending);
     expect(given.openEntity).toHaveBeenLastCalledWith('creator', 'InitialA');
     expect(given.openFollowAuthor).not.toHaveBeenCalled();
@@ -347,7 +347,7 @@ describe('标签', () => {
     const given = props({ kind: 'tags' });
     const host = await open(given);
     const pills = [...host.querySelectorAll('[data-tag-pill]')].map((pill) => pill.textContent);
-    expect(pills).toEqual(['全部', '角色设定', '情境场所']);
+    expect(pills).toEqual(['전체', '역할 설정', '상황과 장소']);
     await click([...host.querySelectorAll('[data-tag-pill]')][1]);
     expect(given.route).toHaveBeenLastCalledWith(expect.objectContaining({ category: 'role' }), { replace: false });
   });
@@ -364,23 +364,23 @@ describe('标签', () => {
     seed(indexKey('tags', '', 'all'), [tag('痴女'), tag('秘书OL')]);
     const given = props({ kind: 'tags' }, { selectMode: true });
     const host = await open(given);
-    expect(host.querySelector('[aria-label="所选标签操作"]')).toBeNull();
+    expect(host.querySelector('[aria-label="선택한 태그 작업"]')).toBeNull();
     await click(alphaTag(host, '痴女'));
     await click(alphaTag(host, '秘书OL'));
     expect(alphaTag(host, '痴女')?.getAttribute('aria-pressed')).toBe('true');
-    expect(host.textContent).toContain('已选 2 个标签');
+    expect(host.textContent).toContain('선택됨 2 개 태그');
     // 广泛匹配缺省开着；关掉就是「必须同时包含」。
-    await click(host.querySelector('[aria-label="所选标签操作"] input[type="checkbox"]'));
-    await click(buttonNamed('显示结果', host));
+    await click(host.querySelector('[aria-label="선택한 태그 작업"] input[type="checkbox"]'));
+    await click(buttonNamed('결과 표시', host));
     expect(given.showTags).toHaveBeenCalledWith(['痴女', '秘书OL'], 'all');
     expect(given.route).not.toHaveBeenCalled();
 
     await click(alphaTag(host, '痴女'));
-    expect(host.textContent).toContain('已选 1 个标签');
+    expect(host.textContent).toContain('선택됨 1 개 태그');
     await act(async () => setSelectMode(false));
     await act(async () => setSelectMode(true));
     expect(alphaTag(host, '痴女')?.getAttribute('aria-pressed')).toBe('false');
-    expect(host.textContent).not.toContain('已选');
+    expect(host.textContent).not.toContain('선택됨');
   });
 
   it('切到在线词表直接给字母表，点开去关注页', async () => {
@@ -399,6 +399,6 @@ describe('标签', () => {
     expect(given.openFollowTag).toHaveBeenCalledWith('long_hair');
     expect(given.showTags).not.toHaveBeenCalled();
     // 多选是本地目录语义：在线那一套不给操作条。
-    expect(host.querySelector('[aria-label="所选标签操作"]')).toBeNull();
+    expect(host.querySelector('[aria-label="선택한 태그 작업"]')).toBeNull();
   });
 });

@@ -68,21 +68,21 @@ describe('馆藏与口味分享', () => {
         });
       const { page } = opened;
       try {
-        const region = page.getByRole('region', { name: '数据上传', exact: true });
+        const region = page.getByRole('region', { name: '데이터 업로드', exact: true });
         await region.waitFor();
         assert.equal(await region.getByRole('switch').count(), 2, '两项上传开关同属一个分区');
-        const initialToggle = region.getByRole('switch', { name: '上传馆藏与口味明细', exact: true });
+        const initialToggle = region.getByRole('switch', { name: '컬렉션 및 취향 상세 정보 업로드', exact: true });
         assert.equal(await initialToggle.count(), 1, '关闭状态也应显示上传开关');
-        await region.getByRole('button', { name: '预览上传内容', exact: true }).click();
-        const preview = region.getByLabel('馆藏与口味上传预览', { exact: true });
+        await region.getByRole('button', { name: '업로드 내용 미리보기', exact: true }).click();
+        const preview = region.getByLabel('컬렉션 및 취향 업로드 미리보기', { exact: true });
         await preview.waitFor();
         assert.equal(posts.length, 0);
         assert.equal(await region.getByText(state.fields[0], { exact: true }).count(), 0);
-        assert.equal(await region.getByText(/当前预览包含.*不含账号、设备、文件路径和浏览器历史记录/).count(), 1);
+        assert.equal(await region.getByText(/현재 미리보기에는.*계정, 기기, 파일 경로, 브라우저 방문 기록 등의 개인 데이터는 포함되지 않습니다/).count(), 1);
         assert.match(await preview.innerText(), /EXM-001/);
         assert.match(await preview.innerText(), /performer/);
         assert.equal(await region.locator('[data-code-block]').count(), 1);
-        assert.equal(await region.getByRole('button', { name: '复制代码', exact: true }).count(), 1);
+        assert.equal(await region.getByRole('button', { name: '코드 복사', exact: true }).count(), 1);
         await preview.focus();
         assert.ok(await preview.evaluate(element => element.scrollWidth > element.clientWidth), '长代码在代码块内部横向滚动');
         await settle(page);
@@ -96,7 +96,7 @@ describe('馆藏与口味分享', () => {
         assert.equal(posts.length, 0);
         await region.getByRole('checkbox').focus();
         await region.getByRole('checkbox').press('Space');
-        await region.getByRole('button', { name: '同意并开启上传', exact: true }).click();
+        await region.getByRole('button', { name: '동의하고 업로드 켜기', exact: true }).click();
         await preview.waitFor({ state: 'hidden' });
         await settle(page);
         assert.deepEqual(posts[0], { enabled: true, schema: 4, consent: true, preview_token: 'preview-token' });
@@ -104,7 +104,7 @@ describe('馆藏与口味分享', () => {
         assert.equal(await region.getByRole('checkbox').count(), 0, '同意后收起同意框');
         assert.equal(await region.getByText(state.fields[0], { exact: true }).count(), 0, '同意后收起字段明细');
         assert.equal(await toggle.isChecked(), true);
-        await region.getByRole('button', { name: '预览上传内容', exact: true }).click();
+        await region.getByRole('button', { name: '업로드 내용 미리보기', exact: true }).click();
         await preview.waitFor();
         assert.equal(posts.length, 1, '查看预览不重复保存同意');
         assert.equal(await region.getByRole('checkbox').count(), 0, '已开启时查看预览不重复要求同意');

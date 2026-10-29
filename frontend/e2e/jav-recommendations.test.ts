@@ -23,11 +23,11 @@ describe('JAV 推荐与加载结构', () => {
         })) } });
       });
       await page.goto(new URL('/jav?tab=discover', page.url()).href);
-      const section = page.getByRole('region', { name: '为你推荐', exact: true });
-      const search = page.getByRole('searchbox', { name: '筛选推荐', exact: true });
+      const section = page.getByRole('region', { name: '추천', exact: true });
+      const search = page.getByRole('searchbox', { name: '추천 필터', exact: true });
       await section.locator('[data-jav-card]').first().waitFor();
-      await page.getByRole('button', { name: '馆藏探索', exact: true }).click();
-      await page.getByRole('button', { name: '按发行日期排序', exact: true }).click();
+      await page.getByRole('button', { name: '컬렉션 탐색', exact: true }).click();
+      await page.getByRole('button', { name: '출시일순 정렬', exact: true }).click();
       await section.locator('[data-catalog-tag="恋足"]').click();
       await search.fill('PCH');
       await section.evaluate(node => { (node as HTMLElement).dataset.returnProbe = 'kept' });
@@ -91,7 +91,7 @@ describe('JAV 推荐与加载结构', () => {
       assert.ok(cover && Math.abs(cover.width / cover.height - 0.75) < 0.02, '大图封面占位应与馆藏正封同一比例');
       const skeletonWidth = await page.locator('[data-skeleton="jav-discover"]').first().boundingBox();
       const skeletonCard = await page.locator('[data-jav-skeleton-card]').first().boundingBox();
-      const searchBox = await page.locator('input[aria-label="筛选推荐"]').locator('xpath=../../..').boundingBox();
+      const searchBox = await page.locator('input[aria-label="추천 필터"]').locator('xpath=../../..').boundingBox();
       const main = await page.locator('#main').boundingBox();
       assert.ok(skeletonWidth && main && skeletonWidth.width >= main.width - 40);
       const pendingFilter = await page.locator('[data-jav-filter]').boundingBox();
@@ -121,8 +121,8 @@ describe('JAV 推荐与加载结构', () => {
       await page.screenshot({ path: `../build/jav-discover-pending-${viewport.name}.png` });
       release();
       await page.getByRole('heading', { name: 'DEMO-777 演示新作', exact: true }).waitFor();
-      const search = page.getByRole('searchbox', { name: '筛选推荐', exact: true });
-      const cards = page.getByRole('region', { name: '为你推荐', exact: true }).locator('article');
+      const search = page.getByRole('searchbox', { name: '추천 필터', exact: true });
+      const cards = page.getByRole('region', { name: '추천', exact: true }).locator('article');
       assert.equal(await cards.count(), 3);
       assert.equal(await cards.first().locator('[data-media-who]').textContent(), '规范姓名');
       assert.equal(await cards.first().locator('[data-media-who]').getAttribute('title'), '规范姓名');
@@ -136,13 +136,13 @@ describe('JAV 推荐与加载结构', () => {
       const refresh = page.locator('[data-jav-filter] [data-jav-metadata-update]');
       assert.equal(await refresh.count(), 1);
       assert.equal(await refresh.textContent(), '');
-      assert.equal(await cards.first().locator('[data-jav-taste-score]').textContent(), '强烈推荐');
+      assert.equal(await cards.first().locator('[data-jav-taste-score]').textContent(), '적극 추천');
       const tierBox = await cards.first().locator('[data-jav-taste-score]').boundingBox();
       const tagsBox = await cards.first().locator('[data-jav-tags]').boundingBox();
       const contentTag = await cards.first().locator('[data-media-tag]').first().boundingBox();
       assert.ok(tierBox && tagsBox && contentTag && Math.abs(tierBox.y - contentTag.y) <= 4
         && tierBox.x + tierBox.width <= contentTag.x, '推荐档位与内容标签同行，排在内容标签前');
-      const recommendation = cards.first().getByRole('button', { name: '推荐分 100，强烈推荐', exact: true });
+      const recommendation = cards.first().getByRole('button', { name: '추천 점수 100，적극 추천', exact: true });
       await recommendation.focus();
       await page.getByRole('tooltip').filter({ hasText: '常看的女优：规范姓名' }).waitFor({ state: 'visible' });
       await recommendation.evaluate(node => (node as HTMLButtonElement).blur());
@@ -187,10 +187,10 @@ describe('JAV 推荐与加载结构', () => {
       }
       assert.deepEqual(await search.locator('xpath=../../..').boundingBox(), searchBox);
       assert.equal(await cards.nth(1).locator('h3').evaluate(node => getComputedStyle(node).webkitLineClamp), '2');
-      const lookup = page.getByRole('button', { name: '查找资源', exact: true }).first();
+      const lookup = page.getByRole('button', { name: '리소스 찾기', exact: true }).first();
       assert.notEqual(await lookup.evaluate(node => getComputedStyle(node).backgroundColor),
-        await cards.first().getByRole('button', { name: '查找资源', exact: true }).evaluate(node => getComputedStyle(node).backgroundColor));
-      const avatar = cards.first().getByRole('link', { name: '打开女优页：规范姓名', exact: true });
+        await cards.first().getByRole('button', { name: '리소스 찾기', exact: true }).evaluate(node => getComputedStyle(node).backgroundColor));
+      const avatar = cards.first().getByRole('link', { name: '배우 페이지 열기：规范姓名', exact: true });
       assert.equal(await avatar.getAttribute('href'), '/performers/42');
       assert.equal(await avatar.locator('.ini').textContent(), '规');
       const avatarBox = await avatar.boundingBox();
@@ -206,31 +206,31 @@ describe('JAV 推荐与加载结构', () => {
         await cards.first().hover();
         assert.notEqual(await cards.first().evaluate(node => getComputedStyle(node).boxShadow), 'none');
       }
-      const source = cards.first().getByRole('link', { name: '作品来源', exact: true });
+      const source = cards.first().getByRole('link', { name: '항목 출처', exact: true });
       const buttonShape = (node: Element) => {
         const style = getComputedStyle(node);
         return { height: style.height, border: style.borderWidth, radius: style.borderRadius,
           background: style.backgroundColor };
       };
       assert.deepEqual(await source.evaluate(buttonShape),
-        await cards.first().getByRole('button', { name: '查找资源', exact: true }).evaluate(buttonShape));
+        await cards.first().getByRole('button', { name: '리소스 찾기', exact: true }).evaluate(buttonShape));
       assert.equal(await source.getAttribute('target'), '_blank');
       assert.equal(await source.locator('svg').count(), 1);
       await search.fill('DEMO-777');
       await search.press('Enter');
       assert.equal(await cards.count(), 1);
       await search.fill('');
-      await page.waitForFunction(() => document.querySelectorAll('[aria-label="为你推荐"] article').length === 3);
-      await page.locator('label:has(input[aria-label="小图"])').click();
+      await page.waitForFunction(() => document.querySelectorAll('[aria-label="추천"] article').length === 3);
+      await page.locator('label:has(input[aria-label="작은 이미지"])').click();
       const smallCover = await cards.first().locator('[data-jav-cover-box]').boundingBox();
       assert.ok(smallCover && Math.abs(smallCover.width / smallCover.height - 16 / 9) < 0.02);
       assert.equal(await cards.first().locator('img.poster').evaluate(node => getComputedStyle(node).objectFit), 'contain');
-      await page.locator('label:has(input[aria-label="大图"])').click();
+      await page.locator('label:has(input[aria-label="큰 이미지"])').click();
       await cards.first().getByRole('button', { name: '恋足', exact: true }).click();
-      await page.getByRole('button', { name: '清除筛选', exact: true }).click();
+      await page.getByRole('button', { name: '필터 지우기', exact: true }).click();
       assert.equal(await cards.count(), 3);
-      await cards.first().getByRole('button', { name: '查找资源', exact: true }).click();
-      await page.getByRole('dialog').getByRole('button', { name: '关闭资源面板', exact: true }).click();
+      await cards.first().getByRole('button', { name: '리소스 찾기', exact: true }).click();
+      await page.getByRole('dialog').getByRole('button', { name: '리소스 패널 닫기', exact: true }).click();
       await page.getByRole('dialog').waitFor({ state: 'hidden' });
       await settle(page);
       assert.equal(await page.locator('[data-jav-skeleton-cover]').count(), 0);

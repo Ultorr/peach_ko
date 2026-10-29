@@ -44,7 +44,7 @@ it('越界的数不提交、标出错误，改对之后错误消失', async () =
   expect(input().getAttribute('aria-invalid')).toBe('true');
   const error = host.querySelector<HTMLElement>('[role=status]')!;
   expect(error.hidden).toBe(false);
-  expect(error.textContent).toBe('请输入 1–50 的整数（条）');
+  expect(error.textContent).toBe('입력할 정수의 범위: 1–50 （단위:개）');
   await commit(input(), '17');
   expect(apply).toHaveBeenLastCalledWith(17);
   expect(input().hasAttribute('aria-invalid')).toBe(false);
@@ -90,7 +90,7 @@ it('必填的那几项没有开关', async () => {
   const { host, input } = await setup('batchSizeSetting', 60, '每批作品');
   expect(host.querySelector('[role=switch]')).toBeNull();
   expect(input().value).toBe('60');
-  expect(host.querySelector('[data-number-control] span')!.textContent).toBe('个');
+  expect(host.querySelector('[data-number-control] span')!.textContent).toBe('개');
 });
 
 it('读回的偏好只认区间内的整数', () => {
@@ -100,8 +100,8 @@ it('读回的偏好只认区间内的整数', () => {
 });
 
 it('以分钟计的间隔满一天时在单位旁换算成天，不满一天或不是分钟时不说', () => {
-  expect(dayReading(10080, '分钟')).toBe('7 天');
-  expect(dayReading(2160, '分钟')).toBe('约 1.5 天');
+  expect(dayReading(10080, '分钟')).toBe('7 일');
+  expect(dayReading(2160, '分钟')).toBe('약 1.5 일');
   expect(dayReading(1439, '分钟')).toBe('');
   expect(dayReading(10080, '秒')).toBe('');
 });

@@ -113,7 +113,7 @@ describe('计数行', () => {
     await open(p);
     const row = p.countRow!;
     expect(row.hasAttribute('aria-busy')).toBe(false);
-    expect(row.querySelector('[data-collection-summary] strong')?.textContent).toBe('2 个');
+    expect(row.querySelector('[data-collection-summary] strong')?.textContent).toBe('2 개');
     const badge = (key: string) => row.querySelector(`[data-count-badge="junk:${key}"]`)?.textContent ?? null;
     expect([badge(''), badge('video'), badge('image'), badge('archive'), badge('dismissed')]).toEqual(['5', '2', '3', null, '3']);
     // 徽标交给遗留层 `popBadges` 记数：变了的那几枚弹，没动的原地不动。
@@ -125,7 +125,7 @@ describe('计数行', () => {
     const p = props();
     await open(p);
     const nav = p.countRow!.querySelector('nav[data-junk-filters]');
-    expect(nav?.getAttribute('aria-label')).toBe('垃圾文件分类');
+    expect(nav?.getAttribute('aria-label')).toBe('불필요한 파일 분류');
     expect(nav?.getAttribute('role')).toBeNull();
     expect([...nav!.querySelectorAll('a use')].map((use) => use.getAttribute('href'))).toEqual([
       '#i-layout-grid', '#i-play', '#i-pics', '#i-file-archive', '#i-file-audio', '#i-globe', '#i-hard-drive', '#i-eye-off',
@@ -143,7 +143,7 @@ describe('计数行', () => {
       '/junk-files?type=archive&view=dismissed', '/junk-files?type=audio&view=dismissed',
       '/junk-files?type=url&view=dismissed', '/junk-files?type=other&view=dismissed', '/junk-files',
     ]);
-    expect(links.at(-1)?.textContent).toBe('返回待判断');
+    expect(links.at(-1)?.textContent).toBe('검토 대기로 되돌리기');
     expect(links.at(-1)?.getAttribute('aria-current')).toBe('page');
     await click(links[2]);
     expect(navigate).toHaveBeenCalledWith('/junk-files?type=image&view=dismissed');
@@ -159,7 +159,7 @@ describe('计数行', () => {
     const { host } = await open(p);
     expect(p.countRow!.querySelector('[data-skeleton]')).toBeNull();
     expect(p.countRow!.querySelector('[data-collection-summary] strong')?.textContent).toBe('—');
-    expect(host.querySelector('[data-media-error] [data-note-action]')?.textContent).toBe('重试');
+    expect(host.querySelector('[data-media-error] [data-note-action]')?.textContent).toBe('다시 시도');
     expect(cards(host)).toHaveLength(0);
   });
 });
@@ -184,11 +184,11 @@ describe('一张卡', () => {
     expect(cards(host).every((card) => card.querySelector('[data-junk-title]')!.hasAttribute('data-middle-truncate'))).toBe(true);
     expect(video!.querySelector('[data-media-check]')).not.toBeNull();
     expect(host.querySelector('[data-later]')).toBeNull();
-    expect(video!.querySelector('[data-junk-facts]')?.textContent).toBe('视频文件名像推广2 MB');
+    expect(video!.querySelector('[data-junk-facts]')?.textContent).toBe('동영상文件名像推广2 MB');
     expect(archive!.querySelector('[data-junk-title]')?.tagName).toBe('SPAN');
     expect(archive!.querySelector('[data-media-art]')).toBeNull();
-    expect(archive!.querySelector('[data-media-glyph]')?.textContent).toBe('压缩包');
-    expect(archive!.querySelector('[data-junk-size]')?.textContent).toBe('大小未知');
+    expect(archive!.querySelector('[data-media-glyph]')?.textContent).toBe('압축 파일');
+    expect(archive!.querySelector('[data-junk-size]')?.textContent).toBe('크기 알 수 없음');
     await click(video!.querySelector('button[data-junk-title]'));
     expect(open_).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), video);
   });
@@ -197,10 +197,10 @@ describe('一张卡', () => {
     vi.stubGlobal('fetch', fetchMock(200, answer([junk(1)])));
     const { host, update } = await open(props());
     const labels = () => [...cards(host)[0]!.querySelectorAll('[data-junk-action] [data-junk-label]')].map((el) => el.textContent);
-    expect(labels()).toEqual(['打开位置', '不是垃圾', '移入回收站']);
+    expect(labels()).toEqual(['위치 열기', '정크 아님', '휴지통으로 이동']);
     await update({ view: 'dismissed' });
     await settle();
-    expect(labels()).toEqual(['打开位置', '重新判断', '移入回收站']);
+    expect(labels()).toEqual(['위치 열기', '다시 판별', '휴지통으로 이동']);
   });
 
   it('处置交给壳：请求期间那颗键忙，失败后恢复成可点', async () => {
@@ -258,10 +258,10 @@ describe('一屏卡片', () => {
   it('为空时按视图说明为什么是空的', async () => {
     vi.stubGlobal('fetch', fetchMock(200, answer([])));
     const { host, update } = await open(props());
-    expect(host.querySelector('h3')?.textContent).toBe('没有待判断的垃圾文件');
+    expect(host.querySelector('h3')?.textContent).toBe('판정 대기 중인 불필요한 파일이 없습니다');
     await update({ view: 'dismissed' });
     await settle();
-    expect(host.querySelector('h3')?.textContent).toBe('没有已排除的文件');
+    expect(host.querySelector('h3')?.textContent).toBe('제외된 파일이 없습니다');
   });
 
   it('整批在手上，按每批条数一段段露，露完不留哨兵', async () => {

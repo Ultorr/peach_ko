@@ -306,7 +306,7 @@ class MountReachabilityTests(unittest.TestCase):
         self.now = 600
         self.wait_state("permission_denied")
         self.assertEqual(len(self.calls), 3)
-        self.assertEqual(self.monitor.summary()["warnings"], ["本地磁盘：没有权限读取"])
+        self.assertEqual(self.monitor.summary()["warnings"], ["本地磁盘：읽기 권한 없음"])
         self.now = 659
         self.monitor.tick()
         self.assertEqual(len(self.calls), 3)
@@ -384,7 +384,7 @@ class MountReachabilityTests(unittest.TestCase):
         self.assertNotIn("roots", row)
         self.assertNotIn("declared", row)
         self.assertNotIn("resolved", row)
-        self.assertEqual(row["message"], "本地磁盘：未配置挂载点")
+        self.assertEqual(row["message"], "本地磁盘：마운트 지점 미설정")
 
 
 if __name__ == "__main__":

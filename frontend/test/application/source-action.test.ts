@@ -25,7 +25,7 @@ describe('定位资产动作', () => {
     expect(button.getAttribute('aria-disabled')).toBe('true');
     expect(button.disabled).toBe(false);
     expect(document.activeElement).toBe(button);
-    expect(button.querySelector('[role="status"]')?.getAttribute('aria-label')).toBe('正在定位');
+    expect(button.querySelector('[role="status"]')?.getAttribute('aria-label')).toBe('위치 확인 중');
     expect(button.textContent).toContain('定位源文件 & 目录');
     await reveal(41, status, { button });
     expect(request).toHaveBeenCalledTimes(1);

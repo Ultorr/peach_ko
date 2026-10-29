@@ -140,20 +140,20 @@ describe('读数卡', () => {
 
   it('复核列前三类、其余合成一项；垃圾分项只列有东西的类别', () => {
     expect(reviewSummary({ counts: { metadata_fields: 12, performer_avatars: 3, studio_logos: 2, creator_tags: 1 } }))
-      .toEqual({ figure: '18 条待复核', meta: '元数据字段 12 · 女优头像 3 · 厂牌 Logo 2 · 其余 1' });
+      .toEqual({ figure: '18 개 검토 대기', meta: '메타데이터 필드 12 · 배우 프로필 사진 3 · 스튜디오 로고 2 · 나머지 1' });
     expect(junkBreakdown({ pending_total: 5, dismissed_total: 2, counts: { video: 4, image: 0, url: 1 } }))
-      .toBe('视频 4 · 网址 1 · 已忽略 2');
+      .toBe('동영상 4 · URL 1 · 무시됨 2');
   });
 
   it('五张卡各读各的；点一张就换到那一页', async () => {
     const { host, open, server } = await openPage();
-    expect(entry(host, 'review')?.textContent).toContain('18 条待复核');
-    expect(entry(host, 'quality')?.textContent).toContain('7 个待升级');
-    expect(entry(host, 'duplicates')?.textContent).toContain('3 组 · 8 个文件');
-    expect(entry(host, 'duplicates')?.textContent).toContain('可回收 2.0 GB');
-    expect(entry(host, 'ads')?.textContent).toContain('5 个待判断');
-    expect(entry(host, 'trash')?.textContent).toContain('9 项在回收站');
-    expect(entry(host, 'trash')?.textContent).toContain('占用 3.0 GB');
+    expect(entry(host, 'review')?.textContent).toContain('18 개 검토 대기');
+    expect(entry(host, 'quality')?.textContent).toContain('7 개 업그레이드 대기');
+    expect(entry(host, 'duplicates')?.textContent).toContain('3 그룹 · 8 개 파일');
+    expect(entry(host, 'duplicates')?.textContent).toContain('확보 가능한 공간 2.0 GB');
+    expect(entry(host, 'ads')?.textContent).toContain('5 개 판별 대기');
+    expect(entry(host, 'trash')?.textContent).toContain('9 개 항목이 휴지통에 있음');
+    expect(entry(host, 'trash')?.textContent).toContain('사용 공간 3.0 GB');
     for (const section of ['review', 'quality', 'duplicates', 'ads', 'trash'] as const) await click(entry(host, section));
     expect(open.mock.calls.map(([section]) => section)).toEqual(['review', 'quality', 'duplicates', 'ads', 'trash']);
     expect(server.unknown).toEqual([]);
@@ -161,8 +161,8 @@ describe('读数卡', () => {
 
   it('一张卡取不到只把那一张写成「读取失败」', async () => {
     const { host } = await openPage(withRoots, { '/api/review?counts=1': failWith(500) });
-    expect(entry(host, 'review')?.textContent).toContain('读取失败');
-    expect(entry(host, 'trash')?.textContent).toContain('9 项在回收站');
+    expect(entry(host, 'review')?.textContent).toContain('읽기 실패');
+    expect(entry(host, 'trash')?.textContent).toContain('9 개 항목이 휴지통에 있음');
   });
 
   it('回收站计数跟着侧栏选中的媒体库走', async () => {
@@ -223,26 +223,26 @@ describe('资源同步', () => {
     });
     const host = await wrap(<ResourceSyncCard toast={toast} />);
     await settle();
-    expect(host.textContent).toContain('本地磁盘');
-    expect(host.textContent).toContain('离线，已跳过');
-    expect(host.textContent).toContain('馆藏中有 30 项');
-    expect(host.textContent).toContain('空文件夹 3 个');
-    expect(host.textContent).toContain('待永久删除');
-    expect(host.textContent).toContain('保留来源根目录');
+    expect(host.textContent).toContain('로컬 디스크');
+    expect(host.textContent).toContain('오프라인으로 건너뜀');
+    expect(host.textContent).toContain('컬렉션에 30 개');
+    expect(host.textContent).toContain('빈 폴더 3 개');
+    expect(host.textContent).toContain('영구 삭제 예정');
+    expect(host.textContent).toContain('소스 루트 폴더 유지');
     expect(server.posts('/api/resource-sync/apply')).toEqual([]);
-    await click(buttonNamed('清理失效条目', host));
+    await click(buttonNamed('유효하지 않은 항목 정리', host));
     await settle();
     expect(seen).toHaveLength(1);
-    expect(seen[0]!.title).toBe('清理失效条目');
+    expect(seen[0]!.title).toBe('유효하지 않은 항목 정리');
     expect(seen[0]!.danger).toBe(true);
     expect(seen[0]!.body).toBe(
-      '将永久删除文件已不在盘上的 4 条记录（含回收站里的）、3 个空文件夹，并清理 2 个闲置缓存。来源根目录保留。这一步不可撤销。');
+      '영구 삭제 대상: 디스크에 파일이 없는 기록 4 개(휴지통 포함), 빈 폴더:3 개,정리 대상: 2 개의 미사용 캐시. 소스 루트 폴더는 유지합니다.이 작업은 되돌릴 수 없습니다.');
     expect(server.posts('/api/resource-sync/apply')).toEqual([
       { confirm: true, clean_cache: true, scan_id: 'scan-7', background: true },
     ]);
     await settle();
-    expect(toast).toHaveBeenCalledWith('已清理失效条目');
-    expect(host.textContent).toContain('已永久删除 4 条失效记录和 3 个空文件夹，清理 2 个缓存，释放 5 MB。');
+    expect(toast).toHaveBeenCalledWith('유효하지 않은 항목을 정리했습니다');
+    expect(host.textContent).toContain('영구 삭제 완료: 4 개의 유효하지 않은 기록과 3 개의 빈 폴더,정리 완료: 2 개 캐시, 확보 공간 5 MB。');
   });
 
   it('其余来源仍在扫描时显示已确认来源，任务失败也保留这些结果', async () => {
@@ -251,14 +251,14 @@ describe('资源同步', () => {
     serve({ '/api/resource-sync/scan': state, '/api/resource-sync/apply': { status: 'idle' } });
     const host = await wrap(<ResourceSyncCard toast={vi.fn()} />);
     await settle();
-    expect(host.textContent).toContain('本地磁盘');
-    expect(host.textContent).toContain('空文件夹 3 个');
-    expect(buttonNamed('清理失效条目', host)).toBeNull();
-    expect(host.textContent).not.toContain('可清理的缓存');
+    expect(host.textContent).toContain('로컬 디스크');
+    expect(host.textContent).toContain('빈 폴더 3 개');
+    expect(buttonNamed('유효하지 않은 항목 정리', host)).toBeNull();
+    expect(host.textContent).not.toContain('정리 가능한 캐시');
     await act(async () => { queryClient.setQueryData(RESOURCE_SCAN_KEY, {
       ...state, status: 'failed', error: '第二个来源无法读取',
     }); });
-    expect(host.textContent).toContain('本地磁盘');
+    expect(host.textContent).toContain('로컬 디스크');
     expect(host.textContent).toContain('第二个来源无法读取');
   });
 
@@ -277,16 +277,16 @@ describe('资源同步', () => {
     });
     const host = await wrap(<ResourceSyncCard toast={vi.fn()} />);
     await settle();
-    expect(host.textContent).toContain('将标为已消失');
-    expect(host.textContent).toContain('2 项带个人记录');
-    await click(buttonNamed('清理失效条目', host));
+    expect(host.textContent).toContain('파일 없음으로 표시 예정');
+    expect(host.textContent).toContain('2 개 항목에 개인 기록 있음');
+    await click(buttonNamed('유효하지 않은 항목 정리', host));
     await settle();
     expect(seen[0]!.body).toBe(
-      '将永久删除文件已不在盘上的 3 条记录（含回收站里的）、3 个空文件夹，并清理 2 个闲置缓存。来源根目录保留。'
-      + '这几样不可撤销。2 条带个人记录的标为已消失，记录留着，可在孤儿记录里接到新文件或彻底删除。');
+      '영구 삭제 대상: 디스크에 파일이 없는 기록 3 개(휴지통 포함), 빈 폴더:3 개,정리 대상: 2 개의 미사용 캐시. 소스 루트 폴더는 유지합니다.'
+      + '이 삭제 및 정리 작업은 되돌릴 수 없습니다.2 개 항목은 개인 기록을 유지하며 파일 없음으로 표시합니다. 연결되지 않은 기록에서 새 파일에 연결하거나 영구 삭제할 수 있습니다.');
     await settle();
     expect(host.textContent).toContain(
-      '1 条带个人记录的已标为已消失，可在孤儿记录里处理。1 条的记录已接到库里的另一个版本。');
+      '1 개 항목은 개인 기록을 유지하며 파일 없음으로 표시했습니다. 연결되지 않은 기록에서 처리할 수 있습니다.1 개 항목의 기록을 라이브러리의 다른 버전에 연결했습니다.');
   });
 
   it('复核时发现文件还在、目录删不掉的几样留在原地：报警告档，结果条写部分完成', async () => {
@@ -302,12 +302,12 @@ describe('资源同步', () => {
     });
     const host = await wrap(<ResourceSyncCard toast={toast} />);
     await settle();
-    await click(buttonNamed('清理失效条目', host));
+    await click(buttonNamed('유효하지 않은 항목 정리', host));
     await settle();
     await settle();
-    expect(toast).toHaveBeenCalledWith('已完成 7 项，2 项没有处理', { warning: true });
-    expect(host.textContent).toContain('部分完成');
-    expect(host.textContent).toContain('1 条记录没有删除（「回来了.mp4」），1 个文件夹没有删除，重新检查后可再试。');
+    expect(toast).toHaveBeenCalledWith('완료 7 개 항목,2 개 항목 미처리', { warning: true });
+    expect(host.textContent).toContain('일부 완료');
+    expect(host.textContent).toContain('1 개 기록은 삭제하지 않았습니다(「回来了.mp4」），1 개 폴더 미삭제. 다시 확인한 뒤 재시도할 수 있습니다.');
   });
 
   it('取消确认就不发 apply', async () => {
@@ -315,7 +315,7 @@ describe('资源同步', () => {
     const server = serve({ '/api/resource-sync/scan': scanned, '/api/resource-sync/apply': { status: 'idle' } });
     const host = await wrap(<ResourceSyncCard toast={vi.fn()} />);
     await settle();
-    await click(buttonNamed('清理失效条目', host));
+    await click(buttonNamed('유효하지 않은 항목 정리', host));
     await settle();
     expect(server.posts('/api/resource-sync/apply')).toEqual([]);
   });
@@ -327,8 +327,8 @@ describe('资源同步', () => {
     });
     const host = await wrap(<ResourceSyncCard toast={vi.fn()} />);
     await settle();
-    expect(buttonNamed('清理失效条目', host)).toBeNull();
-    expect(host.textContent).toContain('已检查可访问的来源，没有待清理的记录、空文件夹或缓存。');
+    expect(buttonNamed('유효하지 않은 항목 정리', host)).toBeNull();
+    expect(host.textContent).toContain('접근 가능한 소스를 확인했습니다. 정리할 기록, 빈 폴더 또는 캐시가 없습니다.');
   });
 
   it('只有空文件夹要删时也给清理键', async () => {
@@ -338,7 +338,7 @@ describe('资源同步', () => {
     });
     const host = await wrap(<ResourceSyncCard toast={vi.fn()} />);
     await settle();
-    expect(buttonNamed('清理失效条目', host)).not.toBeNull();
+    expect(buttonNamed('유효하지 않은 항목 정리', host)).not.toBeNull();
   });
 });
 
@@ -361,7 +361,7 @@ describe('链接管理', () => {
     await settle();
     const cells = [...host.querySelectorAll('.link-stat-grid > div')].map((cell) => cell.textContent);
     expect(cells).toEqual([
-      '链接总数719分布在 210 个女优、厂牌与系列', '官网/事务所224', '社交账号373', '作品资料站100', '资料出处22',
+      '전체 링크 수719연결된 대상: 210 개의 배우, 제작사 및 시리즈', '공식 사이트/소속사224', '소셜 계정373', '항목 정보 사이트100', '정보 출처22',
     ]);
     expect(host.textContent).toContain('x.com 300 · instagram.com 70 · linktr.ee 3');
     expect(host.textContent).not.toContain('tiktok.com');
@@ -379,13 +379,13 @@ describe('链接管理', () => {
     });
     const host = await wrap(<LinkManager />);
     await settle();
-    expect(host.querySelector('[aria-label="地址已失效"]')?.textContent).toContain('女优 1');
-    expect(host.querySelector('[aria-label="本次未访问成功"]')?.textContent).toContain('社交账号');
-    await click(buttonNamed('删除 1 条失效链接', host));
+    expect(host.querySelector('[aria-label="유효하지 않은 주소"]')?.textContent).toContain('女优 1');
+    expect(host.querySelector('[aria-label="이번에 접속하지 못함"]')?.textContent).toContain('소셜 계정');
+    await click(buttonNamed('삭제: 1 개의 유효하지 않은 링크', host));
     await settle();
     expect(seen).toHaveLength(1);
     expect(seen[0]!.danger).toBe(true);
-    expect(seen[0]!.body).toBe('将删除 1 条失效链接。删除前会再次检查，删除后无法恢复。');
+    expect(seen[0]!.body).toBe('삭제 대상: 1 개의 유효하지 않은 링크. 삭제 전에 다시 확인하며, 삭제 후에는 복구할 수 없습니다.');
     expect(server.posts('/api/links/prune')).toEqual([{ confirm: true, check_id: 'check-3', background: true }]);
   });
 
@@ -394,7 +394,7 @@ describe('链接管理', () => {
     const server = serve({ '/api/links': stats, '/api/links/check': checked, '/api/links/prune': { status: 'idle' } });
     const host = await wrap(<LinkManager />);
     await settle();
-    await click(buttonNamed('删除 1 条失效链接', host));
+    await click(buttonNamed('삭제: 1 개의 유효하지 않은 링크', host));
     await settle();
     expect(server.posts('/api/links/prune')).toEqual([]);
   });
@@ -409,7 +409,7 @@ describe('链接管理', () => {
     });
     const host = await wrap(<LinkManager />);
     await settle();
-    await click(buttonNamed('全部重试（2）', host));
+    await click(buttonNamed('모두 다시 시도(2）', host));
     await settle();
     expect(server.posts('/api/links/check').filter((body) => !(body as { status_only?: boolean }).status_only))
       .toEqual([{ retry: [2, 3], check_id: 'check-3' }]);
@@ -425,7 +425,7 @@ describe('链接管理', () => {
     });
     const host = await wrap(<LinkManager />);
     await settle();
-    await click(buttonNamed('检查死链', host));
+    await click(buttonNamed('깨진 링크 확인', host));
     await settle();
     expect(host.textContent).toContain('清单已过期，请重新检查');
   });
@@ -460,15 +460,15 @@ describe('孤儿记录', () => {
     serve({ '/api/orphan-records': orphans });
     const host = await wrap(<OrphanRecordsCard toast={vi.fn()} />);
     await settle();
-    const rows = [...host.querySelectorAll('[aria-label="文件已消失的作品"] tbody tr')];
+    const rows = [...host.querySelectorAll('[aria-label="파일이 사라진 항목"] tbody tr')];
     expect(rows).toHaveLength(2);
-    expect(rows[0]!.textContent).toContain('喜欢与理由 1 · 观看历史 3 · 评分 4 · 播放 2 次');
-    expect(rows[0]!.textContent).toContain('ABC-123.mkv · 60 分钟');
+    expect(rows[0]!.textContent).toContain('좋아요 및 이유 1 · 시청 기록 3 · 평점 4 · 재생 2 회');
+    expect(rows[0]!.textContent).toContain('ABC-123.mkv · 60 분');
     expect(rows[0]!.querySelector('img')?.getAttribute('src')).toBe('/thumb?id=7&c=4');
-    expect(rows[1]!.textContent).toContain('稍后看 1 · 播放过');
-    expect(rows[1]!.textContent).toContain('没有番号或文件名对得上的文件');
-    expect(buttonNamed('接到这个文件', rows[1]!)).toBeFalsy();
-    expect(buttonNamed('彻底删除', rows[1]!)).toBeTruthy();
+    expect(rows[1]!.textContent).toContain('나중에 보기 1 · 재생 이력 있음');
+    expect(rows[1]!.textContent).toContain('품번이나 파일 이름이 일치하는 파일이 없습니다');
+    expect(buttonNamed('이 파일에 연결', rows[1]!)).toBeFalsy();
+    expect(buttonNamed('영구 삭제', rows[1]!)).toBeTruthy();
   });
 
   it('接到这个文件直接发，目标默认是时长最接近的那个', async () => {
@@ -476,10 +476,10 @@ describe('孤儿记录', () => {
     const toast = vi.fn();
     const host = await wrap(<OrphanRecordsCard toast={toast} />);
     await settle();
-    await click(buttonNamed('接到这个文件', host));
+    await click(buttonNamed('이 파일에 연결', host));
     await settle();
     expect(server.posts('/api/orphan-records/attach')).toEqual([{ id: 7, target: 9 }]);
-    expect(toast).toHaveBeenCalledWith('记录已接到新文件，批次 user:reattach@1');
+    expect(toast).toHaveBeenCalledWith('기록을 새 파일에 연결했습니다. 작업 묶음 user:reattach@1');
   });
 
   /** 点第二条的「彻底删除」，交回弹层上写的与发出去的批量请求。 */
@@ -488,7 +488,7 @@ describe('孤儿记录', () => {
     const server = serve({ '/api/orphan-records': orphans, '/api/batch': { ok: true, purged: 1, blocked: [] } });
     const host = await wrap(<OrphanRecordsCard toast={vi.fn()} />);
     await settle();
-    await click(buttonNamed('彻底删除', host.querySelectorAll('[aria-label="文件已消失的作品"] tbody tr')[1]!));
+    await click(buttonNamed('영구 삭제', host.querySelectorAll('[aria-label="파일이 사라진 항목"] tbody tr')[1]!));
     await settle();
     return { seen, posts: server.posts('/api/batch') };
   }
@@ -496,7 +496,7 @@ describe('孤儿记录', () => {
   it('彻底删除是危险确认，正文写明不可撤销，确认了才发批量删除', async () => {
     const { seen, posts } = await purgeSecond(true);
     expect(seen[0]!.danger).toBe(true);
-    expect(seen[0]!.body).toBe('将删除「海边.mp4」这一条和它带的记录（稍后看 1 · 播放过）。此操作不可撤销。');
+    expect(seen[0]!.body).toBe('삭제 대상:「海边.mp4」 항목과 연결된 기록(나중에 보기 1 · 재생 이력 있음). 이 작업은 되돌릴 수 없습니다.');
     expect(posts).toEqual([{ ids: [12], operation: 'delete' }]);
   });
 
@@ -511,18 +511,18 @@ describe('孤儿记录', () => {
     const toast = vi.fn();
     const host = await wrap(<OrphanRecordsCard toast={toast} />);
     await settle();
-    await click(host.querySelector('input[aria-label="选择 作品 0"]'));
-    await click(buttonNamed('下一页', host));
-    await click(host.querySelector('input[aria-label="选择 作品 20"]'));
+    await click(host.querySelector('input[aria-label="선택: 作品 0"]'));
+    await click(buttonNamed('다음 페이지', host));
+    await click(host.querySelector('input[aria-label="선택: 作品 20"]'));
     confirmWith(false);
-    await click(buttonNamed('彻底删除所选（2）', host));
+    await click(buttonNamed('선택한 기록 영구 삭제(2）', host));
     expect(server.posts('/api/batch')).toEqual([]);
     const seen = confirmWith(true);
-    await click(buttonNamed('彻底删除所选（2）', host));
+    await click(buttonNamed('선택한 기록 영구 삭제(2）', host));
     await settle();
     expect(seen[0]!.items).toEqual(['作品 0', '作品 20']);
     expect(server.posts('/api/batch')).toEqual([{ ids: [30, 50], operation: 'delete' }]);
-    expect(toast).toHaveBeenCalledWith('已彻底删除 1 条记录，1 条文件已恢复，未删除');
+    expect(toast).toHaveBeenCalledWith('영구 삭제됨 1 개 기록，1 개 파일이 복원되어 삭제하지 않았습니다');
   });
 });
 
@@ -552,13 +552,13 @@ describe('整理', () => {
     const file = host.querySelector<HTMLInputElement>('input[placeholder="{number}[ {title}]"]');
     expect(file?.value).toBe('{number}');
     await type(file, ' {number} {title} ');
-    await click(buttonNamed('预览', host));
+    await click(buttonNamed('미리 보기', host));
     await settle();
     expect(server.posts('/api/organize/preview')).toEqual([
       { location: 'local', file_template: '{number} {title}', dir_template: '' },
     ]);
     expect(server.posts('/api/settings')).toEqual([]);
-    expect(host.textContent).toContain('2 个文件会改名或移动，5 个已经就是目标名字；跳过 缺番号 1。');
+    expect(host.textContent).toContain('2 개 파일의 이름이나 위치를 변경하며,5 개는 이미 대상 이름과 일치합니다; 건너뜀 缺番号 1。');
     expect(host.textContent).toContain('ABC-001.mp4');
   });
 
@@ -567,13 +567,13 @@ describe('整理', () => {
     const server = organizeServer();
     queryClient.setQueryData(['organize'], organizeIdle);
     const host = await wrap(<OrganizeCard toast={vi.fn()} failure={vi.fn()} />);
-    expect(buttonNamed('执行整理', host)).toBeNull();
-    await click(buttonNamed('预览', host));
+    expect(buttonNamed('정리 실행', host)).toBeNull();
+    await click(buttonNamed('미리 보기', host));
     await settle();
-    await click(buttonNamed('执行整理', host));
+    await click(buttonNamed('정리 실행', host));
     await settle();
-    expect(seen.map((options) => options.title)).toEqual(['按模板整理文件']);
-    expect(seen[0]!.body).toContain('「本地」上的文件名与目录');
+    expect(seen.map((options) => options.title)).toEqual(['템플릿에 따라 파일 정리']);
+    expect(seen[0]!.body).toContain('「로컬」의 파일 이름과 폴더');
     expect(server.posts('/api/organize/apply')).toEqual([
       { location: 'local', file_template: '{number}', dir_template: '', confirm: true },
     ]);
@@ -587,16 +587,16 @@ describe('整理', () => {
     const server = organizeServer({ ...organizeIdle, last_batch: 'batch-9' });
     queryClient.setQueryData(['organize'], { ...organizeIdle, last_batch: 'batch-9' });
     const host = await wrap(<OrganizeCard toast={vi.fn()} failure={vi.fn()} />);
-    await click(buttonNamed('回滚上一批', host));
+    await click(buttonNamed('이전 작업 되돌리기', host));
     await settle();
-    expect(seen.map((options) => options.title)).toEqual(['回滚上一批整理']);
+    expect(seen.map((options) => options.title)).toEqual(['이전 정리 작업 되돌리기']);
     expect(server.posts('/api/organize/rollback')).toEqual([]);
     expect(server.posts('/api/organize/apply')).toEqual([]);
 
     queryClient.clear();
     queryClient.setQueryData(['organize'], organizeIdle);
     const fresh = await wrap(<OrganizeCard toast={vi.fn()} failure={vi.fn()} />);
-    expect(buttonNamed('回滚上一批', fresh)).toBeNull();
+    expect(buttonNamed('이전 작업 되돌리기', fresh)).toBeNull();
   });
 
   it('回滚确认了才发，请求体只有 confirm', async () => {
@@ -604,7 +604,7 @@ describe('整理', () => {
     const server = organizeServer({ ...organizeIdle, last_batch: 'batch-9' });
     queryClient.setQueryData(['organize'], { ...organizeIdle, last_batch: 'batch-9' });
     const host = await wrap(<OrganizeCard toast={vi.fn()} failure={vi.fn()} />);
-    await click(buttonNamed('回滚上一批', host));
+    await click(buttonNamed('이전 작업 되돌리기', host));
     await settle();
     expect(server.posts('/api/organize/rollback')).toEqual([{ confirm: true }]);
   });

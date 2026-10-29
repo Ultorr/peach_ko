@@ -69,11 +69,11 @@ describe('卡片密度与顶栏大小图键', () => {
     expect([document.documentElement.style.getPropertyValue('--tile'), document.body.dataset.density,
       button.getAttribute('aria-pressed'), button.getAttribute('title'), button.getAttribute('aria-label'),
       button.querySelector('[data-icon-swap]')?.getAttribute('data-icon-state')])
-      .toEqual(['336px', 'big', 'false', '当前：大图', '切换为小图', 'a']);
+      .toEqual(['336px', 'big', 'false', '현재: 큰 이미지', '작은 이미지로 전환', 'a']);
     toggleDensity();
     expect([currentDensity(), localStorage.getItem('density'), document.documentElement.style.getPropertyValue('--tile'),
       document.body.dataset.density, button.getAttribute('aria-pressed'), button.getAttribute('title')])
-      .toEqual(['dense', 'dense', '168px', 'dense', 'true', '当前：密集']);
+      .toEqual(['dense', 'dense', '168px', 'dense', 'true', '현재: 촘촘하게']);
   });
 
   it('停在照片墙上时同一颗键报照片大小', () => {
@@ -81,7 +81,7 @@ describe('卡片密度与顶栏大小图键', () => {
     const button = document.querySelector('#density')!;
     expect([button.getAttribute('aria-pressed'), button.getAttribute('title'), button.getAttribute('aria-label'),
       button.querySelector('[data-icon-swap]')?.getAttribute('data-icon-state')])
-      .toEqual(['true', '当前：小图', '切换为大图', 'b']);
+      .toEqual(['true', '현재: 작은 이미지', '큰 이미지로 전환', 'b']);
   });
 });
 

@@ -34,8 +34,8 @@ class MediaConfigurationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             config = settings_file.load_config(environ={"PEACH_DATA_ROOT": str(Path(directory).resolve())})
             facts = dict(web_entry.runtime_facts(config))
-            self.assertIn('操作系统', facts)
-            self.assertIn('设置文件', facts)
+            self.assertIn("운영체제", facts)
+            self.assertIn("설정 파일", facts)
 
     def test_runtime_fact_entries_list_dependencies_only_when_missing(self):
         from peach import web_entry
@@ -51,9 +51,9 @@ class MediaConfigurationTests(unittest.TestCase):
                 missing = {row["term"]: row for row in web_entry.runtime_fact_entries(config)}
         self.assertNotIn("FFmpeg", present)
         self.assertNotIn("untrunc", present)
-        self.assertIn("版本", present)
-        self.assertEqual(missing["FFmpeg"]["download_label"], "下载 FFmpeg")
-        self.assertEqual(missing["untrunc"]["download_label"], "下载 untrunc")
+        self.assertIn("버전", present)
+        self.assertEqual(missing["FFmpeg"]["download_label"], "FFmpeg 다운로드")
+        self.assertEqual(missing["untrunc"]["download_label"], "untrunc 다운로드")
 
     def test_windows_cloud_sources_keep_policy_ids_and_offline_roots(self):
         roots, mounts, errors = media_config.validate([
@@ -78,7 +78,7 @@ class MediaConfigurationTests(unittest.TestCase):
         ], windows=True)
         self.assertEqual(roots, {})
         self.assertEqual(mounts, {})
-        self.assertIn("映射为 Windows 盘符", errors[0])
+        self.assertIn("Windows 드라이브 문자에 먼저 연결하세요", errors[0])
         with patch.object(media_config, "mount_dependencies", return_value=[]):
             roots, mounts, errors = media_config.validate([
                 {"location": "115", "path": r"Z:\视频"},

@@ -95,6 +95,27 @@ FFmpeg와 관련 코덱은 빌드 구성에 따라 적용 라이선스가 달라
 
 원본 `build_windows.ps1 -Standalone`은 도구 및 대응 소스 ZIP, cloudflared 해시를 검증하는 완전한 배포 절차입니다. 위 스크립트는 외부 도구를 포함하지 않는 앱 빌드에 맞춰 그 PyInstaller 옵션을 사용합니다. 기존 설치의 파일을 복사하지 않습니다.
 
+## 전체 회귀 검사
+
+미디어 통합 검사에는 `libdav1d` AV1 소프트웨어 디코더가 포함된 FFmpeg와 같은 배포본의 ffprobe가 필요합니다. 일부 essentials 빌드는 이 디코더가 없으므로 실행 파일의 버전만으로 호환 여부를 판단하지 마세요. 브라우저 검사는 설치된 Chrome과 임시 데이터베이스·합성 미디어를 사용합니다.
+
+새 PowerShell 창에서 저장소 루트로 이동한 뒤 아래 경로를 준비한 FFmpeg 폴더로 바꿔 실행합니다. 환경변수는 이 창과 하위 검사 프로세스에만 적용되며 사용자·시스템 환경 설정에는 저장되지 않습니다.
+
+```powershell
+$PeachMediaBin = 'C:\Tools\ffmpeg\bin'
+$env:PEACH_FFMPEG = Join-Path $PeachMediaBin 'ffmpeg.exe'
+$env:PEACH_FFPROBE = Join-Path $PeachMediaBin 'ffprobe.exe'
+$env:PATH = "$PeachMediaBin;$env:PATH"
+$env:PEACH_DATA_ROOT = Join-Path ([IO.Path]::GetTempPath()) ('peach-test-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+New-Item -ItemType Directory -Path $env:PEACH_DATA_ROOT | Out-Null
+& $env:PEACH_FFMPEG -hide_banner -decoders | Select-String 'libdav1d'
+& ./scripts/test.ps1 -Scope full -Fresh -Jobs 4
+```
+
+`libdav1d`가 출력되어야 합니다. `PATH`도 함께 지정하는 이유는 합성 미디어를 만드는 검사에서 FFmpeg를 직접 실행하기 때문입니다. 설치된 Peach의 내장 도구 선택과 소스 검사 프로세스의 `PATH` 선택은 별개입니다. Windows 인증서 검사는 Git for Windows의 OpenSSL을 검사 프로세스 안에서 사용할 수 있도록 정식 진입점이 연결합니다.
+
+`PEACH_DATA_ROOT`는 검사마다 새 임시 폴더를 사용합니다. 설치본의 데이터 폴더나 미디어 폴더를 지정하지 마세요. 검사 종료 후 임시 폴더와 로그를 확인하고 필요 없는 검사 데이터만 정리할 수 있습니다.
+
 ## 확인 범위
 
 스크립트가 완료되면 잠금 파일 설치, vendor 동기화, TypeScript 검사, 프런트엔드 빌드가 통과한 상태입니다. `-Package` 성공은 추가로 PyInstaller 패키징이 완료되었음을 뜻합니다. 이는 전체 앱 기능 시험을 대신하지 않습니다. 실제 배포 전에는 별도 데이터로 앱을 실행하고 `/healthz?ready=1`, 주요 한국어 화면, 사용할 외부 도구 기능을 확인하세요. 저장소의 정식 테스트 절차는 [TESTING.md](TESTING.md)에 있습니다.

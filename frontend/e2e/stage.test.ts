@@ -213,7 +213,7 @@ describe('舞台岛', () => {
       const tip = page.locator('#stage [data-player-theater] > .vjs-peach-tooltip');
       assert.equal(await theater.getAttribute('title'), null, '原生 title 与自绘提示会叠在一起');
       assert.deepEqual(await tip.evaluate((node) => [node.querySelector('.vjs-peach-tooltip-text')?.textContent,
-        node.querySelector('kbd')?.textContent]), ['影院模式', 'T']);
+        node.querySelector('kbd')?.textContent]), ['영화관 모드', 'T']);
       assert.deepEqual(withoutPlayer(opened.problems), []);
     } finally {
       await opened.close();
@@ -228,22 +228,22 @@ describe('舞台岛', () => {
       const labels = () => page.locator('#playerMenu [data-player-menu] span').allInnerTexts();
       await page.locator('#stage .video-js').click({ button: 'right' });
       await page.locator('#stage #playerMenu:popover-open').waitFor();
-      assert.deepEqual((await labels()).filter((label) => label !== '画中画'),
-        ['循环播放', '迷你播放器', '复制视频网址', '复制当前时间的视频网址', '播放统计']);
+      assert.deepEqual((await labels()).filter((label) => label !== '화면 속 화면'),
+        ['반복 재생', '미니 플레이어', '동영상 URL 복사', '현재 시간의 동영상 URL 복사', '재생 통계']);
       await page.keyboard.press('Escape');
       await page.locator('#playerMenu:popover-open').waitFor({ state: 'detached' }).catch(() => {});
       assert.equal(await page.locator('#playerMenu:popover-open').count(), 0, 'Escape 没关掉菜单');
       assert.equal(await page.locator('#stage[open]').count(), 1, 'Escape 连舞台一起关了');
 
       await page.locator('#stage .video-js').click({ button: 'right' });
-      await page.locator('#playerMenu [data-player-menu]', { hasText: '迷你播放器' }).click();
+      await page.locator('#playerMenu [data-player-menu]', { hasText: '미니 플레이어' }).click();
       await page.locator('#miniplayer:not([hidden]) .video-js').waitFor({ timeout: 10_000 });
       await pathIs(page, '/');
       /* 小窗的按键层盖在画面上，右键直接派给播放器。 */
       await page.locator('#miniplayer .video-js').dispatchEvent('contextmenu', { clientX: 1000, clientY: 600 });
       await page.locator('#playerMenu:popover-open').waitFor();
-      const mini = (await labels()).filter((label) => label !== '画中画');
-      assert.deepEqual(mini, ['循环播放', '展开', '复制视频网址', '复制当前时间的视频网址'], '小窗里的菜单不对');
+      const mini = (await labels()).filter((label) => label !== '화면 속 화면');
+      assert.deepEqual(mini, ['반복 재생', '펼치기', '동영상 URL 복사', '현재 시간의 동영상 URL 복사'], '小窗里的菜单不对');
       await page.keyboard.press('Escape');
       assert.deepEqual(withoutPlayer(opened.problems), []);
     } finally {

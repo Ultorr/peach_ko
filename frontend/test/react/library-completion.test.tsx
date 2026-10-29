@@ -30,8 +30,8 @@ it('关闭视频预览生成时保留资料同步，并禁用单独抽帧', asyn
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ status: 'idle', metadata_only: true }) })));
   const host = await mount(prompt());
   await click(host.querySelector('[aria-haspopup="dialog"]'));
-  expect(buttonNamed('仅生成视频预览', document)?.disabled).toBe(true);
-  expect(buttonNamed('仅补全资料', document)?.disabled).toBe(false);
+  expect(buttonNamed('동영상 미리보기만 생성', document)?.disabled).toBe(true);
+  expect(buttonNamed('정보만 보완', document)?.disabled).toBe(false);
 });
 
 it('没有缺图影片时不显示入口也不查询任务', async () => {
@@ -49,12 +49,12 @@ it('默认补全与下拉分项都只提交当前缺图影片，菜单包含主�
     return { ok: true, json: async () => ({ status: 'idle' }) };
   }));
   const host = await mount(prompt());
-  expect(host.textContent).toContain('2 部暂无预览');
-  await click(buttonNamed('同步这些影片', host));
-  for (const label of ['仅生成视频预览', '仅补全资料']) {
+  expect(host.textContent).toContain('2 개에 미리보기가 없습니다');
+  await click(buttonNamed('이 영상 동기화', host));
+  for (const label of ['동영상 미리보기만 생성', '정보만 보완']) {
     await click(host.querySelector('[aria-haspopup="dialog"]'));
     const menu = document.querySelector('[role="dialog"]')!;
-    expect(buttonNamed('同步这些影片', menu)).not.toBeNull();
+    expect(buttonNamed('이 영상 동기화', menu)).not.toBeNull();
     await click(buttonNamed(label, menu));
   }
   expect(posts).toEqual([
@@ -78,7 +78,7 @@ it('启动等待期间不重复提交，结束后刷新馆藏并给出封面与�
   queryClient.setQueryData(['catalog-grid', 'catalog', 'sample', 1], { pages: [] });
   const onComplete = vi.fn();
   const host = await mount(prompt([7], onComplete));
-  const primary = buttonNamed('同步这些影片', host)!;
+  const primary = buttonNamed('이 영상 동기화', host)!;
   await click(primary);
   expect(primary.getAttribute('aria-busy')).toBe('true');
   const more = host.querySelector<HTMLButtonElement>('[aria-haspopup="dialog"]')!;
@@ -92,7 +92,7 @@ it('启动等待期间不重复提交，结束后刷新馆藏并给出封面与�
   expect(more.getAttribute('aria-expanded')).toBe('false');
   await act(async () => queryClient.setQueryData(LIBRARY_PROCESSING_KEY,
     { status: 'complete', job_id: 'complete-one', covers: 1, previews: 2 }));
-  expect(host.textContent).toContain('取得 1 张封面，生成 2 部视频预览');
+  expect(host.textContent).toContain('표지 1 장 가져옴, 동영상 미리보기 2 개 생성');
   expect(queryClient.getQueryState(['catalog-grid', 'catalog', 'sample', 1])?.isInvalidated).toBe(true);
   expect(onComplete).toHaveBeenCalledTimes(1);
   const nextMore = host.querySelector<HTMLButtonElement>('[aria-haspopup="dialog"]')!;
@@ -105,9 +105,9 @@ it('启动失败保留入口与处理详情，不显示完成回执', async () =
     ? { ok: false, status: 400, json: async () => ({ error: '请先添加媒体文件夹' }) }
     : { ok: true, json: async () => ({ status: 'idle' }) }));
   const host = await mount(prompt());
-  await click(buttonNamed('同步这些影片', host));
+  await click(buttonNamed('이 영상 동기화', host));
   expect(host.textContent).toContain('请先添加媒体文件夹');
-  expect(host.textContent).not.toContain('补全完成');
-  expect(host.querySelector('a[href="/data-cleanup#libraryProcessing"]')?.textContent).toBe('查看并处理');
-  expect(buttonNamed('同步这些影片', host)?.disabled).toBe(false);
+  expect(host.textContent).not.toContain('보완 완료');
+  expect(host.querySelector('a[href="/data-cleanup#libraryProcessing"]')?.textContent).toBe('확인 및 처리');
+  expect(buttonNamed('이 영상 동기화', host)?.disabled).toBe(false);
 });

@@ -24,8 +24,8 @@ it('外部入口：能换镜像的两站各一个地址框，默认留空，保�
   // 默认值不要人先抄一遍：框是空的，当前在用的那个域名写在占位符里。
   expect(javdb?.value).toBe('');
   expect(javdb?.placeholder).toBe('javdb.com');
-  expect(host.textContent).toContain('JavDB 地址');
-  expect(host.textContent).not.toContain('地址模板');
+  expect(host.textContent).toContain('JavDB 주소');
+  expect(host.textContent).not.toContain('주소 템플릿');
   await type(javdb, 'javdb521.com');
   expect(fetcher).not.toHaveBeenCalled();
   await submit(host.querySelector('form'));
@@ -34,13 +34,13 @@ it('外部入口：能换镜像的两站各一个地址框，默认留空，保�
   expect(sentBody(fetcher)).toEqual({
     sites: { javdb: { host: 'javdb521.com' }, missav: { host: 'missav.ai' } },
   });
-  expect(receipt).toHaveBeenCalledWith('已保存配置');
+  expect(receipt).toHaveBeenCalledWith('설정이 저장되었습니다');
 });
 
 it('外部入口：说明就是卡里的头一块，它上面不画线', async () => {
   const host = await mount(<EntryLinksForm initial={state} receipt={vi.fn()} />);
   const help = [...host.querySelectorAll('p')]
-    .find((node) => node.textContent?.startsWith('JavDB 或 MISSAV 打不开时'));
+    .find((node) => node.textContent?.startsWith('JavDB 또는 MISSAV에 접속할 수 없으면'));
   const block = help?.parentElement;
   // 那道线是给排在设置行后面的块用的，分隔的是它和上面那组行。这张卡里它自己就是头一块，
   // 线画出来上面什么也没有，读成分区标题自带一条下边线。

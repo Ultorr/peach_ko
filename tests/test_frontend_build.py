@@ -77,7 +77,7 @@ class MainBundleTests(unittest.TestCase):
         `web/dist/peach-app.js` 是提交进 Git 的产物。改了 `frontend/src` 不重建，浏览器拿到
         的仍是旧的那一份，而 tsc 和 vitest 都只看源码，谁都不会红——只有扫产物这一条会。
         """
-        for label in ("开机后启动 Peach", "只启动托盘，不打开网页", "在桌面创建快捷方式"):
+        for label in ("시스템 시작 후 Peach 실행", "웹페이지를 열지 않고 트레이만 실행", "바탕 화면에 바로가기 만들기"):
             self.assertIn(label, self.bundle,
                           f"产物里没有「{label}」，先跑 npm --prefix frontend run build")
         payload = self.bundle[self.bundle.index('"/api/configuration/startup"'):][:240]

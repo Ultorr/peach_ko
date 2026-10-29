@@ -82,7 +82,7 @@ describe('名册', () => {
     expect(ring?.dataset.fitNative).toBe('portrait');
     expect(ring?.style.getPropertyValue('--face')).toBe('40% 20%');
     expect([...host.querySelectorAll('[data-index-cell]')].map((cell) => cell.querySelector('[data-index-readout]')?.textContent))
-      .toEqual(['12 个视频', '3 个视频']);
+      .toEqual(['12 개 영상', '3 개 영상']);
     await click(host.querySelector('[data-index-cell][data-k="小湊よつ葉"]'));
     expect(given.actions.openEntity).toHaveBeenCalledWith('performer', '小湊よつ葉');
     expect(host.querySelector('[data-entity-grid]')).toBeNull();
@@ -162,12 +162,12 @@ const indexes = (host: HTMLElement) =>
 describe('照片墙', () => {
   it('各部样张一部一段排在本地图片前面，段头写番号、标题与「来源 样张 · 发行日 · 张数」', async () => {
     const { host } = await openPhotos();
-    expect(groups(host)).toEqual([['SSIS-057', 3], ['SSIS-001', 2], ['本地图片', 2]]);
+    expect(groups(host)).toEqual([['SSIS-057', 3], ['SSIS-001', 2], ['로컬 이미지', 2]]);
     const head = host.querySelector('[data-photo-group]')!;
     expect(head.querySelector('[data-photo-group-title]')?.getAttribute('title')).toBe('雨の日');
-    expect(head.querySelector('[data-photo-group-meta]')?.textContent).toBe('DMM 样张 · 2021-05-18 · 3 张');
+    expect(head.querySelector('[data-photo-group-meta]')?.textContent).toBe('DMM 샘플 이미지 · 2021-05-18 · 3 장');
     expect(host.querySelectorAll('[data-photo-group]')[2].querySelector('[data-photo-group-meta]')?.textContent)
-      .toBe('2 张');
+      .toBe('2 장');
     expect(indexes(host)).toEqual([0, 1, 2, 3, 4, 5, 6]);
     expect(host.querySelectorAll('[data-local-wall] [data-photo-cell]').length).toBe(2);
   });
@@ -194,7 +194,7 @@ describe('照片墙', () => {
     expect(index).toBe(3);
     expect(slides).toHaveLength(7);
     expect(slides[3]).toEqual({
-      src: '/sample-image?code=SSIS-001&n=1', thumb: '/sample-thumb?code=SSIS-001&n=1', name: 'SSIS-001 样张 1',
+      src: '/sample-image?code=SSIS-001&n=1', thumb: '/sample-thumb?code=SSIS-001&n=1', name: 'SSIS-001 샘플 이미지 1',
       asset: null, source: 'DMM',
     });
     expect(slides[5]).toEqual({

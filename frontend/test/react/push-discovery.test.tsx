@@ -30,10 +30,10 @@ it('配置块给的是服务端拼好的那一段，复制键把它整个写进�
   expect(host.querySelector('pre')?.textContent).toBe(TOML);
   expect(host.textContent).not.toContain('共享密钥');
   expect(host.textContent).not.toContain('通知地址');
-  await click(buttonNamed('复制配置', host));
+  await click(buttonNamed('설정 복사', host));
   await settle();
   expect(writeText).toHaveBeenCalledWith(TOML);
-  expect(receipt).toHaveBeenCalledWith('已复制 CloudDrive2 配置');
+  expect(receipt).toHaveBeenCalledWith('CloudDrive2 설정을 복사했습니다');
 });
 
 it('配置块默认收起，横向滚动用全站的覆盖式滑块', async () => {
@@ -45,7 +45,7 @@ it('配置块默认收起，横向滚动用全站的覆盖式滑块', async () =
   const pre = host.querySelector('pre')!;
   const fold = pre.closest('details');
   expect(fold?.open).toBe(false);
-  expect(fold?.querySelector('summary')?.textContent).toContain('查看配置');
+  expect(fold?.querySelector('summary')?.textContent).toContain('설정 보기');
   expect(pre.className).not.toContain('max-h');
   expect(pre.dataset.overlayScrollbar).toBe('true');
   expect(pre.parentElement?.querySelector('.ovtrack')).not.toBeNull();
@@ -55,8 +55,8 @@ it('这台机器没有对外的 HTTPS 地址时说出原因，不发一段填了
   const host = await mount(
     <PushDiscoveryForm initial={state({ origin: '', config_toml: '' })} receipt={vi.fn()} />);
   expect(host.querySelector('pre')).toBeNull();
-  expect(buttonNamed('复制配置', host)).toBeNull();
-  expect(host.textContent).toContain('要先有 CloudDrive2 能访问的 HTTPS 地址');
+  expect(buttonNamed('설정 복사', host)).toBeNull();
+  expect(host.textContent).toContain('먼저 CloudDrive2에서 접근할 수 있는 HTTPS 주소가 있어야 생성할 수 있습니다.');
 });
 
 it('配置块跟着已保存的开关走，拨一下不算数', async () => {
@@ -71,7 +71,7 @@ it('换过密钥之后配置块换成新的那一段', async () => {
   const next = state({ secret: 'new', config_toml: '[global_params]\nbase_url = "https://h"\n' });
   vi.stubGlobal('fetch', fetchMock(200, next));
   const host = await mount(<PushDiscoveryForm initial={state()} receipt={vi.fn()} />);
-  await click(buttonNamed('更换密钥', host));
+  await click(buttonNamed('키 변경', host));
   await settle();
   expect(host.querySelector('pre')?.textContent).toBe(next.config_toml);
 });

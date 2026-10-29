@@ -29,14 +29,14 @@ describe('配置中的系统诊断', () => {
         const badge = page.locator('[data-diagnostic-check="media_mounts"] [data-diagnostic-status="warning"]');
         await badge.waitFor();
         assert.notEqual(await badge.evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)');
-        await page.locator('summary').filter({ hasText: '缺封面 · 31 项' }).click();
+        await page.locator('summary').filter({ hasText: '缺封面 · 31 개' }).click();
         const table = page.getByRole('grid', { name: '缺封面', exact: true });
         await table.waitFor();
         assert.equal(await table.getByRole('row').count(), 21);
         assert.ok((await table.innerText()).includes('演示文件 1.mp4'));
         assert.ok((await table.innerText()).includes('R:\\Media\\演示文件 1.mp4'));
-        const pagination = page.getByRole('navigation', { name: '缺封面分页' });
-        await pagination.getByRole('button', { name: '下一页', exact: true }).click();
+        const pagination = page.getByRole('navigation', { name: '缺封面페이지 탐색' });
+        await pagination.getByRole('button', { name: '다음 페이지', exact: true }).click();
         assert.equal(await table.getByRole('row').count(), 12);
         assert.ok((await table.innerText()).includes('演示条目 21'));
         assert.ok((await layout(page)).scrollWidth <= viewport.width);
@@ -54,12 +54,12 @@ describe('配置中的系统诊断', () => {
         await page.locator('article[data-diagnostic-source]').first().waitFor();
         await settle(page);
         await page.evaluate(() => window.scrollTo(0, 650));
-        const nav = page.getByRole('tablist', { name: '配置分区' });
+        const nav = page.getByRole('tablist', { name: '설정 섹션' });
         const pinned = await nav.evaluate(element => ({ nav: element.getBoundingClientRect().top,
           search: document.querySelector('.top')!.getBoundingClientRect().bottom }));
         assert.ok(pinned.nav >= pinned.search + 7, JSON.stringify(pinned));
         assert.ok(pinned.nav <= pinned.search + 9, JSON.stringify(pinned));
-        await nav.getByRole('tab', { name: '网络与访问', exact: true }).click();
+        await nav.getByRole('tab', { name: '네트워크 및 접속', exact: true }).click();
         await settle(page);
         const visible = await page.locator('.ui-board-group-active').evaluate(element => ({ panel: element.getBoundingClientRect().top,
           nav: document.querySelector('.ui-board-local-nav')!.getBoundingClientRect().bottom,
@@ -78,15 +78,15 @@ describe('配置中的系统诊断', () => {
         await page.goto(new URL('/settings/diagnostics', page.url()).href);
         const skeleton = page.locator('[data-skeleton="board/settings/diagnostics"]');
         await skeleton.waitFor();
-        assert.equal(await skeleton.locator('.ui-board-local-nav [aria-selected="true"]').textContent(), '系统诊断');
-        assert.equal(await skeleton.locator('section[aria-label="媒体文件夹"]').count(), 0);
+        assert.equal(await skeleton.locator('.ui-board-local-nav [aria-selected="true"]').textContent(), '시스템 진단');
+        assert.equal(await skeleton.locator('section[aria-label="미디어 폴더"]').count(), 0);
         assert.equal(await skeleton.locator('[data-skeleton="diagnostics"]').count(), 1);
         const pending = await skeleton.locator('.ui-configpage').evaluate(element => {
           const body = element.lastElementChild!.getBoundingClientRect();
           return { x: body.x, width: body.width };
         });
         release();
-        await page.getByRole('tab', { name: '系统诊断', selected: true }).waitFor();
+        await page.getByRole('tab', { name: '시스템 진단', selected: true }).waitFor();
         await page.locator('article[data-diagnostic-source]').first().waitFor();
         await settle(page);
         const ready = await page.locator('.ui-board-group-active').boundingBox();
@@ -105,8 +105,8 @@ describe('配置中的系统诊断', () => {
             action: '检查媒体目录与挂载状态', target: '/settings/library', details: {} };
           await route.fulfill({ json: report });
         });
-        await page.getByRole('tab', { name: '系统诊断', exact: true }).click();
-        await page.locator('section[aria-label="来源会话"]').waitFor();
+        await page.getByRole('tab', { name: '시스템 진단', exact: true }).click();
+        await page.locator('section[aria-label="소스 세션"]').waitFor();
         await settle(page);
         assert.equal(new URL(page.url()).pathname, '/settings/diagnostics');
         const source = page.locator('article[data-diagnostic-source]').first();
@@ -139,7 +139,7 @@ describe('配置中的系统诊断', () => {
           }
         }
         assert.ok((await layout(page)).scrollWidth <= viewport.width);
-        await page.locator('summary').filter({ hasText: /其他检查 ·/ }).click();
+        await page.locator('summary').filter({ hasText: /기타 검사 ·/ }).click();
         const groups = page.locator('[data-diagnostic-group]');
         assert.ok(await groups.count() > 1);
         const grouping = await groups.first().evaluate(element => {
@@ -154,8 +154,8 @@ describe('配置中的系统诊断', () => {
         assert.ok(grouping.gap >= 20);
         assert.deepEqual(opened.problems, []);
         await page.reload();
-        await page.getByRole('tab', { name: '系统诊断', selected: true }).waitFor();
-        await page.locator('section[aria-label="来源会话"]').waitFor();
+        await page.getByRole('tab', { name: '시스템 진단', selected: true }).waitFor();
+        await page.locator('section[aria-label="소스 세션"]').waitFor();
       } finally { await opened.close(); }
     });
   }

@@ -13,7 +13,7 @@ describe('卡片信息与收藏入口', () => {
     it(`${viewport.name} 标题与署名相邻，标签有间距，${viewport.mobile ? '卡片按内容定高' : '同排卡片等高'}`, async () => {
       const opened = await openFollowFeed(browser, '/follow', viewport);
       try {
-        assert.equal(await opened.page.locator('[data-follow-filter-glass]').getByRole('button', { name: '我的收藏', exact: true }).count(), 1);
+        assert.equal(await opened.page.locator('[data-follow-filter-glass]').getByRole('button', { name: '내 즐겨찾기', exact: true }).count(), 1);
         const payload = await opened.page.evaluate(async () => (await fetch('/api/follow')).json());
         payload.groups[0].primary.title = '这是一个很长的作品标题'.repeat(8);
         payload.groups[1].primary.title = '短标题';

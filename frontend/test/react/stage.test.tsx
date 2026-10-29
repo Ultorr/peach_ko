@@ -323,6 +323,6 @@ describe('常驻面', () => {
     expect(reported, '确定性抛错只报那一次').toHaveBeenCalledTimes(1);
     /* 批量条放在最后画：它的进场动画跑在 motion 的帧循环上，画完就收尾，卸树时不留进行中的动画。 */
     await act(async () => { dock.render({ count: 2, context: 'catalog', junkDismissed: false }) });
-    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('已选 2 项');
+    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('선택됨 2 개');
   });
 });

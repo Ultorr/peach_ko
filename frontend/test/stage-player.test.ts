@@ -167,9 +167,12 @@ describe('播放墙的共享播放器', () => {
     response();
     const frame = document.body.appendChild(document.createElement('div'));
     const signal = new AbortController().signal;
-    for (const extra of [{ cost: 'metered' }, { location: 'online' }]) {
+    for (const [extra, reason] of [
+      [{ cost: 'metered' }, '유료 소스를 확인하려면 상세 정보를 여세요'],
+      [{ location: 'online' }, '온라인 항목을 재생하려면 상세 정보를 여세요'],
+    ] as const) {
       response(extra);
-      await expect(stage.mountWallPlayer(item(1), frame, signal)).rejects.toThrow('请打开详情');
+      await expect(stage.mountWallPlayer(item(1), frame, signal)).rejects.toThrow(reason);
     }
     response(); offline = true;
     await expect(stage.mountWallPlayer(item(1), frame, signal)).rejects.toThrow('来源未挂载');
@@ -253,8 +256,8 @@ describe('小窗自己的键', () => {
     settings.seekSeconds = 15;
     show(1).leave(true);
     const { player } = fake.mounts[0]!;
-    expect(dom.back.getAttribute('aria-label')).toBe('后退 15 秒');
-    expect(dom.ahead.title).toBe('前进 15 秒');
+    expect(dom.back.getAttribute('aria-label')).toBe('뒤로 이동: 15 초');
+    expect(dom.ahead.title).toBe('앞으로 이동: 15 초');
     player.time = 90;
     stage.seekMiniplayer(1);
     expect(player.time).toBe(100);

@@ -13,6 +13,7 @@ import { Input } from '@/components/base/input/input';
 import { Select, SelectItem } from '@/components/base/select/select';
 
 import { errorMessage } from '../../api';
+import { koreanLabel } from '../../korean-label';
 import { useBackgroundJob } from '../background-job';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
 import { Note } from '../components/note';
@@ -101,7 +102,7 @@ export function OrganizeCard(
   const plan = preview.data;
   const changes = Number(plan?.counts?.change || 0);
   const name = LOC[location] || location;
-  const hint = (data?.placeholders ?? []).map((item) => `{${item.key}} ${item.label}`).join(' · ');
+  const hint = (data?.placeholders ?? []).map((item) => `{${item.key}} ${koreanLabel(item.label)}`).join(' · ');
 
   const runPreview = () => {
     if (preview.isPending || !location) return;
@@ -190,10 +191,10 @@ export function OrganizeCard(
         {data?.presets?.length
           ? <div className="flex flex-wrap gap-2">
               {data.presets.map((preset) => (
-                <Button key={preset.label} variant="secondary" title={preset.label}
+                <Button key={preset.label} variant="secondary" title={koreanLabel(preset.label)}
                   className="max-w-full [&>span]:min-w-0 [&>span]:shrink"
                   onClick={() => { edit({ file: preset.file, dir: preset.dir }); setInvalid(null) }}>
-                  <span className="truncate">{preset.label}</span>
+                  <span className="truncate">{koreanLabel(preset.label)}</span>
                 </Button>
               ))}
             </div>

@@ -314,7 +314,7 @@ class StandaloneUpdateTests(unittest.TestCase):
         binary.write_bytes(b"old version")
         state, _ = self.prepare_fixture(target, output, release, corrupt=manifest["tools"]["ffmpeg"]["asset"]["name"])
         self.assertEqual(state["state"], "error")
-        self.assertIn("校验失败", state["message"])
+        self.assertIn("검증에 실패", state["message"])
         self.assertEqual(binary.read_bytes(), b"old version")
         self.assertEqual((target / "Peach.exe").read_bytes(), b"old application")
 
@@ -335,7 +335,7 @@ class StandaloneUpdateTests(unittest.TestCase):
 
     def test_tool_archive_cannot_replace_application_files(self):
         archive = self.archive(["Peach/tools/ffmpeg/bin/ffmpeg.exe", "Peach/Peach.exe"])
-        with self.assertRaisesRegex(ValueError, "清单外"):
+        with self.assertRaisesRegex(ValueError, "목록에 없는 파일"):
             update.extract(archive, self.root / "tool-stage", Mock(), tool_files={"tools/ffmpeg/bin/ffmpeg.exe"})
 
     def test_install_failure_restores_program_directory_and_preserves_data(self):

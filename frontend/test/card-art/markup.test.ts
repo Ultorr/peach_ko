@@ -156,7 +156,7 @@ describe('avatarInner：首字母垫底，再叠真实图', () => {
     const ref = { id: 80, rep: 18, has_avatar: true, avatar_stand_in: true };
     const avatar = parse(entityAvatar('卖家账号', ref, 'creator'))!;
     expect(avatar.getAttribute('src')).toBe('/avatar?id=18');
-    expect(avatar.getAttribute('title')).toBe('代表作画面，非本人');
+    expect(avatar.getAttribute('title')).toBe('대표 항목의 장면이며 본인 사진이 아닙니다');
     const installed = parse(entityAvatar('卖家账号', { ...ref, has_image: true }, 'creator'))!;
     expect(installed.getAttribute('src')).toBe('/entity-image?kind=creator&id=80');
     expect(installed.hasAttribute('title')).toBe(false);
@@ -171,8 +171,8 @@ describe('avatarInner：首字母垫底，再叠真实图', () => {
   it('代表作画面替账号占位时注明不是本人；装了实体图的不注', () => {
     const standIn = parse(avatarInner('A', { id: 3, avatar_stand_in: true }, 41, 'creator'))!;
     expect(standIn.getAttribute('src')).toBe('/avatar?id=41');
-    expect(standIn.getAttribute('title')).toBe('代表作画面，非本人');
-    expect(standIn.getAttribute('aria-label')).toBe('代表作画面，非本人');
+    expect(standIn.getAttribute('title')).toBe('대표 항목의 장면이며 본인 사진이 아닙니다');
+    expect(standIn.getAttribute('aria-label')).toBe('대표 항목의 장면이며 본인 사진이 아닙니다');
     const installed = parse(avatarInner('A', { id: 3, has_image: true, avatar_stand_in: true }, 41, 'creator'))!;
     expect(installed.hasAttribute('title')).toBe(false);
     expect(parse(avatarInner('A', { id: 3 }, 41, 'creator'))!.hasAttribute('title')).toBe(false);
@@ -183,8 +183,8 @@ describe('avatarInner：首字母垫底，再叠真实图', () => {
     expect(standIn.hasAttribute('title')).toBe(false);
     expect(advanceImageFallback(standIn)).toBe('retry');
     expect(standIn.getAttribute('src')).toBe('/avatar?id=41');
-    expect(standIn.title).toBe('代表作画面，非本人');
-    expect(standIn.getAttribute('aria-label')).toBe('代表作画面，非本人');
+    expect(standIn.title).toBe('대표 항목의 장면이며 본인 사진이 아닙니다');
+    expect(standIn.getAttribute('aria-label')).toBe('대표 항목의 장면이며 본인 사진이 아닙니다');
     const person = parse(avatarInner('A', { id: 3, has_image: true }, 41, 'creator'))!;
     advanceImageFallback(person);
     expect(person.hasAttribute('title')).toBe(false);
@@ -316,7 +316,7 @@ describe('cardArtwork 与队列小图', () => {
   });
 
   it('队列一行没有图时写「无预览」占住那一格；番号作品按小图取', () => {
-    expect(queueThumbHtml({ id: 1 }, 'cover')).toBe('<span class="nopic">无预览</span>');
+    expect(queueThumbHtml({ id: 1 }, 'cover')).toBe('<span class="nopic">미리보기 없음</span>');
     expect(parse(queueThumbHtml(JAV, 'cover'))!.className).toBe('poster cover whole');
   });
 });
@@ -344,7 +344,7 @@ describe('卡片署名的身份推导', () => {
   });
 
   it('没有署名人是「未归属」', () => {
-    expect(cardIdentity({})).toMatchObject({ kind: '', name: '未归属' });
+    expect(cardIdentity({})).toMatchObject({ kind: '', name: '소속 없음' });
   });
 
   it('共演只写第一位再给总人数', () => {
@@ -386,9 +386,9 @@ describe('卡片署名的身份推导', () => {
 
 describe('称谓与 Mix 署名', () => {
   it('「女优」只用于番号发行物', () => {
-    expect(performerLabel({ is_jav: true })).toBe('女优');
-    expect(performerLabel({ is_jav: false })).toBe('艺人');
-    expect(performerLabel(null)).toBe('艺人');
+    expect(performerLabel({ is_jav: true })).toBe('배우');
+    expect(performerLabel({ is_jav: false })).toBe('아티스트');
+    expect(performerLabel(null)).toBe('아티스트');
   });
 
   it('番号作品先认女优，其余先认创作者，再依次退到厂牌、番号、首个标签', () => {
@@ -398,7 +398,7 @@ describe('称谓与 Mix 署名', () => {
     expect(mixLabel({ studio: 's', code: 'c' }, label)).toBe('s');
     expect(mixLabel({ code: 'c' }, label)).toBe('c');
     expect(mixLabel({ tags: ['t'] }, label)).toBe('#t');
-    expect(mixLabel({}, () => '')).toBe('为你推荐');
+    expect(mixLabel({}, () => '')).toBe('추천');
   });
 });
 

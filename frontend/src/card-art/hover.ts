@@ -110,7 +110,7 @@ export function wireHover(el: HTMLElement, it: HoverItem): void {
   el.addEventListener('mouseenter', () => {
     if (config.selecting() || config.censored() || scrolling()) return;   // 多选、遮挡或滚动中不启动预览
     timer = setTimeout(() => {
-      if (scrolling() || config.censored()) return;
+      if (config.selecting() || scrolling() || config.censored()) return;
       releaseHoverPreviews(document, el);   // 同一时间只保留一个本地视频预览
       const video = document.createElement('video') as HoverVideo;
       v = video;

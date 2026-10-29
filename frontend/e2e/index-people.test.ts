@@ -43,9 +43,9 @@ describe('本地与在线艺人共用名册布局', () => {
           body: '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="190"><rect width="180" height="190" fill="#888"/></svg>',
         }));
         await page.reload({ waitUntil: 'load' });
-        for (const label of ['紧凑 · 圆形头像', '大图 · 竖幅头像']) {
+        for (const label of ['간결하게 · 원형 프로필', '큰 이미지 · 세로 프로필']) {
           await page.getByRole('radio', { name: label, exact: true }).press('Space');
-          const marker = page.locator('#index [data-k="已订阅人物"]').getByRole('img', { name: '已订阅新作', exact: true });
+          const marker = page.locator('#index [data-k="已订阅人物"]').getByRole('img', { name: '새 항목 구독 중', exact: true });
           await marker.waitFor({ timeout: 5_000 });
           await page.waitForFunction(() => {
             const image = document.querySelector<HTMLImageElement>('#index [data-k="已订阅人物"] img');
@@ -65,7 +65,7 @@ describe('本地与在线艺人共用名册布局', () => {
           }), true, 'RSS 标记应完整显示在头像上方');
           assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
           await page.locator('#index [data-index-grid]').screenshot({
-            path: `../build/continuation-rss/rss-${viewport.name}-${label.startsWith('紧凑') ? 'compact' : 'big'}.png`,
+            path: `../build/continuation-rss/rss-${viewport.name}-${label.startsWith('간결하게') ? 'compact' : 'big'}.png`,
           });
         }
         following = false;
@@ -77,8 +77,8 @@ describe('本地与在线艺人共用名册布局', () => {
     });
   }
   for (const viewport of VIEWPORTS) {
-    for (const [path, selected] of [['/performers', '艺人'], ['/creators', '卖家'],
-      ['/performers?scope=online', '在线']] as const) {
+    for (const [path, selected] of [['/performers', '아티스트'], ['/creators', '판매자'],
+      ['/performers?scope=online', '온라인']] as const) {
       it(`加载占位页使用同级名册入口（${selected} · ${viewport.name}）`, { timeout: 60_000 }, async () => {
         const context = await browser.newContext({
           viewport: { width: viewport.width, height: viewport.height }, isMobile: viewport.mobile,
@@ -95,14 +95,14 @@ describe('本地与在线艺人共用名册布局', () => {
           await page.goto(requiredEnv('PEACH_E2E_ORIGIN') + path, { waitUntil: 'commit' });
           await page.locator('#index [data-skeleton]').first().waitFor();
           assert.equal(await page.locator('#index [role="tablist"]').count(), 1);
-          assert.deepEqual(await page.locator('#index [role="tab"]').allTextContents(), ['艺人', '卖家', '在线']);
+          assert.deepEqual(await page.locator('#index [role="tab"]').allTextContents(), ['아티스트', '판매자', '온라인']);
           assert.deepEqual(await page.locator('#index [role="tab"][aria-selected="true"]').allTextContents(), [selected]);
           assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
           const waiting = await headControls(page, {
             search: '#index [data-index-search] [data-rac]', icon: '#index [data-index-search] svg', layout: '#index .ihead .iconswitch' });
           release();
           await page.locator('#index [data-index-page]').waitFor();
-          assert.deepEqual(await page.locator('#index [role="tab"]').allTextContents(), ['艺人', '卖家', '在线']);
+          assert.deepEqual(await page.locator('#index [role="tab"]').allTextContents(), ['아티스트', '판매자', '온라인']);
           const ready = await headControls(page, {
             search: '#index [data-index-search] [role="presentation"]', icon: '#index [data-index-search] svg',
             layout: '#index [data-index-layout]' });
@@ -135,14 +135,14 @@ describe('本地与在线艺人共用名册布局', () => {
             contained: name.left >= rect.left && name.right <= rect.right,
           };
         }));
-        for (const label of ['紧凑 · 圆形头像', '大图 · 竖幅头像']) {
-          await page.getByRole('tab', { name: '艺人', exact: true }).click();
+        for (const label of ['간결하게 · 원형 프로필', '큰 이미지 · 세로 프로필']) {
+          await page.getByRole('tab', { name: '아티스트', exact: true }).click();
           await page.getByRole('radio', { name: label, exact: true }).press('Space');
-          const layout = label.startsWith('紧凑') ? 'compact' : 'big';
+          const layout = label.startsWith('간결하게') ? 'compact' : 'big';
           await page.locator(`#index [data-index-grid][data-layout="${layout}"]`).waitFor();
           await settle(page);
           const local = await measure();
-          await page.getByRole('tab', { name: '在线', exact: true }).click();
+          await page.getByRole('tab', { name: '온라인', exact: true }).click();
           await page.locator('#index [data-follow-author][data-index-cell]').first().waitFor();
           await settle(page);
           const online = await measure();
@@ -150,12 +150,12 @@ describe('本地与在线艺人共用名册布局', () => {
           assert.ok(online.every(item => item.width >= 150 && item.contained && item.whiteSpace === 'normal'));
           assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
           assert.equal(await page.locator('#index [role="tablist"]').count(), 1);
-          assert.deepEqual(await page.locator('#index [role="tab"]').allTextContents(), ['艺人', '卖家', '在线']);
-          await page.getByRole('tab', { name: '卖家', exact: true }).click();
+          assert.deepEqual(await page.locator('#index [role="tab"]').allTextContents(), ['아티스트', '판매자', '온라인']);
+          await page.getByRole('tab', { name: '판매자', exact: true }).click();
           await page.locator('#index [data-index-cell]').first().waitFor();
           await settle(page);
           assert.equal(await page.locator('#index [role="tablist"]').count(), 1);
-          assert.equal(await page.locator('#index [aria-label="身份分类"]').count(), 0);
+          assert.equal(await page.locator('#index [aria-label="인물 분류"]').count(), 0);
           assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
         }
         assert.deepEqual(opened.problems, []);
@@ -180,8 +180,8 @@ describe('本地与在线艺人共用名册布局', () => {
       assert.equal(new URL(page.url()).searchParams.get('category'), 'animation');
       assert.equal(await page.evaluate(() => history.length), before + 1, '规范化不该多压一条历史');
       assert.equal(await page.evaluate(() => document.body.dataset.surface), '/performers');
-      assert.match(await page.title(), /^艺人/);
-      assert.deepEqual(await page.locator('#index [role="tab"][aria-selected="true"]').allTextContents(), ['艺人']);
+      assert.match(await page.title(), /^아티스트/);
+      assert.deepEqual(await page.locator('#index [role="tab"][aria-selected="true"]').allTextContents(), ['아티스트']);
       assert.equal(requests.length, 1, `名册只取一次：${requests.join(' | ')}`);
       assert.match(requests[0], /kind=performers/);
       assert.match(requests[0], /category=animation/);

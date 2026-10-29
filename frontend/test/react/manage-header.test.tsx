@@ -152,7 +152,7 @@ describe('换手', () => {
       .map((el) => [el.tagName, ...[...el.attributes].map((a) => a.name).filter((name) => name.startsWith('data-') || name.startsWith('aria-')).sort()].join(' '))
       .filter((line) => !line.startsWith('USE'));
     expect(shape(host.root)).toEqual(shape(skeleton));
-    expect(title(host.root)).toBe('垃圾文件');
+    expect(title(host.root)).toBe('불필요한 파일');
   });
 
   it('骨架与首帧在同一个任务里换掉：每个任务边界上宿主里要么是骨架、要么是画好的页头，宿主上不多包 .peach-react', async () => {
@@ -248,7 +248,7 @@ describe('管理条与面包屑', () => {
     const { root, host } = await setup(props('cleanup', '/duplicates'));
     const link = root.querySelector<HTMLAnchorElement>('[data-manage-crumb] a')!;
     expect(link.getAttribute('href')).toBe('/data-cleanup');
-    expect(root.querySelector('[data-manage-crumb] [aria-current="true"]')!.textContent).toBe('重复文件');
+    expect(root.querySelector('[data-manage-crumb] [aria-current="true"]')!.textContent).toBe('중복 파일');
     const fire = (init: MouseEventInit) => {
       const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...init });
       act(() => { link.dispatchEvent(event) });
@@ -271,7 +271,7 @@ describe('回收站说明行', () => {
     render(props('trash', '/trash', { trash: { total: 1234, shown: 8 } }));
     expect(root.querySelector('[data-manage-lede]')).toBe(lede);
     expect(lede.querySelector('[data-trash-lede-skeleton]')).toBeNull();
-    expect(lede.querySelector('[data-lede-text]')!.textContent).toBe('1,234 个符合 · 显示 8');
+    expect(lede.querySelector('[data-lede-text]')!.textContent).toBe('1,234 개 일치 · 표시 8');
     await click(lede.querySelector('[data-empty-trash]'));
     expect(host.emptyTrash).toHaveBeenCalledTimes(1);
     render(props('trash', '/trash', { trash: { total: 0, shown: 0 } }));
@@ -286,9 +286,9 @@ describe('回收站说明行', () => {
     expect(root.querySelector('[data-lede-text]')).toBe(cell);
     expect(root.querySelector('[data-trash-lede-skeleton]')).toBeNull();
     expect(cell.classList.contains('leaving')).toBe(true);
-    expect(cell.textContent).toBe('20 个符合 · 显示 8');
+    expect(cell.textContent).toBe('20 개 일치 · 표시 8');
     act(() => { vi.advanceTimersByTime(400) });
-    expect(cell.textContent).toBe('20 个符合 · 显示 16');
+    expect(cell.textContent).toBe('20 개 일치 · 표시 16');
     expect(cell.classList.contains('leaving')).toBe(false);
   });
 });
@@ -299,7 +299,7 @@ describe('常驻面', () => {
     /* 不包 act：act 会把 flushSync 推到它结束时，看不出句柄自己同步没有。 */
     (globalThis as ActFlag).IS_REACT_ACT_ENVIRONMENT = false;
     api.render(props('cleanup', '/junk-files'));
-    expect(title(root)).toBe('垃圾文件');
+    expect(title(root)).toBe('불필요한 파일');
     api.render(props('trash', '/trash'));
     expect([title(root), root.querySelectorAll('[data-trash-lede-skeleton]').length]).toEqual(['回收站', 2]);
   });
@@ -323,7 +323,7 @@ describe('常驻面', () => {
     expect(r.managedTaken(root)).toBe(false);
     expect(r.managedEntries().map((entry) => entry.path), '别的面照画').toEqual(['batch-dock']);
     await act(async () => { dock.render({ count: 2, context: 'catalog', junkDismissed: false }) });
-    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('已选 2 项');
+    expect(dockRoot.querySelector('[data-selection-dock] [role="status"]')?.textContent).toBe('선택됨 2 개');
 
     /* 壳照旧每次换页都推一份：不抛、不重开、不再上报。 */
     for (const next of [props('stats', '/stats'), props('trash', '/trash')]) {

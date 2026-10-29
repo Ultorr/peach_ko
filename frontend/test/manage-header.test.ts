@@ -23,11 +23,11 @@ describe('页头判据', () => {
   });
 
   it('数据管理之下的子页画面包屑，标题取子页的名字；hub 自己与别的管理区不画', () => {
-    expect(manageHeaderView(props('cleanup', '/junk-files'))).toMatchObject({ title: '垃圾文件', crumb: '垃圾文件' });
-    expect(manageHeaderView(props('cleanup', '/sources'))).toMatchObject({ title: '来源和凭证', crumb: '来源和凭证' });
+    expect(manageHeaderView(props('cleanup', '/junk-files'))).toMatchObject({ title: '불필요한 파일', crumb: '불필요한 파일' });
+    expect(manageHeaderView(props('cleanup', '/sources'))).toMatchObject({ title: '소스 및 인증 정보', crumb: '소스 및 인증 정보' });
     expect(manageHeaderView(props('cleanup', '/data-cleanup'))).toMatchObject({ title: '数据管理', crumb: '' });
     expect(manageHeaderView(props('stats', '/stats'))).toMatchObject({ title: '统计', crumb: '' });
-    expect(manageHeaderView(props('trash', '/trash'))).toMatchObject({ title: '回收站', crumb: '回收站' });
+    expect(manageHeaderView(props('trash', '/trash'))).toMatchObject({ title: '回收站', crumb: '휴지통' });
   });
 
   it('窄屏标题收一档的只有数据管理 hub、来源和凭证与配置', () => {
@@ -42,10 +42,10 @@ describe('页头判据', () => {
     expect(manageHeaderView(props('stats', '/stats'))!.lede).toEqual({ kind: 'none' });
     expect(manageHeaderView(props('trash', '/trash'))!.lede).toEqual({ kind: 'skeleton' });
     expect(manageHeaderView(props('trash', '/trash', { trash: { total: 1234, shown: 8 } }))!.lede)
-      .toEqual({ kind: 'count', text: '1,234 个符合 · 显示 8', total: 1234 });
+      .toEqual({ kind: 'count', text: '1,234 개 일치 · 표시 8', total: 1234 });
     const empty = document.createElement('div');
     empty.innerHTML = manageHeaderSkeletonHtml(props('trash', '/trash', { trash: { total: 0, shown: 0 } }));
-    expect(empty.querySelector('[data-lede-text]')!.textContent).toBe('0 个符合 · 显示 0');
+    expect(empty.querySelector('[data-lede-text]')!.textContent).toBe('0 개 일치 · 표시 0');
     expect(empty.querySelector('[data-empty-trash]')).toBeNull();
   });
 });

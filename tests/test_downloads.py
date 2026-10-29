@@ -206,7 +206,7 @@ class SubmitTests(_Deployment):
 
     def test_the_reader_never_submits(self):
         self.service.available = False
-        with self.assertRaisesRegex(ValueError, "写入端"):
+        with self.assertRaisesRegex(ValueError, "쓰기 담당 기기"):
             self.submit()
 
 
@@ -265,7 +265,7 @@ class PollingTests(_Deployment):
         task = self.service.cancel(task_id)
         self.assertEqual((task.state, self.provider.cancelled), (dl.CANCELLED, [task_id]))
         self.assertEqual(self.tick(900), 0)
-        with self.assertRaisesRegex(ValueError, "已经结束"):
+        with self.assertRaisesRegex(ValueError, "이미 종료된 작업"):
             self.service.cancel(task_id)
 
 
@@ -374,12 +374,12 @@ class LandingTests(_Deployment):
         self.tick(dl.LANDING_GRACE)
         task = self.service.store.get(task_id)
         self.assertEqual((task.state, task.failure), (dl.FAILED, "not_landed"))
-        self.assertIn("云端路径前缀", task.failure_detail)
+        self.assertIn("클라우드 경로 접두어", task.failure_detail)
 
 
 class SettingsTests(_Deployment):
     def test_settings_hold_no_credentials_and_check_the_pikpak_root(self):
-        with self.assertRaisesRegex(ValueError, "不是已声明的 PikPak 媒体根"):
+        with self.assertRaisesRegex(ValueError, "선언된 PikPak 미디어 루트가 아닙니다"):
             self.service.save_settings({"pikpak_root": "Z:\\"}, self.declared)
         config = self.service.save_settings({
             "clouddrive_address": "127.0.0.1:19798", "targets": {"115": "115/云下载/"},

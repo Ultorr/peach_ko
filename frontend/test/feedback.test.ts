@@ -4,20 +4,30 @@ import {noteHtml,projectBannerHtml,gaugeHtml,progressHtml,configurationSkeletonH
 
 describe('中文错误反馈',()=>{
   it.each(['Failed to fetch','NetworkError when attempting to fetch resource.','Load failed'])('网络异常 %s 给出连接检查方法',message=>{
-    expect(requestErrorMessage(new TypeError(message))).toBe('无法连接到 Peach 服务，请确认网络连接和托盘服务已启动。');
+    expect(requestErrorMessage(new TypeError(message))).toBe('Peach 서비스에 연결할 수 없습니다. 네트워크 연결과 트레이 서비스 실행 상태를 확인하세요.');
   });
-  it.each([[401,'登录已失效'],[403,'没有执行此操作的权限'],[404,'已不存在'],[429,'过于频繁'],[503,'暂时不可用'],[504,'超时']])('HTTP %s 使用明确原因', (code,reason)=>{
+  it.each([[401,'로그인이 만료되었습니다'],[403,'해당 작업을 실행할 수 없습니다'],[404,'더 이상 없습니다'],[429,'요청이 너무 잦습니다'],[503,'일시적으로 사용할 수 없습니다'],[504,'시간이 초과되었습니다']])('HTTP %s 使用明确原因', (code,reason)=>{
     expect(requestErrorMessage('request failed',code)).toContain(reason);
   });
   it('正文里的 timeout 字样不把 500 读成超时',()=>{
     expect(requestErrorMessage('Traceback: httpx.ReadTimeout raised in handler (timeout=30)',500))
-      .toBe('Peach 服务处理失败，请重试；持续失败时查看托盘日志。');
-    expect(requestErrorMessage('read timed out')).toContain('超时');
+      .toBe('Peach 서비스 처리에 실패했습니다. 다시 시도하고, 계속 실패하면 트레이 로그를 확인하세요.');
+    expect(requestErrorMessage('read timed out')).toContain('시간이 초과되었습니다');
   });
   it('本机接口的 502 说的是 Peach 服务，不提代理',()=>{
     const text=requestErrorMessage('Bad Gateway',502);
-    expect(text).toContain('Peach 服务');
-    expect(text).not.toContain('代理');
+    expect(text).toContain('Peach 서비스');
+    expect(text).not.toContain('프록시');
+  });
+  it.each(['현재 접근 비밀번호가 올바르지 않습니다', new Error('현재 접근 비밀번호가 올바르지 않습니다')])('保留服务端明确的韩文原因',cause=>{
+    expect(requestErrorMessage(cause,409)).toBe('현재 접근 비밀번호가 올바르지 않습니다');
+  });
+  it.each([
+    {cause:'요청 실패 (401）',status:401,message:'로그인이 만료되었습니다. 새로고침한 뒤 다시 로그인하세요.'},
+    {cause:new Error('요청 실패 (503）'),status:0,message:'Peach 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요.'},
+    {cause:'请求失败（403）',status:403,message:'이 기기에서는 해당 작업을 실행할 수 없습니다. Peach를 실행 중인 컴퓨터에서 작업하세요.'},
+  ])('通用失败包装使用 HTTP 原因，只有具体原因原样保留',({cause,status,message})=>{
+    expect(requestErrorMessage(cause,status)).toBe(message);
   });
   it('保留服务端明确的中文原因',()=>{
     expect(requestErrorMessage('媒体盘没有挂载，请先连接媒体盘。',409)).toBe('媒体盘没有挂载，请先连接媒体盘。');
@@ -47,14 +57,14 @@ describe('持久提示控件',()=>{
   it('容量比例和任务计数使用真实上限，未知容量不显示零',()=>{
     const host=document.createElement('div');host.innerHTML=gaugeHtml('使用率',25,50);
     expect(host.querySelector('[role=progressbar]')?.getAttribute('aria-valuenow')).toBe('50');
-    expect(gaugeHtml('使用率',0,0)).toContain('未取得');
+    expect(gaugeHtml('使用率',0,0)).toContain('가져오지 못함');
     host.innerHTML=progressHtml('分析记录',3,10,{stops:[{value:5,label:'分析结束'}],variant:'warning'});
     expect(host.querySelector('[role=progressbar]')?.getAttribute('aria-valuemax')).toBe('10');
     expect(host.querySelector('[aria-label="分析结束"]')).not.toBeNull();
   });
   it('Note 错误不会直接输出英文网络异常',()=>{
     const host=document.createElement('div');host.innerHTML=noteHtml('Failed to fetch',{variant:'error',size:'small',filled:true});
-    expect(host.querySelector('[role=alert]')?.textContent).toContain('无法连接到 Peach');
+    expect(host.querySelector('[role=alert]')?.textContent).toContain('Peach 서비스에 연결할 수 없습니다');
     expect(host.querySelector('.geist-note-small.geist-note-filled')).not.toBeNull();
     expect(host.querySelector('button')).toBeNull();
   });

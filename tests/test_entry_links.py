@@ -291,7 +291,7 @@ class EntryLinkSettingsFileTests(unittest.TestCase):
         with self.assertRaises(ValueError) as caught:
             entry_links.save(self.root, self.body(
                 javdb={"host": "javdb.com/actors/{javdb_id}"}))
-        self.assertIn("只写域名本身", str(caught.exception))
+        self.assertIn("도메인만 입력하세요", str(caught.exception))
 
     def test_clearing_the_box_goes_back_to_the_default_domain(self):
         entry_links.save(self.root, self.body(missav={"host": "missav.ai"}))

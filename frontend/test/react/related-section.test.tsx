@@ -10,7 +10,7 @@ describe('接着看状态', () => {
     expect(host.querySelector('[data-skeleton]')).not.toBeNull();
     expect(host.querySelector('[data-empty-state]')).toBeNull();
     await rerender(<RelatedSection wireDrag={wireDrag} empty />);
-    expect(host.querySelector('[data-empty-state] h3')?.textContent).toBe('暂无接着看的内容');
+    expect(host.querySelector('[data-empty-state] h3')?.textContent).toBe('이어서 볼 콘텐츠 없음');
     expect(host.querySelector('[data-related-row]')).toBeNull();
   });
 

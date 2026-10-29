@@ -728,7 +728,7 @@ describe('设计决定：关注详情、作品详情、播放器与侧栏', () =
 
       // 动作键以底色反馈，悬停与按住保持尺寸；选中使用浅底深字。
       await page.route('**/api/feedback', (route) => route.fulfill({ json: { feedback: 'seen', o_count: 0 } }));
-      const seen = '[data-immerse-actions] button[aria-label="标为看过"]';
+      const seen = '[data-immerse-actions] button[aria-label="본 항목으로 표시"]';
       const resting = await page.locator(seen).boundingBox();
       const background = await page.locator(seen).evaluate(node => getComputedStyle(node).backgroundColor);
       await page.hover(seen);
@@ -800,7 +800,7 @@ describe('设计决定：关注详情、作品详情、播放器与侧栏', () =
       await route.fulfill({ json: { ...real, stats: { ...real.stats, duration: real.stats?.duration || 540 } } });
     });
     await opened.page.reload({ waitUntil: 'load' });
-    await opened.page.locator('#drawer [data-sidebar-group="时长"]').waitFor({ state: 'attached', timeout: 15_000 });
+    await opened.page.locator('#drawer [data-sidebar-group="재생 시간"]').waitFor({ state: 'attached', timeout: 15_000 });
     await settle(opened.page);
     return { ...opened, close: async () => {
       await opened.page.unrouteAll({ behavior: 'ignoreErrors' });
@@ -899,8 +899,8 @@ describe('设计决定：关注详情、作品详情、播放器与侧栏', () =
     const opened = await openSidebar(DESKTOP);
     try {
       const { page } = opened;
-      await page.locator('#drawer [data-sidebar-group="时长"] > [data-sidebar-toggle]').click();
-      await page.locator('#drawer [data-sidebar-group="时长"] [data-sidebar-collapse]:not([inert])').waitFor({ timeout: 5_000 });
+      await page.locator('#drawer [data-sidebar-group="재생 시간"] > [data-sidebar-toggle]').click();
+      await page.locator('#drawer [data-sidebar-group="재생 시간"] [data-sidebar-collapse]:not([inert])').waitFor({ timeout: 5_000 });
       const read = () => page.evaluate(() => {
         const range = document.querySelector('#durationRange')!;
         const bounds = range.getBoundingClientRect();
@@ -921,8 +921,8 @@ describe('设计决定：关注详情、作品详情、播放器与侧栏', () =
       assert.ok(resting.fill.startsWith('linear-gradient(90deg') && resting.fill.includes(accent),
         `已选段不是从 accent-400 起的横向渐变：${resting.fill}`);
       assert.deepEqual(resting.tips, [
-        { end: 'min', text: '0 分钟', layer: '1', visible: true, inside: true },
-        { end: 'max', text: '不限', layer: '2', visible: true, inside: true },
+        { end: 'min', text: '0 분', layer: '1', visible: true, inside: true },
+        { end: 'max', text: '제한 없음', layer: '2', visible: true, inside: true },
       ], '两端读数要常显、贴着轨道两端不越界，没动过时右端那枚在上');
 
       await page.locator('#durMin').focus();

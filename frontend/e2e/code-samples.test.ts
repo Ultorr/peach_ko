@@ -65,7 +65,7 @@ async function openPhotos(browser: Browser, search: string, local?: Local): Prom
     offsets = await serveProfile(page, local);
   });
   try {
-    await opened.page.locator('#index [data-entity-readout]', { hasText: '照片' })
+    await opened.page.locator('#index [data-entity-readout]', { hasText: '사진' })
       .waitFor({ state: 'visible', timeout: 15_000 });
     await settle(opened.page);
     return { ...opened, offsets, documents };
@@ -111,8 +111,8 @@ describe('番号样张', () => {
       const gap = await page.evaluate(() => document.querySelector('[data-photo-group]')!.getBoundingClientRect().top
         - document.querySelector('[data-entity-filter-glass]')!.getBoundingClientRect().bottom);
       assert.ok(Math.abs(gap - 28) <= 1, `第一段离浮层 ${gap}px`);
-      assert.match(await page.locator('[data-photo-group]').first().innerText(), /雨の日[\s\S]*DMM 样张 · 2021-05-18 · 3 张/);
-      assert.match(await page.locator('[data-entity-readout]').innerText(), /样张 5 张 · 2 部作品/);
+      assert.match(await page.locator('[data-photo-group]').first().innerText(), /雨の日[\s\S]*DMM 샘플 이미지 · 2021-05-18 · 3 장/);
+      assert.match(await page.locator('[data-entity-readout]').innerText(), /샘플 이미지 5 장 · 2 개 항목/);
       assert.equal(await page.locator('[data-entity-batch]').count(), 0, '没有本地图可换一批');
       assert.equal(await page.locator('[data-photo-back]').count(), 0, '样张不另开一层');
       assert.deepEqual(unexpected(opened.problems), [], JSON.stringify(opened.problems));
@@ -146,7 +146,7 @@ describe('番号样张', () => {
       // 「载入更多」一进视口就自己翻下一页：把它滚进来，等两页都落定再读。
       await page.evaluate(() => document.querySelector('#index [data-entity-more]')?.scrollIntoView());
       await page.waitForFunction(() => document.querySelectorAll('[data-photo-wall] [data-photo-cell]').length === 8);
-      assert.deepEqual(await groups(page), [['SSIS-057', 3], ['SSIS-001', 2], ['本地图片', 3]]);
+      assert.deepEqual(await groups(page), [['SSIS-057', 3], ['SSIS-001', 2], ['로컬 이미지', 3]]);
       assert.equal(await page.locator('[data-local-wall] [data-photo-cell] img[src^="/photo-thumb"]').count(), 3);
       assert.deepEqual(opened.offsets, [2]);
       assert.deepEqual(unexpected(opened.problems), [], JSON.stringify(opened.problems));

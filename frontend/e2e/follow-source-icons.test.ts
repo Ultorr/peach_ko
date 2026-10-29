@@ -142,7 +142,7 @@ describe('关注的出处用站点图标', () => {
     try {
       const [badge] = await lineGeometry(opened.page, '[data-follow-item] [data-follow-seealso]');
       assert.ok(badge, '卡片上没有「另见」徽章');
-      assert.equal(badge.text, '另见');
+      assert.equal(badge.text, '함께 보기');
       assert.equal(badge.alt, 'Rule34.xxx');
       assert.ok(Math.abs(badge.icon! - badge.line!) <= 1, `图标偏离徽章中线 ${Math.abs(badge.icon! - badge.line!)}px`);
       await opened.page.locator('[data-follow-item]:has([data-follow-seealso])').first().hover();

@@ -258,7 +258,7 @@ class ErrorReportingTests(unittest.TestCase):
 
     def test_failure_dialog_points_to_an_existing_report_and_cli_needs_no_service(self):
         message = error_reporting.failure_details("tray-handoff", OSError("desktop unavailable"))
-        self.assertIn("诊断报告", message)
+        self.assertIn("진단 보고서", message)
         self.assertEqual(len(list(self.logs.glob("peach-support-*.zip"))), 1)
         destination = self.root / "share.zip"
         result = self.probe(f"from peach.support_bundle import main; raise SystemExit(main([{str(destination)!r}]))")
@@ -619,7 +619,7 @@ runpy.run_path({str(ROOT / 'scripts/build_app_entry.py')!r}, run_name='__main__'
         self.assertTrue(list(self.logs.glob("peach-support-*.zip")))
         self.assertTrue(any(row["stage"] == "tray-import" for row in self.records()))
         if sys.platform == "win32":
-            self.assertIn("诊断报告", (self.root / "dialog.txt").read_text(encoding="utf-8"))
+            self.assertIn("진단 보고서", (self.root / "dialog.txt").read_text(encoding="utf-8"))
 
     def test_offline_export_creates_its_log_directory_on_a_fresh_machine(self):
         result = self.probe("from peach.support_bundle import main; raise SystemExit(main())")

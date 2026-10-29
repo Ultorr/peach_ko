@@ -13,12 +13,12 @@ it('随机无方向，首页偏好与其他排序分别解析', () => {
 it('可翻转的列从 desc 起，随机没有方向；发行时间只在 JAV 语境出现但也是合法键', () => {
   expect([defaultSortDir('new'), defaultSortDir('seed'), defaultSortDir('unknown')]).toEqual(['desc', '', '']);
   expect(SORT_KEYS).toEqual(['seed', 'rating', 'o', 'plays', 'dur', 'size', 'new', 'played', 'release']);
-  expect([sortDirWord('dur', 'asc'), sortDirWord('dur', 'desc'), sortDirWord('seed', 'asc')]).toEqual(['从短到长', '从长到短', '']);
+  expect([sortDirWord('dur', 'asc'), sortDirWord('dur', 'desc'), sortDirWord('seed', 'asc')]).toEqual(['짧은순', '긴순', '']);
   /* 列名中性，方向词按列各说各的：同一个 desc 在时间列上是「从新到旧」，在时长上是「从长到短」。 */
   expect([...SORTS.map(([, label]) => label), JAV_RELEASE_SORT[1]])
-    .toEqual(['随机', '评分', '高潮计数', '观看次数', '时长', '体积', '入库时间', '观看时间', '发行时间']);
+    .toEqual(['무작위', '평점', '오르가슴 횟수', '시청 횟수', '재생 시간', '파일 크기', '라이브러리 등록일', '시청 시각', '출시일']);
   expect(['new', 'played'].map((key) => [sortDirWord(key, 'desc'), sortDirWord(key, 'asc')]))
-    .toEqual([['从新到旧', '从旧到新'], ['从近到远', '从远到近']]);
+    .toEqual([['최신순', '오래된순'], ['최근순', '오래된순']]);
 });
 
 it('地址栏与书签里把方向写进键名的旧键照旧认', () => {

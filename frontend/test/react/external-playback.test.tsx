@@ -9,7 +9,7 @@ it('外部播放器只在用户请求后签发链接，并保留网络地址供 
   vi.stubGlobal('fetch', fetcher);
   const host = await mount(<ExternalPlayback id={1} />);
   expect(fetcher).not.toHaveBeenCalled();
-  await click(Array.from(host.querySelectorAll('button')).find(button => button.textContent === '生成播放链接')!);
+  await click(Array.from(host.querySelectorAll('button')).find(button => button.textContent === '재생 링크 생성')!);
   await settle();
   expect(fetcher.mock.calls).toHaveLength(1);
   expect(host.querySelector('a')?.getAttribute('href')).toContain('/external-playlist/1.m3u?ticket=short');

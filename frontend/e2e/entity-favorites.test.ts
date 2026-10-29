@@ -26,15 +26,15 @@ describe('资料页收藏与别名布局', () => {
       });
       try {
         await page.goto(new URL('/studios/Prestige', page.url()).href);
-        const favorite = page.getByRole('button', { name: '收藏Prestige', exact: true });
+        const favorite = page.getByRole('button', { name: '즐겨찾기Prestige', exact: true });
         await favorite.waitFor();
         await settle(page);
         const geometry = await page.evaluate(() => {
           const name = document.querySelector('[data-namepick-toggle]')!;
-          const star = document.querySelector('[aria-label="收藏Prestige"]')!;
+          const star = document.querySelector('[aria-label="즐겨찾기Prestige"]')!;
           const a = name.getBoundingClientRect(), b = star.getBoundingClientRect();
           const alias = document.querySelector('[data-meta-item="names"]')!;
-          const count = document.querySelector('[data-meta-item][title="视频"]')!;
+          const count = document.querySelector('[data-meta-item][title="동영상"]')!;
           return { title: !!star.closest('[data-entity-title]'), size: [a.width, a.height, b.width, b.height],
             gap: b.left - a.right, row: Math.abs(a.top - b.top), text: star.textContent?.trim(),
             aliasesTogether: Math.abs(alias.getBoundingClientRect().top - count.getBoundingClientRect().top) < 2 };
@@ -46,7 +46,7 @@ describe('资料页收藏与别名布局', () => {
         assert.equal(geometry.text, '');
         if (!viewport.mobile) assert.equal(geometry.aliasesTogether, true);
         await favorite.click();
-        const active = page.getByRole('button', { name: '取消收藏Prestige', exact: true });
+        const active = page.getByRole('button', { name: '즐겨찾기 해제Prestige', exact: true });
         await active.waitFor();
         assert.equal(await active.getAttribute('aria-pressed'), 'true');
         const paint = await active.locator('svg').evaluate(node => {

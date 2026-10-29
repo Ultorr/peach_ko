@@ -30,14 +30,14 @@ describe('关注失败来源重试', () => {
       await page.route('**/api/follow?summary=1', route => started ? route.fulfill(json({
         sources: [followSource(1, 'kou', 'Kemono', 'kou'), paused], counts: {}, author_aliases: [], suggestions: [],
       })) : route.fallback());
-      const retry = page.getByRole('button', { name: '检查失败项', exact: true });
+      const retry = page.getByRole('button', { name: '실패한 항목 확인', exact: true });
       await retry.waitFor();
       await retry.focus();
       await retry.press('Enter');
       await retry.waitFor({ state: 'hidden', timeout: 15_000 });
       assert.deepEqual(requests, [{ background: true, sources: [3, 4] }]);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-      await page.getByRole('button', { name: '检查全部', exact: true }).waitFor();
+      await page.getByRole('button', { name: '전체 확인', exact: true }).waitFor();
     } finally { await opened.close() }
   });
 });

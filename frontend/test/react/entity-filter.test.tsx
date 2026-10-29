@@ -63,7 +63,7 @@ describe('作品视图', () => {
     const host = await mount(<EntityFilterPage {...props()} />);
     expect($$(host, '[data-media-view]').map((key) => [key.dataset.mediaView, key.getAttribute('aria-pressed')]))
       .toEqual([['videos', 'true'], ['photos', 'false']]);
-    expect($(host, '[data-media-view="photos"]')?.getAttribute('aria-label')).toBe('照片 18');
+    expect($(host, '[data-media-view="photos"]')?.getAttribute('aria-label')).toBe('사진 18');
     expect($(host, '[data-entity-states]')?.hidden).toBe(false);
     expect($(host, '[data-entity-state=""]')?.getAttribute('aria-pressed')).toBe('true');
     expect($$(host, '[data-entity-tag]').map((tag) => [tag.textContent, tag.getAttribute('aria-pressed')]))
@@ -74,7 +74,7 @@ describe('作品视图', () => {
     expect($(host, '[data-entity-sort="release"]')?.querySelector('svg')).not.toBeNull();
     expect($(host, '[data-entity-sort="rating"]')?.querySelector('svg')).toBeNull();
     expect($(host, '[data-entity-sort="rating"]')?.getAttribute('aria-label')).toBe('按评分从高到低排序');
-    expect($(host, '[data-entity-layout][aria-label="JAV 卡片版式"]')).not.toBeNull();
+    expect($(host, '[data-entity-layout][aria-label="JAV 카드 형식"]')).not.toBeNull();
     expect($(host, '[data-photo-back]')).toBeNull();
   });
 
@@ -85,8 +85,8 @@ describe('作品视图', () => {
     await click($(host, '[data-entity-state="later"]')!);
     await click($(host, '[data-entity-state=""]')!);
     await click($(host, '[data-entity-tag="巨乳"]')!);
-    await click($(host, '[aria-label="撤掉 中出"]')!);
-    await click($(host, '[aria-label="撤掉 厂牌 S1"]')!);
+    await click($(host, '[aria-label="제거: 中出"]')!);
+    await click($(host, '[aria-label="제거: 厂牌 S1"]')!);
     await click($(host, '[data-combo-clear]')!);
     await click($(host, '[data-entity-sort="rating"]')!);
     await click($(host, '[data-entity-batch]')!);
@@ -133,7 +133,7 @@ describe('照片与名册视图', () => {
     expect($$(host, '[data-entity-tag]')).toHaveLength(0);
     expect($(host, '[data-entity-combo]')?.hidden).toBe(true);
     expect($$(host, '[data-entity-sort]')).toHaveLength(0);
-    expect($(host, '[data-entity-layout][aria-label="图片布局"]')).not.toBeNull();
+    expect($(host, '[data-entity-layout][aria-label="이미지 레이아웃"]')).not.toBeNull();
     expect($$(host, '[data-entity-batch]')).toHaveLength(1);
     expect($(host, '[data-photo-back]')).toBeNull();
   });
@@ -180,7 +180,7 @@ describe('照片与名册视图', () => {
     expect($(host, '[data-media-view="people"]')?.getAttribute('aria-pressed')).toBe('true');
     expect($(host, '[data-entity-media]')?.getAttribute('aria-label')).toBe('页面视图');
     expect($$(host, '[data-filter-row="bottom"] > *').map((node) => node.tagName)).toEqual(['H3', 'SPAN']);
-    expect($(host, '[data-filter-row="bottom"] [aria-label="我的收藏"]')).not.toBeNull();
+    expect($(host, '[data-filter-row="bottom"] [aria-label="내 즐겨찾기"]')).not.toBeNull();
     await click($(host, '[data-media-view="videos"]')!);
     expect(shell.setView).toHaveBeenCalledWith('videos');
   });
@@ -209,7 +209,7 @@ describe('在线视图', () => {
     expect($(host, '[data-follow-tag="cum"]')?.getAttribute('aria-pressed')).toBe('true');
     expect($$(host, '[data-online-media] > [data-media-view]').map((key) => key.dataset.mediaView)).toEqual(['videos', 'images']);
     expect($(host, '[data-follow-images-only]'), '视频那一档没有照片墙的控件').toBeNull();
-    expect($(host, '[data-entity-layout][aria-label="图片布局"]')).toBeNull();
+    expect($(host, '[data-entity-layout][aria-label="이미지 레이아웃"]')).toBeNull();
   });
 
   it('点下去回调各自的在线动作，不走作品视图那一套', async () => {
@@ -231,7 +231,7 @@ describe('在线视图', () => {
   it('图片那一档带上图片布局与仅显示图片，和关注页的照片墙同一组', async () => {
     const shell = actions();
     const host = await mount(<EntityFilterPage {...online({ actions: shell, online: head({ media: 'images', imagesOnly: true }) })} />);
-    expect($(host, '[data-entity-layout][aria-label="图片布局"]')).not.toBeNull();
+    expect($(host, '[data-entity-layout][aria-label="이미지 레이아웃"]')).not.toBeNull();
     expect($(host, '[data-follow-images-only]')?.getAttribute('aria-pressed')).toBe('true');
     await click($(host, '[data-follow-images-only]')!);
     expect(shell.onlineImagesOnly).toHaveBeenCalledWith(false);

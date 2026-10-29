@@ -422,7 +422,7 @@ class ConflictStatusTests(unittest.TestCase):
         self.assertIn(f'"blocking_run_id":{blocking.id}', body)
         self.assertIn("follow-check", body)
         # 机器读的是 `error` 与 `task_key`，人读的是 `message`：后者里不留英文任务键。
-        self.assertIn("追更检查已有一轮在进行", json.loads(body)["message"])
+        self.assertIn("追更检查 작업이 이미 실행 중입니다", json.loads(body)["message"])
 
     def test_a_get_that_conflicts_returns_409_too(self):
         error = TaskRunConflict("demo", 7)

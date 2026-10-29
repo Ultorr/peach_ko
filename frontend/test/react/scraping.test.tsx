@@ -107,27 +107,27 @@ it('首屏用 prefetch 缓存画出来源与任务，挂载时不重复请求', 
   const { calls, host } = await open(quiet());
   expect(calls.map((call) => call.path)).toEqual(FIRST_SCREEN);
   expect(section(host, 'JavBus')).not.toBeNull();
-  expect(section(host, '高清封面')).not.toBeNull();
+  expect(section(host, '고해상도 표지')).not.toBeNull();
   const bridge = section(host, 'amane');
   expect(bridge).not.toBeNull();
-  expect(bridge?.textContent).toContain('已安装版本0.16.1');
+  expect(bridge?.textContent).toContain('설치된 버전0.16.1');
   expect(bridge?.textContent).toContain('FC2PPVDB、AVSOX');
-  expect(buttonNamed('重新安装', bridge!)).not.toBeNull();
+  expect(buttonNamed('재설치', bridge!)).not.toBeNull();
   // 连接方式是 BoardUI 的 Select，画出来的是按钮；原生 select 是 React Aria 藏在后面
   // 供表单取值的那一个，不是这一行的长相。
-  expect(host.querySelector('[aria-haspopup=listbox]')?.textContent?.trim()).toBe('Peach 代理');
+  expect(host.querySelector('[aria-haspopup=listbox]')?.textContent?.trim()).toBe('Peach 프록시');
   expect(host.querySelector<HTMLAnchorElement>('a[href="/settings/library#peachProxy"]')?.textContent)
-    .toContain('配置 Peach 代理');
+    .toContain('Peach 프록시 설정');
   expect(host.querySelector<HTMLAnchorElement>('a[href="https://www.javbus.com/"]')?.target).toBe('_blank');
 });
 
 it('走本机浏览器的来源只说明验证怎么过，不画 Cookie 输入', async () => {
   const { host } = await open(quiet({ source: 'fc2ppvdb', label: 'FC2PPV-DB', browser: true }));
   const card = section(host, 'FC2PPV-DB');
-  expect(card?.textContent).toContain('人机验证由本机浏览器自动完成');
-  expect(card?.textContent).toContain('这台机器上不需要 Cookie');
+  expect(card?.textContent).toContain('사람 인증은 이 기기의 브라우저에서 자동으로 처리합니다. 클릭이 필요하면 창이 나타납니다. 이 기기에서는 쿠키가 필요하지 않습니다.');
+  expect(card?.textContent).toContain('이 기기에서는 쿠키가 필요하지 않습니다');
   expect(password(host), '浏览器自己带 Cookie，这一格不该出现').toBeNull();
-  expect(card?.textContent).not.toContain('任选一种方式提供 Cookie');
+  expect(card?.textContent).not.toContain('다음 방식 중 하나로 쿠키를 제공하세요');
   expect(host.querySelector('[aria-haspopup=listbox]'), '连接方式仍由用户选，浏览器按它换出口').not.toBeNull();
 });
 
@@ -148,9 +148,9 @@ it('保存后清空秘密输入，列表就地换成服务端回的那一条，�
     },
   });
   expect(password(host)?.value, '保存回来之后页面上不再留着刚交上去的那一份').toBe('');
-  expect(host.textContent).toContain('登录是否有效要到抓取时才知道');
-  expect(buttonNamed('撤销 Cookie', host)).not.toBeNull();
-  expect(toast).toHaveBeenCalledWith('来源设置已保存');
+  expect(host.textContent).toContain('쿠키가 저장되었습니다. 로그인 유효 여부는 수집 시 확인됩니다.');
+  expect(buttonNamed('쿠키 삭제', host)).not.toBeNull();
+  expect(toast).toHaveBeenCalledWith('출처 설정이 저장되었습니다');
   expect(calls.filter((call) => call.path === '/api/scraping' && call.method === 'GET'),
     '保存换的是列表里的一条，不为它把整页重取一遍').toHaveLength(1);
 });
@@ -160,11 +160,11 @@ it('撤销走同一条写入，回执说的是撤销', async () => {
     ...quiet({ cookie_saved: true }),
     'POST /api/scraping/settings': () => ({ body: { saved: source({ cookie_saved: false }) } }),
   });
-  await click(buttonNamed('撤销 Cookie', host));
+  await click(buttonNamed('쿠키 삭제', host));
   await settle();
   expect(calls[FIRST_SCREEN.length]?.body).toMatchObject({ source: 'javbus', revoke: true });
-  expect(toast).toHaveBeenCalledWith('Cookie 已撤销');
-  expect(buttonNamed('撤销 Cookie', host), '撤销之后这颗键没有对象可撤了').toBeNull();
+  expect(toast).toHaveBeenCalledWith('쿠키가 삭제되었습니다');
+  expect(buttonNamed('쿠키 삭제', host), '撤销之后这颗键没有对象可撤了').toBeNull();
 });
 
 it('保存失败时原因留在卡内，列表和刚填的内容都不动', async () => {
@@ -178,7 +178,7 @@ it('保存失败时原因留在卡内，列表和刚填的内容都不动', asyn
 
   expect(host.querySelector('[role=alert]')?.textContent).toContain('Cookie 不是 Netscape 格式');
   expect(password(host)?.value, '失败了还清空输入，等于让人重打一遍').toBe('session=fixture');
-  expect(buttonNamed('撤销 Cookie', host)).toBeNull();
+  expect(buttonNamed('쿠키 삭제', host)).toBeNull();
   expect(toast).not.toHaveBeenCalled();
 });
 
@@ -191,11 +191,11 @@ it('连接结果按来源名称与这一跳查的是什么说成一句话', asyn
     ...quiet(),
     'POST /api/scraping/check': () => ({ body: { results } }),
   });
-  await click(buttonNamed('检查连接', host));
+  await click(buttonNamed('연결 확인', host));
   await settle();
 
-  expect(host.querySelector('[role=status]')?.textContent).toBe('JavBus：可连接 · 800 × 538');
-  expect(host.querySelector('[role=alert]')?.textContent).toBe('JavBus 高清图片：不能连接。需要登录');
+  expect(host.querySelector('[role=status]')?.textContent).toBe('JavBus：연결 가능 · 800 × 538');
+  expect(host.querySelector('[role=alert]')?.textContent).toBe('JavBus 고해상도 이미지：연결 불가。需要登录');
 });
 
 it('Cookie 二选一：切过去的那一种才交，另一种连输入都不留', async () => {
@@ -208,7 +208,7 @@ it('Cookie 二选一：切过去的那一种才交，另一种连输入都不留
   await click(radio('file'));
   expect(password(host), '粘贴框还在页面上就会跟着提交').toBeNull();
   expect(host.querySelector('input[type=file]')).not.toBeNull();
-  expect(host.textContent).toContain('未选择文件');
+  expect(host.textContent).toContain('선택한 파일 없음');
 
   await submit(section(host, 'JavBus'));
   await settle();
@@ -227,8 +227,8 @@ it('Cookie 文件超过上限时当场拦住，不拿它去占一次请求', asy
   await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })) });
   await settle();
 
-  expect(host.querySelector('[role=alert]')?.textContent).toBe('Cookie 文本超过 256 KiB');
-  expect(host.textContent).toContain('未选择文件');
+  expect(host.querySelector('[role=alert]')?.textContent).toBe('쿠키 텍스트가 256 KiB를 초과합니다');
+  expect(host.textContent).toContain('선택한 파일 없음');
   expect(calls).toHaveLength(FIRST_SCREEN.length);
 });
 
@@ -239,7 +239,7 @@ it('首屏读到的旧结果不冒充新结果：不画、也不发回执', asyn
   });
   expect(toast).not.toHaveBeenCalled();
   expect(host.textContent).not.toContain('上一趟的封面');
-  expect(host.textContent).not.toContain('正在抓取封面');
+  expect(host.textContent).not.toContain('표지 수집 중');
 });
 
 it('抓封面跟到终态：跑的时候两秒一次，跑完发一次回执就不再问', async () => {
@@ -254,15 +254,15 @@ it('抓封面跟到终态：跑的时候两秒一次，跑完发一次回执就�
   await prefetchScraping(new AbortController().signal);
   const host = await mount(page(toast));
 
-  await type(host.querySelector<HTMLInputElement>('input[aria-label=馆藏番号]'), 'ABW-232');
-  await click(buttonNamed('抓取封面', host));
+  await type(host.querySelector<HTMLInputElement>('input[aria-label="컬렉션 품번"]'), 'ABW-232');
+  await click(buttonNamed('표지 수집', host));
   await settle();
   expect(calls[FIRST_SCREEN.length]).toMatchObject({ path: '/api/scraping/cover', method: 'POST', body: { code: 'ABW-232' } });
-  expect(host.textContent).toContain('正在抓取封面');
+  expect(host.textContent).toContain('표지 수집 중');
 
   await tick(2000);
   expect(host.textContent).toContain('已取得 1600 × 1077 封面');
-  expect(host.textContent).not.toContain('正在抓取封面');
+  expect(host.textContent).not.toContain('표지 수집 중');
   expect(toast).toHaveBeenCalledTimes(1);
   expect(toast).toHaveBeenCalledWith('已取得 1600 × 1077 封面');
 
@@ -303,18 +303,18 @@ it('amane 桥：检查上游只填「上游最新版本」那一行，重建跟�
   await prefetchScraping(new AbortController().signal);
   const host = await mount(page(toast));
   const bridge = section(host, 'amane')!;
-  expect(bridge.textContent).toContain('尚未检查');
+  expect(bridge.textContent).toContain('아직 확인하지 않음');
 
-  await click(buttonNamed('检查上游版本', bridge));
+  await click(buttonNamed('업스트림 버전 확인', bridge));
   await settle();
   expect(calls[FIRST_SCREEN.length]).toMatchObject({ path: '/api/scraping/amane-bridge/check', method: 'POST' });
   expect(bridge.textContent).toContain('v0.17.0');
-  expect(bridge.textContent, '检查上游不改变已安装版本').toContain('已安装版本0.16.1');
+  expect(bridge.textContent, '检查上游不改变已安装版本').toContain('설치된 버전0.16.1');
 
-  await click(buttonNamed('重新安装', bridge));
+  await click(buttonNamed('재설치', bridge));
   await settle();
   expect(calls[FIRST_SCREEN.length + 1]).toMatchObject({ path: '/api/scraping/amane-bridge/rebuild', method: 'POST' });
-  expect(bridge.textContent).toContain('正在重建运行环境');
+  expect(bridge.textContent).toContain('실행 환경 재생성 중');
   await tick(2000);
   expect(bridge.textContent).toContain('amane 桥已按 79ecfa763cc7 重建');
   expect(toast).toHaveBeenCalledTimes(1);
@@ -325,5 +325,5 @@ it('登录外链只写主机名；账本里认不出的连接方式原样列成�
   expect(linkHost('https://www.javbus.com/login?next=%2F')).toBe('www.javbus.com');
   expect(linkHost('不是地址')).toBe('不是地址');
   expect(networkOptions('peach').map(([key]) => key)).toEqual(['peach', 'direct']);
-  expect(networkOptions('socks-legacy')).toEqual([['peach', 'Peach 代理'], ['direct', '直接连接'], ['socks-legacy', 'socks-legacy']]);
+  expect(networkOptions('socks-legacy')).toEqual([['peach', 'Peach 프록시'], ['direct', '직접 연결'], ['socks-legacy', 'socks-legacy']]);
 });
